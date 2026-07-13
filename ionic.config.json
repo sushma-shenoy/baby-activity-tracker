@@ -1,5 +1,7 @@
 {
   "name": "baby-activity-tracker",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular-standalone"
 }

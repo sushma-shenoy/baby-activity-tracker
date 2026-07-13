@@ -1,2 +1,44 @@
 // For information on how to create your own theme, please refer to:
 // https://ionicframework.com/docs/theming/
+:root {
+    /* App background */
+--app-bg: linear-gradient(180deg, #fff7fb 0%, #f4f7ff 45%, #ffffff 100%);
+
+/* Text */
+--text-main: #1f2937;
+--text-muted: #9ca3af;
+
+/* Cards */
+--card-bg: #ffffff;
+--card-radius: 28px;
+--card-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+
+/* Feeding - pink/rose */
+--feed-soft: #ffe4e6;
+--feed-main: #fb7185;
+--feed-gradient: linear-gradient(135deg, #fb7185, #f9a8d4);
+
+/* Sleep - indigo/lavender */
+--sleep-soft: #e0e7ff;
+--sleep-main: #818cf8;
+--sleep-gradient: linear-gradient(135deg, #818cf8, #c4b5fd);
+
+/* Diaper - green/mint */
+--diaper-soft: #d1fae5;
+--diaper-main: #34d399;
+--diaper-gradient: linear-gradient(135deg, #34d399, #a7f3d0);
+
+/* Reports - yellow/amber */
+--reports-soft: #fef3c7;
+--reports-main: #f59e0b;
+--reports-gradient: linear-gradient(135deg, #fef3c7, #fde68a);
+
+/* Insights / AI - purple blue */
+--insights-soft: #ede9fe;
+--insights-main: #8b5cf6;
+--insights-gradient: linear-gradient(135deg, #8b5cf6, #60a5fa);
+
+/* Hero */
+--hero-gradient: radial-gradient(circle at top right, #fde68a, transparent 35%),
+  linear-gradient(135deg, #f9a8d4, #c4b5fd, #93c5fd);
+}

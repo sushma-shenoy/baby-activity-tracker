@@ -1,0 +1,98 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-title>Home</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-bg">
+
+  <!-- HERO -->
+  <div class="hero-card">
+    <div>
+      <p class="eyebrow">Today with</p>
+      <h1>{{ baby.name }}</h1>
+      <p>{{ baby.age }} • {{ baby.mood }}</p>
+    </div>
+
+    <div class="baby-bubble">👶</div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="quick-actions">
+    <div class="quick-card feed" routerLink="/feeding">
+      <div class="quick-icon">🍼</div>
+      <span>Feed</span>
+    </div>
+
+    <div class="quick-card sleep" routerLink="/sleep">
+      <div class="quick-icon">😴</div>
+      <span>Sleep</span>
+    </div>
+
+    <div class="quick-card diaper" routerLink="/diaper">
+      <div class="quick-icon">🧷</div>
+      <span>Diaper</span>
+    </div>
+  </div>
+
+  <!-- DONUT CHARTS -->
+  <div class="section">
+    <div class="section-title">
+      <h3>Today’s Progress</h3>
+      <p>Activity goals</p>
+    </div>
+
+    <div class="donut-row">
+      <div class="donut-card" *ngFor="let d of donuts">
+
+        <div
+          class="donut"
+          [ngClass]="d.class"
+          [style.--percent]="d.percent + '%'">
+
+          <div class="donut-center">
+            <div>{{ d.icon }}</div>
+            <strong>{{ d.value }}</strong>
+          </div>
+
+        </div>
+
+        <h4>{{ d.label }}</h4>
+        <p>{{ d.percent }}% of goal</p>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD CTA -->
+  <div class="dashboard-card" routerLink="/dashboard">
+    <div>
+      <h3>Daily Dashboard</h3>
+      <p>Full tracking & timeline</p>
+    </div>
+    <span>›</span>
+  </div>
+
+  <!-- TODAY -->
+  <div class="section bottom-space">
+    <div class="section-title">
+      <h3>Today</h3>
+      <p>{{ recentActivities.length }} activities</p>
+    </div>
+
+    <div *ngIf="recentActivities.length === 0" class="empty-state">
+      <div>🌈</div>
+      <h4>No activity yet</h4>
+      <p>Start by adding feed, sleep, or diaper.</p>
+    </div>
+
+    <app-activity-card
+      *ngFor="let item of recentActivities"
+      [icon]="getIcon(item.type)"
+      [title]="item.title"
+      [value]="item.value"
+      [time]="item.time">
+    </app-activity-card>
+  </div>
+
+</ion-content>

@@ -1,0 +1,61 @@
+.activity-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 12px;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  animation: slideUp 0.25s ease;
+}
+
+.icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f4f6f8;
+  font-size: 22px;
+}
+
+.content {
+  flex: 1;
+}
+
+.content h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.content p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #8a8a8a;
+}
+
+.time {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

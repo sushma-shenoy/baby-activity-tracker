@@ -1,0 +1,165 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Feeding</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="app-bg">
+  <div class="feeding-hero">
+    <p>Track feeding</p>
+    <h1>Feeding 🍼</h1>
+  </div>
+  <!-- INPUT CARD -->
+  <div class="feeding-form-card">
+
+    <h2>{{ editModeId ? 'Edit Feeding' : 'Add Feeding' }}</h2>
+
+    <!-- TYPE -->
+    <div class="toggle">
+      <button [class.active]="newFeed.type === 'formula'" (click)="newFeed.type='formula'">
+        Formula
+      </button>
+
+      <button [class.active]="newFeed.type === 'breast'" (click)="newFeed.type='breast'">
+        Breast
+      </button>
+    </div>
+
+    <!-- QUANTITY -->
+    <div class="stepper">
+      <button (click)="newFeed.quantity = newFeed.quantity - 10">-</button>
+      <div>{{ newFeed.quantity }} ml</div>
+      <button (click)="newFeed.quantity = newFeed.quantity + 10">+</button>
+    </div>
+
+    <!-- EDITABLE TIME -->
+    <ion-item button id="open-time" class="time-item">
+
+      <ion-label>
+        <div class="label-title">Time</div>
+        <div class="label-sub">Tap to change</div>
+      </ion-label>
+
+      <div class="time-value">
+        {{ newFeed.time }}
+      </div>
+
+    </ion-item>
+
+    <ion-popover trigger="open-time" size="cover">
+      <ng-template>
+        <ion-datetime presentation="time" [(ngModel)]="newFeed.time" (ionChange)="formatTime($event)">
+        </ion-datetime>
+      </ng-template>
+    </ion-popover>
+    <ion-popover trigger="open-edit-time" size="cover">
+      <ng-template>
+        <ion-datetime presentation="time" [(ngModel)]="editFeed.time" (ionChange)="formatEditTime($event)">
+        </ion-datetime>
+      </ng-template>
+    </ion-popover>
+    <!-- SAVE -->
+    <button class="add-btn" (click)="saveFeed()">
+      {{ editModeId ? 'Update Feeding' : '+ Add Feeding' }}
+    </button>
+
+  </div>
+
+  <!-- LIST -->
+  <div class="list">
+
+    <div class="feed-card app-card" *ngFor="let f of feeds">
+
+      <div class="left">
+
+        <div class="icon">🍼</div>
+
+        <div class="content">
+
+          <div class="title">
+            {{ f.quantity }} ml • {{ f.type }}
+          </div>
+
+          <!-- TIME (CLICKABLE + VISIBLE) -->
+          <div class="time">
+            ⏰ {{ f.time }}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button (click)="edit(f)">✏️</button>
+        <button (click)="delete(f.id)">🗑</button>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- EDIT MODAL -->
+  <div class="modal-backdrop" *ngIf="isEditOpen">
+
+    <div class="modal">
+
+      <h2>Edit Feeding</h2>
+
+      <!-- TYPE -->
+      <div class="toggle">
+        <button [class.active]="editFeed.type==='formula'" (click)="editFeed.type='formula'">
+          Formula
+        </button>
+
+        <button [class.active]="editFeed.type==='breast'" (click)="editFeed.type='breast'">
+          Breast
+        </button>
+      </div>
+
+      <!-- QUANTITY -->
+      <div class="stepper">
+        <button (click)="editFeed.quantity -= 10">-</button>
+        <div>{{ editFeed.quantity }} ml</div>
+        <button (click)="editFeed.quantity += 10">+</button>
+      </div>
+
+      <!-- TIME -->
+    <div class="edit-time-box">
+  <div class="edit-time-header">
+    <div>
+      <div class="label-title">Time</div>
+      <div class="label-sub">Scroll to adjust feeding time</div>
+    </div>
+
+    <div class="time-value">
+      {{ editFeed.time }}
+    </div>
+  </div>
+
+  <ion-datetime
+    presentation="time"
+    [preferWheel]="true"
+    [(ngModel)]="editFeedPickerValue"
+    (ionChange)="formatEditTime($event)">
+  </ion-datetime>
+</div>
+      <!-- ACTIONS -->
+      <div class="modal-actions">
+        <button class="cancel" (click)="isEditOpen=false">
+          Cancel
+        </button>
+
+        <button class="save" (click)="saveEdit()">
+          Save
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</ion-content>

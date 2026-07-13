@@ -1,0 +1,176 @@
+😊 BABY ACTIVITY TRACKER APP
+===========================
+
+OVERVIEW
+--------
+Baby Activity Tracker is a mobile-first Ionic/Angular application that helps
+parents and caregivers log, monitor, and review a baby's daily routines. The
+app focuses on the most common newborn and infant care activities—feeding,
+sleep, and diaper changes—and provides a simple dashboard for at-a-glance
+progress throughout the day.
+
+The app is designed for quick, one-handed use during busy caregiving moments,
+with local storage so data persists on the device without requiring an account
+or internet connection.
+
+
+TARGET USERS
+------------
+- New parents tracking daily feeding, sleep, and diaper patterns
+- Caregivers (grandparents, nannies) who need a shared view of recent activity
+- Parents who want lightweight daily summaries without complex medical software
+
+
+CORE FEATURES
+-------------
+
+1. HOME
+   - Personalized hero card showing baby name, age, and mood
+   - Quick-action shortcuts to Feed, Sleep, and Diaper screens
+   - Donut charts showing daily progress toward activity goals (feeds, sleep
+     hours, diaper changes)
+   - Recent activity feed (last 5 entries)
+   - Link to the full Daily Dashboard
+
+2. DAILY DASHBOARD
+   - Summary stats: feeds today, sleep hours, diaper changes
+   - "Last feed" time indicator
+   - Quick-add buttons for feeding, sleep, and diaper
+   - Today's timeline of logged activities
+
+3. FEEDING
+   - Log feedings with type (formula or breast), quantity (ml), and time
+   - Adjustable quantity stepper (10 ml increments)
+   - Time picker for backdating or correcting entries
+   - Edit and delete existing feed entries
+   - Feeds sync to the unified activity timeline
+
+4. SLEEP
+   - Live sleep timer with start, pause, and stop controls
+   - Timer persists across page navigation via local storage
+   - Displays elapsed time in HH:MM:SS format
+
+5. DIAPER (planned)
+   - Route and page scaffold exist; logging UI not yet implemented
+
+6. GROWTH (planned)
+   - Route and page scaffold exist for weight/height tracking
+
+7. MEDICINE (planned)
+   - Route and page scaffold exist for medication logging
+
+8. VACCINATION (planned)
+   - Route and page scaffold exist for immunization records
+
+9. SETTINGS (planned)
+   - Route and page scaffold exist for baby profile and app preferences
+
+
+DATA MODEL
+----------
+
+Activity (unified timeline entry):
+  - id: string
+  - type: 'feeding' | 'sleep' | 'diaper'
+  - title: string
+  - value: string (e.g. "120 ml formula")
+  - time: string (display time)
+  - createdAt: number (Unix timestamp)
+
+Feed (feeding-specific record):
+  - id: string
+  - time: string
+  - quantity: number (ml)
+  - type: 'breast' | 'formula'
+
+SleepState (active timer session):
+  - isRunning: boolean
+  - startTime: number | null
+  - elapsed: number (milliseconds)
+  - sessionActive: boolean
+
+
+ARCHITECTURE
+------------
+
+Frontend:
+  - Angular 20 (standalone components)
+  - Ionic 8 UI framework
+  - RxJS BehaviorSubjects for reactive state
+  - Chart.js available for future charting
+
+Storage:
+  - Browser localStorage for activities, feeds, and sleep state
+  - Keys: 'baby_activities', 'feeds', 'sleep_state'
+
+Services:
+  - ActivityService  — CRUD for unified activity timeline
+  - FeedService      — CRUD for feeding records
+  - SleepService     — Sleep timer state management
+  - Storage          — Placeholder for future Ionic Storage integration
+  - Notification     — Placeholder for future push/local notifications
+
+Components:
+  - ActivityCardComponent — Reusable card for timeline entries
+
+
+ROUTES
+------
+  /home         — Home screen (default)
+  /dashboard    — Daily dashboard
+  /feeding      — Feeding log
+  /sleep        — Sleep timer
+  /diaper       — Diaper log (scaffold)
+  /growth       — Growth tracking (scaffold)
+  /medicine     — Medicine log (scaffold)
+  /vaccination  — Vaccination records (scaffold)
+  /settings     — App settings (scaffold)
+
+
+PLATFORMS
+---------
+  - Web (browser via ng serve)
+  - iOS (Capacitor 8 native shell)
+  - Android (Capacitor 8 native shell)
+
+App ID: io.ionic.starter
+Web build output: www/
+
+
+DESIGN
+------
+  - Soft, friendly UI with emoji icons for quick recognition
+  - Color-coded activity types (feed, sleep, diaper)
+  - Card-based layout optimized for mobile screens
+  - Donut progress charts on the home screen for daily goals
+
+
+CURRENT STATUS
+--------------
+Implemented:
+  - Home page with baby profile, quick actions, progress donuts, recent activity
+  - Dashboard with live stats and timeline
+  - Full feeding CRUD with formula/breast types and time editing
+  - Sleep timer with start/pause/stop and persistence
+  - Activity timeline shared across Home and Dashboard
+  - Capacitor iOS and Android project scaffolding
+
+Not yet implemented:
+  - Diaper logging UI and service
+  - Growth, medicine, and vaccination features
+  - Settings (baby profile editing, goals, units)
+  - Push/local notifications
+  - Ionic Storage migration from localStorage
+  - Sleep session saved to activity timeline on stop
+  - Real-time donut chart data tied to actual logged activities
+
+
+FUTURE ROADMAP (SUGGESTED)
+--------------------------
+  - Complete diaper, growth, medicine, and vaccination modules
+  - Editable baby profile and daily goal targets in Settings
+  - Reminders for feeding intervals and medication doses
+  - Weekly/monthly trend charts (Chart.js)
+  - Data export (CSV/JSON)
+  - Multi-baby support
+  - Cloud sync and caregiver sharing

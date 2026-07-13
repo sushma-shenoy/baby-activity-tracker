@@ -35,3 +35,113 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+ion-content {
+  --color: #1f1f1f;
+}
+ion-item[button] {
+  --background: #ffffff;
+  --background-activated: #f5f6f8;
+  --background-focused: #f5f6f8;
+
+  --ripple-color: rgba(79, 70, 229, 0.12);
+}
+ion-tab-bar {
+  --background: #f2f2f2;   /* light grey */
+  --border: 1px solid #e5e5e5;
+}
+.app-bg {
+  --background: var(--app-bg);
+}
+
+.app-card {
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+.section {
+  margin: 20px 16px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.section-title h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+.section-title p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.soft-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.feed-theme {
+  background: var(--feed-gradient);
+}
+
+.sleep-theme {
+  background: var(--sleep-gradient);
+}
+
+.diaper-theme {
+  background: var(--diaper-gradient);
+}
+
+.reports-theme {
+  background: var(--reports-gradient);
+}
+
+.insights-theme {
+  background: var(--insights-gradient);
+}
+.feed-soft {
+  background: var(--feed-soft);
+}
+
+.sleep-soft {
+  background: var(--sleep-soft);
+}
+
+.diaper-soft {
+  background: var(--diaper-soft);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

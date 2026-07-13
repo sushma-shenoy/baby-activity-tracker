@@ -1,0 +1,46 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Feeding</ion-title>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Sleep</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding bg">
+
+    <div class="timer-card">
+
+      <div class="timer">
+        {{ timerDisplay }}
+      </div>
+
+      <div class="controls">
+
+        <ion-button *ngIf="!sleepService.getState().isRunning" (click)="start()">
+          ▶ Start
+        </ion-button>
+
+        <ion-button color="danger" *ngIf="sleepService.getState().isRunning" (click)="pause()">
+          ⏸ Pause
+        </ion-button>
+        <ion-button color="dark" (click)="stop()">
+          ⏹ Stop
+        </ion-button>
+
+      </div>
+
+    </div>
+
+  </ion-content>
+</ion-content>

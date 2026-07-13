@@ -1,0 +1,25 @@
+.bg {
+  --background: #f6f7ff;
+}
+.timer-card {
+  text-align: center;
+  margin-top: 40px;
+  margin: 16px;
+    padding: 18px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #6a5af9, #8d7aff);
+    color: white;
+    animation: _ngcontent-ng-c4029031220_fadeIn 0.4s ease;
+}
+
+.timer {
+  font-size: 42px;
+  font-weight: 700;
+  color: #1f1f1f;
+  margin-bottom: 20px;
+}
+
+.controls ion-button {
+  margin: 10px;
+  --border-radius: 12px;
+}

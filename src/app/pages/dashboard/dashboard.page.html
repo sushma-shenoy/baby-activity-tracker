@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Baby Dashboard 👶</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="app-bg">
+
+  <!-- HERO SUMMARY -->
+  <div class="hero">
+    <h2>Good Day</h2>
+    <p>Last feed: {{ stats.lastFeedAgo }}</p>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="actions">
+    <button (click)="add('feeding')">🍼 Feed</button>
+    <button (click)="add('sleep')">😴 Sleep</button>
+    <button (click)="add('diaper')">🧷 Diaper</button>
+  </div>
+
+  <!-- STATS GRID -->
+  <div class="grid">
+
+    <div class="card feed">
+      <h1>{{ stats.feeding }}</h1>
+      <p>Feeds Today</p>
+    </div>
+
+    <div class="card sleep">
+      <h1>{{ stats.sleep }}</h1>
+      <p>Sleep Hours</p>
+    </div>
+
+    <div class="card diaper">
+      <h1>{{ stats.diaper }}</h1>
+      <p>Diaper Changes</p>
+    </div>
+
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <h3>Today Timeline</h3>
+
+  <app-activity-card
+  *ngFor="let a of activities"
+  [icon]="getIcon(a.type)"
+  [title]="a.title"
+  [value]="a.value"
+  [time]="a.time">
+</app-activity-card>
+  </div>
+
+</ion-content>
