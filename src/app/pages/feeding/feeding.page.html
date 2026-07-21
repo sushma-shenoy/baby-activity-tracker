@@ -1,165 +1,412 @@
 <ion-header translucent="true">
   <ion-toolbar>
-
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+      <ion-back-button
+        defaultHref="/dashboard">
+      </ion-back-button>
     </ion-buttons>
 
     <ion-title>Feeding</ion-title>
-
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="app-bg">
-  <div class="feeding-hero">
-    <p>Track feeding</p>
-    <h1>Feeding 🍼</h1>
-  </div>
-  <!-- INPUT CARD -->
-  <div class="feeding-form-card">
+<ion-content
+  [fullscreen]="true"
+  class="app-bg">
 
-    <h2>{{ editModeId ? 'Edit Feeding' : 'Add Feeding' }}</h2>
+  <!-- HERO -->
+  <section class="feeding-hero">
+    <div>
+      <p>Track feeding</p>
+      <h1>Feeding 🍼</h1>
+    </div>
+
+    <div class="hero-icon">
+      🍼
+    </div>
+  </section>
+
+  <!-- ADD FEEDING FORM -->
+  <section class="feeding-form-card">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">
+          New activity
+        </p>
+
+        <h2>Add Feeding</h2>
+      </div>
+    </div>
 
     <!-- TYPE -->
-    <div class="toggle">
-      <button [class.active]="newFeed.type === 'formula'" (click)="newFeed.type='formula'">
-        Formula
-      </button>
+    <div class="field-group">
+      <p class="field-label">
+        Feeding type
+      </p>
 
-      <button [class.active]="newFeed.type === 'breast'" (click)="newFeed.type='breast'">
-        Breast
-      </button>
-    </div>
+      <div class="feeding-toggle">
+        <button
+          type="button"
+          [class.active]="
+            newFeed.type === 'formula'
+          "
+          (click)="
+            newFeed.type = 'formula'
+          ">
 
-    <!-- QUANTITY -->
-    <div class="stepper">
-      <button (click)="newFeed.quantity = newFeed.quantity - 10">-</button>
-      <div>{{ newFeed.quantity }} ml</div>
-      <button (click)="newFeed.quantity = newFeed.quantity + 10">+</button>
-    </div>
-
-    <!-- EDITABLE TIME -->
-    <ion-item button id="open-time" class="time-item">
-
-      <ion-label>
-        <div class="label-title">Time</div>
-        <div class="label-sub">Tap to change</div>
-      </ion-label>
-
-      <div class="time-value">
-        {{ newFeed.time }}
-      </div>
-
-    </ion-item>
-
-    <ion-popover trigger="open-time" size="cover">
-      <ng-template>
-        <ion-datetime presentation="time" [(ngModel)]="newFeed.time" (ionChange)="formatTime($event)">
-        </ion-datetime>
-      </ng-template>
-    </ion-popover>
-    <ion-popover trigger="open-edit-time" size="cover">
-      <ng-template>
-        <ion-datetime presentation="time" [(ngModel)]="editFeed.time" (ionChange)="formatEditTime($event)">
-        </ion-datetime>
-      </ng-template>
-    </ion-popover>
-    <!-- SAVE -->
-    <button class="add-btn" (click)="saveFeed()">
-      {{ editModeId ? 'Update Feeding' : '+ Add Feeding' }}
-    </button>
-
-  </div>
-
-  <!-- LIST -->
-  <div class="list">
-
-    <div class="feed-card app-card" *ngFor="let f of feeds">
-
-      <div class="left">
-
-        <div class="icon">🍼</div>
-
-        <div class="content">
-
-          <div class="title">
-            {{ f.quantity }} ml • {{ f.type }}
-          </div>
-
-          <!-- TIME (CLICKABLE + VISIBLE) -->
-          <div class="time">
-            ⏰ {{ f.time }}
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="actions">
-        <button (click)="edit(f)">✏️</button>
-        <button (click)="delete(f.id)">🗑</button>
-      </div>
-
-    </div>
-
-  </div>
-  <!-- EDIT MODAL -->
-  <div class="modal-backdrop" *ngIf="isEditOpen">
-
-    <div class="modal">
-
-      <h2>Edit Feeding</h2>
-
-      <!-- TYPE -->
-      <div class="toggle">
-        <button [class.active]="editFeed.type==='formula'" (click)="editFeed.type='formula'">
           Formula
         </button>
 
-        <button [class.active]="editFeed.type==='breast'" (click)="editFeed.type='breast'">
+        <button
+          type="button"
+          [class.active]="
+            newFeed.type === 'breast'
+          "
+          (click)="
+            newFeed.type = 'breast'
+          ">
+
           Breast
         </button>
       </div>
+    </div>
 
-      <!-- QUANTITY -->
+    <!-- QUANTITY -->
+    <div class="field-group">
+      <p class="field-label">
+        Quantity
+      </p>
+
       <div class="stepper">
-        <button (click)="editFeed.quantity -= 10">-</button>
-        <div>{{ editFeed.quantity }} ml</div>
-        <button (click)="editFeed.quantity += 10">+</button>
-      </div>
+        <button
+          type="button"
+          aria-label="Decrease quantity"
+          (click)="decreaseNewFeedQuantity()">
 
-      <!-- TIME -->
-    <div class="edit-time-box">
-  <div class="edit-time-header">
-    <div>
-      <div class="label-title">Time</div>
-      <div class="label-sub">Scroll to adjust feeding time</div>
-    </div>
-
-    <div class="time-value">
-      {{ editFeed.time }}
-    </div>
-  </div>
-
-  <ion-datetime
-    presentation="time"
-    [preferWheel]="true"
-    [(ngModel)]="editFeedPickerValue"
-    (ionChange)="formatEditTime($event)">
-  </ion-datetime>
-</div>
-      <!-- ACTIONS -->
-      <div class="modal-actions">
-        <button class="cancel" (click)="isEditOpen=false">
-          Cancel
+          −
         </button>
 
-        <button class="save" (click)="saveEdit()">
-          Save
+        <div class="quantity-value">
+          <strong>
+            {{ newFeed.quantity }}
+          </strong>
+
+          <span>ml</span>
+        </div>
+
+        <button
+          type="button"
+          aria-label="Increase quantity"
+          (click)="increaseNewFeedQuantity()">
+
+          +
         </button>
       </div>
-
     </div>
 
+    <!-- TIME -->
+    <div class="field-group">
+      <p class="field-label">
+        Feeding time
+      </p>
+
+      <ion-item
+        button="true"
+        detail="false"
+        lines="none"
+        id="open-time"
+        class="time-item">
+
+        <ion-icon
+          slot="start"
+          name="time-outline">
+        </ion-icon>
+
+        <ion-label>
+          <div class="label-title">
+            Time
+          </div>
+
+          <div class="label-sub">
+            Tap to change
+          </div>
+        </ion-label>
+
+        <div
+          slot="end"
+          class="time-value">
+
+          {{ newFeed.time }}
+        </div>
+      </ion-item>
+
+      <ion-popover
+        trigger="open-time"
+        size="cover"
+        cssClass="feeding-time-popover">
+
+        <ng-template>
+          <ion-datetime
+            presentation="time"
+            [preferWheel]="true"
+            [(ngModel)]="newFeedPickerValue"
+            (ionChange)="formatTime($event)">
+          </ion-datetime>
+        </ng-template>
+      </ion-popover>
+    </div>
+
+    <!-- SAVE -->
+    <button
+      type="button"
+      class="add-btn"
+      (click)="saveFeed()">
+
+      <span>＋ Add Feeding</span>
+    </button>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="history-section">
+    <div class="history-header">
+      <div>
+        <p class="section-eyebrow">
+          Recent activity
+        </p>
+
+        <h2>Feeding history</h2>
+      </div>
+
+      <span class="history-count">
+        {{ feeds.length }}
+      </span>
+    </div>
+
+    <div
+      class="empty-state"
+      *ngIf="feeds.length === 0">
+
+      <div class="empty-icon">
+        🍼
+      </div>
+
+      <h3>No feeding recorded</h3>
+
+      <p>
+        Add the first feeding activity
+        using the form above.
+      </p>
+    </div>
+
+    <div
+      class="feed-card"
+      role="button"
+      tabindex="0"
+      *ngFor="
+        let feed of feeds;
+        trackBy: trackByFeedId
+      "
+      (click)="edit(feed)"
+      (keyup.enter)="edit(feed)">
+
+      <div class="feed-card-left">
+        <div class="feed-icon">
+          🍼
+        </div>
+
+        <div class="feed-content">
+          <div class="feed-title">
+            {{ feed.quantity }} ml
+          </div>
+
+          <div class="feed-type">
+            {{
+              feed.type === 'formula'
+                ? 'Formula feeding'
+                : 'Breast feeding'
+            }}
+          </div>
+
+          <div class="feed-time">
+            <ion-icon
+              name="time-outline">
+            </ion-icon>
+
+            <span>{{ feed.time }}</span>
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="more-button"
+        aria-label="Feeding options"
+        (click)="
+          openFeedActions(feed, $event)
+        ">
+
+        <ion-icon
+          name="ellipsis-horizontal-outline">
+        </ion-icon>
+      </button>
+    </div>
+  </section>
+
+  <!-- EDIT MODAL -->
+  <div
+    class="modal-backdrop"
+    *ngIf="isEditOpen"
+    (click)="closeEditModal()">
+
+    <section
+      class="edit-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-feeding-title"
+      (click)="$event.stopPropagation()">
+
+      <div class="edit-modal-hero">
+        <div>
+          <p>Edit activity</p>
+
+          <h2 id="edit-feeding-title">
+            Feeding
+          </h2>
+        </div>
+
+        <div class="edit-modal-icon">
+          🍼
+        </div>
+      </div>
+
+      <div class="edit-modal-content">
+        <!-- TYPE -->
+        <div class="field-group">
+          <p class="field-label">
+            Feeding type
+          </p>
+
+          <div class="feeding-toggle">
+            <button
+              type="button"
+              [class.active]="
+                editFeed.type === 'formula'
+              "
+              (click)="
+                editFeed.type = 'formula'
+              ">
+
+              Formula
+            </button>
+
+            <button
+              type="button"
+              [class.active]="
+                editFeed.type === 'breast'
+              "
+              (click)="
+                editFeed.type = 'breast'
+              ">
+
+              Breast
+            </button>
+          </div>
+        </div>
+
+        <!-- QUANTITY -->
+        <div class="field-group">
+          <p class="field-label">
+            Quantity
+          </p>
+
+          <div class="stepper">
+            <button
+              type="button"
+              aria-label="Decrease quantity"
+              (click)="
+                decreaseEditFeedQuantity()
+              ">
+
+              −
+            </button>
+
+            <div class="quantity-value">
+              <strong>
+                {{ editFeed.quantity }}
+              </strong>
+
+              <span>ml</span>
+            </div>
+
+            <button
+              type="button"
+              aria-label="Increase quantity"
+              (click)="
+                increaseEditFeedQuantity()
+              ">
+
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- TIME -->
+        <div class="field-group">
+          <p class="field-label">
+            Feeding time
+          </p>
+
+          <div class="edit-time-box">
+            <div class="edit-time-header">
+              <div>
+                <div class="label-title">
+                  Time
+                </div>
+
+                <div class="label-sub">
+                  Scroll to adjust
+                </div>
+              </div>
+
+              <div class="time-value">
+                {{ editFeed.time }}
+              </div>
+            </div>
+
+            <ion-datetime
+              presentation="time"
+              [preferWheel]="true"
+              [(ngModel)]="editFeedPickerValue"
+              (ionChange)="formatEditTime($event)">
+            </ion-datetime>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="edit-feed-actions">
+          <ion-button
+            type="button"
+            expand="block"
+            class="edit-feed-cancel-button"
+            (click)="closeEditModal()">
+
+            <span class="edit-feed-cancel-text">
+              Cancel
+            </span>
+          </ion-button>
+
+          <ion-button
+            type="button"
+            expand="block"
+            class="edit-feed-save-button"
+            (click)="saveEdit()">
+
+            <span class="edit-feed-save-text">
+              Save changes
+            </span>
+          </ion-button>
+        </div>
+      </div>
+    </section>
   </div>
 </ion-content>

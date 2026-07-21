@@ -1,13 +1,427 @@
-<ion-header [translucent]="true">
+<ion-header translucent="true">
   <ion-toolbar>
-    <ion-title>diaper</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard">
+      </ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Diaper</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="app-bg" [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">diaper</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="diaper-page">
+
+  <main class="diaper-page-content">
+
+    <!-- HERO -->
+    <section class="diaper-hero">
+      <div>
+        <p class="eyebrow">Quick log</p>
+
+        <h1>Diaper change</h1>
+
+        <p class="hero-description">
+          Record wet and dirty diapers.
+        </p>
+      </div>
+
+      <div class="hero-icon">
+        🧷
+      </div>
+    </section>
+
+    <!-- ADD DIAPER -->
+    <section class="diaper-form-card">
+      <div class="card-heading">
+        <div>
+          <p class="section-eyebrow">
+            New activity
+          </p>
+
+          <h2>Diaper type</h2>
+        </div>
+
+        <span class="selected-type-badge">
+          {{ selectedTypeLabel }}
+        </span>
+      </div>
+
+      <ion-segment
+        class="activity-segment"
+        [(ngModel)]="selectedType">
+
+        <ion-segment-button value="wet">
+          <ion-label>Wet</ion-label>
+        </ion-segment-button>
+
+        <ion-segment-button value="dirty">
+          <ion-label>Dirty</ion-label>
+        </ion-segment-button>
+
+        <ion-segment-button value="both">
+          <ion-label>Both</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <!-- DATE AND TIME -->
+      <div class="field-section">
+        <p class="field-label">
+          Date and time
+        </p>
+
+        <div class="date-time-field">
+          <div>
+            <span class="date-time-title">
+              Diaper changed
+            </span>
+
+            <span class="date-time-subtitle">
+              Tap to adjust
+            </span>
+          </div>
+
+          <ion-datetime-button
+            datetime="diaper-datetime">
+          </ion-datetime-button>
+        </div>
+
+        <ion-modal
+          [keepContentsMounted]="true"
+          cssClass="diaper-date-modal">
+
+          <ng-template>
+            <ion-datetime
+              id="diaper-datetime"
+              presentation="date-time"
+              [preferWheel]="true"
+              [(ngModel)]="diaperTime">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </div>
+
+      <!-- NOTES -->
+      <div class="field-section">
+        <p class="field-label">
+          Notes
+          <span>Optional</span>
+        </p>
+
+        <ion-item
+          class="notes-field"
+          lines="none">
+
+          <ion-textarea
+            aria-label="Diaper notes"
+            placeholder="Add color, consistency, rash or other details"
+            autoGrow="true"
+            maxlength="250"
+            [(ngModel)]="notes">
+          </ion-textarea>
+        </ion-item>
+      </div>
+
+      <ion-button
+        type="button"
+        expand="block"
+        class="add-diaper-button"
+        (click)="saveDiaper()">
+
+        <ion-icon
+          slot="start"
+          name="add-outline">
+        </ion-icon>
+
+        <span class="add-button-text">
+          Add diaper
+        </span>
+      </ion-button>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="history-section">
+      <div class="section-title">
+        <div>
+          <p class="section-eyebrow">
+            Recent activity
+          </p>
+
+          <h2>Diaper history</h2>
+        </div>
+
+        <span class="history-count">
+          {{ diaperActivities.length }}
+        </span>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div
+        class="empty-state"
+        *ngIf="diaperActivities.length === 0">
+
+        <div class="empty-icon">
+          🧷
+        </div>
+
+        <h3>No diaper entries</h3>
+
+        <p>
+          Add the first diaper change above.
+        </p>
+      </div>
+
+      <!-- HISTORY LIST -->
+      <ion-list
+        class="history-list"
+        lines="none"
+        *ngIf="diaperActivities.length > 0">
+
+        <ion-item-sliding
+          *ngFor="
+            let activity of diaperActivities;
+            trackBy: trackByActivityId
+          ">
+
+          <ion-item
+            button="true"
+            detail="false"
+            lines="none"
+            class="history-item"
+            (click)="openEditDiaper(activity)">
+
+            <div
+              class="history-icon"
+              slot="start"
+              [class.wet-icon]="
+                getActivityDiaperType(activity) === 'wet'
+              "
+              [class.dirty-icon]="
+                getActivityDiaperType(activity) === 'dirty'
+              "
+              [class.both-icon]="
+                getActivityDiaperType(activity) === 'both'
+              ">
+
+              {{
+                getDiaperIcon(
+                  getActivityDiaperType(activity)
+                )
+              }}
+            </div>
+
+            <ion-label>
+              <h3>
+                {{ getActivityTitle(activity) }}
+              </h3>
+
+              <p class="activity-time">
+                <ion-icon name="time-outline">
+                </ion-icon>
+
+                {{ activity.time }}
+              </p>
+
+              <p
+                class="activity-notes"
+                *ngIf="getActivityNotes(activity)">
+
+                {{ getActivityNotes(activity) }}
+              </p>
+            </ion-label>
+
+            <ion-button
+              type="button"
+              slot="end"
+              fill="clear"
+              class="more-button"
+              aria-label="Diaper options"
+              (click)="
+                openDiaperActions(
+                  activity,
+                  $event
+                )
+              ">
+
+              <ion-icon
+                slot="icon-only"
+                name="ellipsis-horizontal-outline">
+              </ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item-options side="end">
+
+            <ion-item-option
+              class="edit-option"
+              (click)="openEditDiaper(activity)">
+
+              Edit
+            </ion-item-option>
+
+            <ion-item-option
+              class="delete-option"
+              (click)="confirmDeleteDiaper(activity)">
+
+              Delete
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+    </section>
+  </main>
+
+  <!-- EDIT DIAPER MODAL -->
+  <ion-modal
+    [isOpen]="isEditOpen"
+    cssClass="diaper-edit-modal"
+    (didDismiss)="closeDiaperEdit()">
+
+    <ng-template>
+      <ion-header>
+        <ion-toolbar class="edit-modal-toolbar">
+
+          <ion-buttons slot="start">
+            <ion-button
+              type="button"
+              aria-label="Close diaper editor"
+              (click)="closeDiaperEdit()">
+
+              <ion-icon
+                slot="icon-only"
+                name="close-outline">
+              </ion-icon>
+            </ion-button>
+          </ion-buttons>
+
+          <ion-title>Edit diaper</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="edit-modal-bg">
+        <div class="edit-modal-shell">
+
+          <!-- EDIT HERO -->
+          <section class="edit-modal-hero">
+            <div>
+              <p>Edit activity</p>
+
+              <h2>Diaper change</h2>
+            </div>
+
+            <div class="edit-modal-icon">
+              🧷
+            </div>
+          </section>
+
+          <!-- EDIT FORM -->
+          <section class="edit-modal-card">
+
+            <div class="field-section">
+              <p class="field-label">
+                Diaper type
+              </p>
+
+              <ion-segment
+                class="activity-segment"
+                [(ngModel)]="editDiaper.type">
+
+                <ion-segment-button value="wet">
+                  <ion-label>Wet</ion-label>
+                </ion-segment-button>
+
+                <ion-segment-button value="dirty">
+                  <ion-label>Dirty</ion-label>
+                </ion-segment-button>
+
+                <ion-segment-button value="both">
+                  <ion-label>Both</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+
+            <div class="field-section">
+              <p class="field-label">
+                Date and time
+              </p>
+
+              <div class="date-time-field">
+                <div>
+                  <span class="date-time-title">
+                    Diaper changed
+                  </span>
+
+                  <span class="date-time-subtitle">
+                    Tap to adjust
+                  </span>
+                </div>
+
+                <ion-datetime-button
+                  datetime="edit-diaper-datetime">
+                </ion-datetime-button>
+              </div>
+
+              <ion-modal
+                [keepContentsMounted]="true"
+                cssClass="diaper-date-modal">
+
+                <ng-template>
+                  <ion-datetime
+                    id="edit-diaper-datetime"
+                    presentation="date-time"
+                    [preferWheel]="true"
+                    [(ngModel)]="editDiaper.dateTime">
+                  </ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </div>
+
+            <div class="field-section">
+              <p class="field-label">
+                Notes
+                <span>Optional</span>
+              </p>
+
+              <ion-item
+                class="notes-field"
+                lines="none">
+
+                <ion-textarea
+                  aria-label="Edit diaper notes"
+                  placeholder="Add color, consistency, rash or other details"
+                  autoGrow="true"
+                  maxlength="250"
+                  [(ngModel)]="editDiaper.notes">
+                </ion-textarea>
+              </ion-item>
+            </div>
+
+            <div class="edit-diaper-actions">
+
+              <ion-button
+                type="button"
+                expand="block"
+                class="edit-diaper-cancel-button"
+                (click)="closeDiaperEdit()">
+
+                <span class="cancel-button-text">
+                  Cancel
+                </span>
+              </ion-button>
+
+              <ion-button
+                type="button"
+                expand="block"
+                class="edit-diaper-save-button"
+                (click)="saveDiaperEdit()">
+
+                <span class="save-button-text">
+                  Save changes
+                </span>
+              </ion-button>
+            </div>
+          </section>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

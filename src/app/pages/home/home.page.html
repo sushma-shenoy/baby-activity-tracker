@@ -1,98 +1,250 @@
 <ion-header translucent="true">
   <ion-toolbar>
     <ion-title>Home</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button routerLink="/settings">
+        <ion-icon
+          slot="icon-only"
+          name="settings-outline">
+        </ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="app-bg">
+<ion-content class="home-bg">
 
   <!-- HERO -->
-  <div class="hero-card">
-    <div>
-      <p class="eyebrow">Today with</p>
+  <section class="hero-card">
+    <div class="hero-content">
+      <p class="eyebrow">
+        {{ greeting }}
+      </p>
+
       <h1>{{ baby.name }}</h1>
-      <p>{{ baby.age }} • {{ baby.mood }}</p>
+
+      <p class="baby-details">
+        {{ baby.age }} · {{ baby.mood }}
+      </p>
     </div>
 
-    <div class="baby-bubble">👶</div>
-  </div>
+    <div class="baby-bubble">
+      👶
+    </div>
+  </section>
+
+  <!-- LAST ACTIVITY -->
+  <section class="status-grid">
+    <button
+      type="button"
+      class="status-card feed-status"
+      routerLink="/feeding">
+
+      <div class="status-icon">
+        🍼
+      </div>
+
+      <div>
+        <span>Last feed</span>
+        <strong>{{ lastFeedText }}</strong>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      class="status-card sleep-status"
+      routerLink="/sleep">
+
+      <div class="status-icon">
+        😴
+      </div>
+
+      <div>
+        <span>Last sleep</span>
+        <strong>{{ lastSleepText }}</strong>
+      </div>
+    </button>
+  </section>
 
   <!-- QUICK ACTIONS -->
-  <div class="quick-actions">
-    <div class="quick-card feed" routerLink="/feeding">
-      <div class="quick-icon">🍼</div>
-      <span>Feed</span>
-    </div>
-
-    <div class="quick-card sleep" routerLink="/sleep">
-      <div class="quick-icon">😴</div>
-      <span>Sleep</span>
-    </div>
-
-    <div class="quick-card diaper" routerLink="/diaper">
-      <div class="quick-icon">🧷</div>
-      <span>Diaper</span>
-    </div>
-  </div>
-
-  <!-- DONUT CHARTS -->
-  <div class="section">
+  <section class="section">
     <div class="section-title">
-      <h3>Today’s Progress</h3>
-      <p>Activity goals</p>
+      <div>
+        <h2>Quick actions</h2>
+        <p>Record an activity</p>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <button
+        type="button"
+        class="quick-card feed"
+        routerLink="/feeding">
+
+        <div class="quick-icon">🍼</div>
+        <span>Feed</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card sleep"
+        routerLink="/sleep">
+
+        <div class="quick-icon">😴</div>
+        <span>Sleep</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card diaper"
+        routerLink="/diaper">
+
+        <div class="quick-icon">🧷</div>
+        <span>Diaper</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card medicine"
+        routerLink="/medicine">
+
+        <div class="quick-icon">💊</div>
+        <span>Medicine</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="section">
+    <div class="section-title">
+      <div>
+        <h2>Today’s progress</h2>
+        <p>Daily activity overview</p>
+      </div>
     </div>
 
     <div class="donut-row">
-      <div class="donut-card" *ngFor="let d of donuts">
+      <article
+        class="donut-card"
+        *ngFor="let donut of donuts">
 
         <div
           class="donut"
-          [ngClass]="d.class"
-          [style.--percent]="d.percent + '%'">
+          [ngClass]="donut.class"
+          [style.--percent]="
+            donut.percent + '%'
+          ">
 
           <div class="donut-center">
-            <div>{{ d.icon }}</div>
-            <strong>{{ d.value }}</strong>
+            <span>{{ donut.icon }}</span>
+            <strong>{{ donut.value }}</strong>
           </div>
-
         </div>
 
-        <h4>{{ d.label }}</h4>
-        <p>{{ d.percent }}% of goal</p>
+        <h3>{{ donut.label }}</h3>
 
-      </div>
+        <p>
+          {{ donut.value }} / {{ donut.goal }}
+          {{ donut.unit }}
+        </p>
+      </article>
     </div>
-  </div>
+  </section>
 
-  <!-- DASHBOARD CTA -->
-  <div class="dashboard-card" routerLink="/dashboard">
+  <!-- INSIGHT -->
+  <section class="insight-card">
+    <div class="insight-icon">
+      💡
+    </div>
+
     <div>
-      <h3>Daily Dashboard</h3>
-      <p>Full tracking & timeline</p>
-    </div>
-    <span>›</span>
-  </div>
+      <p class="insight-label">
+        Today’s insight
+      </p>
 
-  <!-- TODAY -->
-  <div class="section bottom-space">
-    <div class="section-title">
-      <h3>Today</h3>
-      <p>{{ recentActivities.length }} activities</p>
+      <p class="insight-text">
+        {{ insightText }}
+      </p>
+    </div>
+  </section>
+
+  <!-- TODAY'S JOURNEY -->
+  <section class="section journey-section">
+    <div class="section-title section-title-row">
+      <div>
+        <h2>Today’s journey</h2>
+
+        <p>
+          {{ recentActivities.length }}
+          recent activities
+        </p>
+      </div>
+
+      <ion-button
+        fill="clear"
+        size="small"
+        routerLink="/dashboard">
+
+        View all
+      </ion-button>
     </div>
 
-    <div *ngIf="recentActivities.length === 0" class="empty-state">
-      <div>🌈</div>
-      <h4>No activity yet</h4>
-      <p>Start by adding feed, sleep, or diaper.</p>
+    <div
+      class="empty-state"
+      *ngIf="
+        recentActivities.length === 0
+      ">
+
+      <div class="empty-icon">
+        🌈
+      </div>
+
+      <h3>No activity yet</h3>
+
+      <p>
+        Add a feed, sleep session,
+        or diaper change.
+      </p>
     </div>
 
-    <app-activity-card
-      *ngFor="let item of recentActivities"
-      [icon]="getIcon(item.type)"
-      [title]="item.title"
-      [value]="item.value"
-      [time]="item.time">
-    </app-activity-card>
-  </div>
+    <button
+      type="button"
+      class="journey-card"
+      *ngFor="
+        let activity of recentActivities
+      "
+      [ngClass]="
+        getActivityAccent(activity.type)
+      "
+      (click)="
+        openActivityPage(activity.type)
+      ">
+
+      <div class="journey-line">
+        <div class="journey-icon">
+          {{ getIcon(activity.type) }}
+        </div>
+      </div>
+
+      <div class="journey-content">
+        <div class="journey-heading">
+          <h3>{{ activity.title }}</h3>
+
+          <span>
+            {{ getTimeAgo(activity.createdAt) }}
+          </span>
+        </div>
+
+        <p>{{ activity.value }}</p>
+
+        <small>{{ activity.time }}</small>
+      </div>
+
+      <ion-icon
+        name="chevron-forward-outline">
+      </ion-icon>
+    </button>
+  </section>
 
 </ion-content>

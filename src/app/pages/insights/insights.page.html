@@ -1,0 +1,746 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard">
+      </ion-back-button>
+    </ion-buttons>
+
+    <ion-title>Insights</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="insights-page">
+  <main class="insights-content">
+
+    <!-- HERO -->
+    <section class="insights-hero">
+      <div>
+        <p class="eyebrow">
+          Daily analytics
+        </p>
+
+        <h1>Today at a glance</h1>
+
+        <p>
+          {{ todayDateLabel }}
+        </p>
+      </div>
+
+      <div class="hero-icon">
+        ✨
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="summary-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">
+            Overview
+          </p>
+
+          <h2>Daily summary</h2>
+        </div>
+
+        <span class="activity-count">
+          {{ todayAnalytics.totalActivities }}
+        </span>
+      </div>
+
+      <div class="summary-grid">
+
+        <article class="summary-card feeding-card">
+          <div class="summary-icon">
+            🍼
+          </div>
+
+          <strong>
+            {{ todayAnalytics.feeding.count }}
+          </strong>
+
+          <span>Feeds</span>
+        </article>
+
+        <article class="summary-card sleep-card">
+          <div class="summary-icon">
+            😴
+          </div>
+
+          <strong>
+            {{ totalSleepText }}
+          </strong>
+
+          <span>Sleep</span>
+        </article>
+
+        <article class="summary-card diaper-card">
+          <div class="summary-icon">
+            🧷
+          </div>
+
+          <strong>
+            {{ todayAnalytics.diaper.count }}
+          </strong>
+
+          <span>Changes</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ACTIVE SLEEP -->
+    <section
+      class="active-sleep-card"
+      *ngIf="hasActiveSleepSession">
+
+      <div class="active-sleep-icon">
+        😴
+      </div>
+
+      <div>
+        <p>Current sleep session</p>
+
+        <h2>{{ activeSleepDisplay }}</h2>
+      </div>
+    </section>
+
+    <!-- FEEDING ANALYTICS -->
+    <section class="analytics-card feeding-analytics">
+      <div class="analytics-heading">
+        <div class="analytics-icon">
+          🍼
+        </div>
+
+        <div>
+          <p>Feeding analytics</p>
+          <h2>Today’s feeding pattern</h2>
+        </div>
+      </div>
+
+      <div class="metric-list">
+
+        <div class="metric-row">
+          <span>Feeds recorded</span>
+
+          <strong>
+            {{ todayAnalytics.feeding.count }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Average amount</span>
+
+          <strong>
+            {{
+              todayAnalytics.feeding.averageAmountMl > 0
+                ? todayAnalytics.feeding.averageAmountMl + ' ml'
+                : 'Not available'
+            }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Total amount</span>
+
+          <strong>
+            {{
+              todayAnalytics.feeding.totalAmountMl > 0
+                ? todayAnalytics.feeding.totalAmountMl + ' ml'
+                : 'Not available'
+            }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Average interval</span>
+
+          <strong>
+            {{
+              todayAnalytics.feeding.averageIntervalMinutes > 0
+                ? feedingIntervalText
+                : 'Need 2 feeds'
+            }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Last feed</span>
+
+          <strong>
+            {{ lastFeedText }}
+          </strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLEEP ANALYTICS -->
+    <section class="analytics-card sleep-analytics">
+      <div class="analytics-heading">
+        <div class="analytics-icon">
+          😴
+        </div>
+
+        <div>
+          <p>Sleep analytics</p>
+          <h2>Completed sleep sessions</h2>
+        </div>
+      </div>
+
+      <div class="metric-list">
+
+        <div class="metric-row">
+          <span>Sessions</span>
+
+          <strong>
+            {{ todayAnalytics.sleep.count }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Total sleep</span>
+
+          <strong>
+            {{ totalSleepText }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Longest session</span>
+
+          <strong>
+            {{ longestSleepText }}
+          </strong>
+        </div>
+
+        <div class="metric-row">
+          <span>Average session</span>
+
+          <strong>
+            {{ averageSleepText }}
+          </strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAPER ANALYTICS -->
+    <section class="analytics-card diaper-analytics">
+      <div class="analytics-heading">
+        <div class="analytics-icon">
+          🧷
+        </div>
+
+        <div>
+          <p>Diaper analytics</p>
+          <h2>Today’s breakdown</h2>
+        </div>
+      </div>
+
+      <div class="diaper-breakdown">
+
+        <article>
+          <span class="breakdown-icon">
+            💧
+          </span>
+
+          <strong>
+            {{
+              todayAnalytics
+                .diaper
+                .breakdown
+                .wet
+            }}
+          </strong>
+
+          <span>Wet</span>
+        </article>
+
+        <article>
+          <span class="breakdown-icon">
+            💩
+          </span>
+
+          <strong>
+            {{
+              todayAnalytics
+                .diaper
+                .breakdown
+                .dirty
+            }}
+          </strong>
+
+          <span>Dirty</span>
+        </article>
+
+        <article>
+          <span class="breakdown-icon">
+            🧷
+          </span>
+
+          <strong>
+            {{
+              todayAnalytics
+                .diaper
+                .breakdown
+                .both
+            }}
+          </strong>
+
+          <span>Both</span>
+        </article>
+      </div>
+    </section>
+<!-- SEVEN-DAY OVERVIEW -->
+<section class="weekly-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-eyebrow">
+        Last seven days
+      </p>
+
+      <h2>Weekly trends</h2>
+    </div>
+
+    <span class="week-badge">
+      7 days
+    </span>
+  </div>
+
+  <!-- WEEKLY AVERAGES -->
+  <div class="weekly-average-grid">
+
+    <article>
+      <span>Average feeds</span>
+
+      <strong>
+        {{
+          weeklyAnalytics
+            .averages
+            .feedingCount
+        }}
+      </strong>
+
+      <small>per day</small>
+    </article>
+
+    <article>
+      <span>Average sleep</span>
+
+      <strong>
+        {{ weeklyAverageSleepText }}
+      </strong>
+
+      <small>per day</small>
+    </article>
+
+    <article>
+      <span>Average diapers</span>
+
+      <strong>
+        {{
+          weeklyAnalytics
+            .averages
+            .diaperCount
+        }}
+      </strong>
+
+      <small>per day</small>
+    </article>
+  </div>
+
+  <!-- TODAY COMPARISON -->
+  <article class="comparison-card">
+    <div class="comparison-icon">
+      📊
+    </div>
+
+    <div>
+      <span>Today’s activity</span>
+
+      <strong>
+        {{ todayVsAverageText }}
+      </strong>
+    </div>
+  </article>
+
+  <!-- FEEDING COUNT CHART -->
+  <article class="chart-card feeding-chart">
+    <div class="chart-heading">
+      <div>
+        <span>Feeding</span>
+        <h3>Feeds per day</h3>
+      </div>
+
+      <div
+        class="trend-badge"
+        [ngClass]="
+          getTrendClass(
+            weeklyAnalytics
+              .trends
+              .feeding
+          )
+        ">
+
+        <span>
+          {{
+            getTrendIcon(
+              weeklyAnalytics
+                .trends
+                .feeding
+            )
+          }}
+        </span>
+
+        {{
+          getTrendLabel(
+            weeklyAnalytics
+              .trends
+              .feeding
+          )
+        }}
+      </div>
+    </div>
+
+    <div class="bar-chart">
+      <div
+        class="bar-column"
+        *ngFor="
+          let day of weeklyAnalytics.days;
+          trackBy: trackByDay
+        ">
+
+        <span class="bar-value">
+          {{ day.feedingCount }}
+        </span>
+
+        <div class="bar-track">
+          <div
+            class="chart-bar"
+            [class.today-bar]="day.isToday"
+            [style.height.%]="
+              getFeedingBarHeight(
+                day.feedingCount
+              )
+            ">
+          </div>
+        </div>
+
+        <span
+          class="bar-label"
+          [class.today-label]="day.isToday">
+
+          {{ day.dayLabel }}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- FEEDING VOLUME CHART -->
+  <article class="chart-card volume-chart">
+    <div class="chart-heading">
+      <div>
+        <span>Feeding volume</span>
+        <h3>Recorded milk amount</h3>
+      </div>
+
+      <div
+        class="trend-badge"
+        [ngClass]="
+          getTrendClass(
+            weeklyAnalytics
+              .trends
+              .feedingVolume
+          )
+        ">
+
+        <span>
+          {{
+            getTrendIcon(
+              weeklyAnalytics
+                .trends
+                .feedingVolume
+            )
+          }}
+        </span>
+
+        {{
+          getTrendLabel(
+            weeklyAnalytics
+              .trends
+              .feedingVolume
+          )
+        }}
+      </div>
+    </div>
+
+    <div class="bar-chart">
+      <div
+        class="bar-column"
+        *ngFor="
+          let day of weeklyAnalytics.days;
+          trackBy: trackByDay
+        ">
+
+        <span class="bar-value">
+          {{
+            day.feedingVolumeMl > 0
+              ? day.feedingVolumeMl
+              : '—'
+          }}
+        </span>
+
+        <div class="bar-track">
+          <div
+            class="chart-bar"
+            [class.today-bar]="day.isToday"
+            [style.height.%]="
+              getVolumeBarHeight(
+                day.feedingVolumeMl
+              )
+            ">
+          </div>
+        </div>
+
+        <span
+          class="bar-label"
+          [class.today-label]="day.isToday">
+
+          {{ day.dayLabel }}
+        </span>
+      </div>
+    </div>
+
+    <p class="chart-unit">
+      Amounts shown in millilitres
+    </p>
+  </article>
+
+  <!-- SLEEP CHART -->
+  <article class="chart-card sleep-chart">
+    <div class="chart-heading">
+      <div>
+        <span>Sleep</span>
+        <h3>Sleep duration per day</h3>
+      </div>
+
+      <div
+        class="trend-badge"
+        [ngClass]="
+          getTrendClass(
+            weeklyAnalytics
+              .trends
+              .sleep
+          )
+        ">
+
+        <span>
+          {{
+            getTrendIcon(
+              weeklyAnalytics
+                .trends
+                .sleep
+            )
+          }}
+        </span>
+
+        {{
+          getTrendLabel(
+            weeklyAnalytics
+              .trends
+              .sleep
+          )
+        }}
+      </div>
+    </div>
+
+    <div class="bar-chart">
+      <div
+        class="bar-column"
+        *ngFor="
+          let day of weeklyAnalytics.days;
+          trackBy: trackByDay
+        ">
+
+        <span class="bar-value">
+          {{
+            day.sleepMinutes > 0
+              ? formatChartDuration(
+                  day.sleepMinutes
+                )
+              : '—'
+          }}
+        </span>
+
+        <div class="bar-track">
+          <div
+            class="chart-bar"
+            [class.today-bar]="day.isToday"
+            [style.height.%]="
+              getSleepBarHeight(
+                day.sleepMinutes
+              )
+            ">
+          </div>
+        </div>
+
+        <span
+          class="bar-label"
+          [class.today-label]="day.isToday">
+
+          {{ day.dayLabel }}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- DIAPER CHART -->
+  <article class="chart-card diaper-chart">
+    <div class="chart-heading">
+      <div>
+        <span>Diapers</span>
+        <h3>Changes per day</h3>
+      </div>
+
+      <div
+        class="trend-badge"
+        [ngClass]="
+          getTrendClass(
+            weeklyAnalytics
+              .trends
+              .diaper
+          )
+        ">
+
+        <span>
+          {{
+            getTrendIcon(
+              weeklyAnalytics
+                .trends
+                .diaper
+            )
+          }}
+        </span>
+
+        {{
+          getTrendLabel(
+            weeklyAnalytics
+              .trends
+              .diaper
+          )
+        }}
+      </div>
+    </div>
+
+    <div class="bar-chart">
+      <div
+        class="bar-column"
+        *ngFor="
+          let day of weeklyAnalytics.days;
+          trackBy: trackByDay
+        ">
+
+        <span class="bar-value">
+          {{ day.diaperCount }}
+        </span>
+
+        <div class="bar-track">
+          <div
+            class="chart-bar"
+            [class.today-bar]="day.isToday"
+            [style.height.%]="
+              getDiaperBarHeight(
+                day.diaperCount
+              )
+            ">
+          </div>
+        </div>
+
+        <span
+          class="bar-label"
+          [class.today-label]="day.isToday">
+
+          {{ day.dayLabel }}
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <!-- BUSIEST DAY -->
+  <article
+    class="busiest-day-card"
+    *ngIf="
+      weeklyAnalytics.busiestDay
+    ">
+
+    <div class="busiest-icon">
+      🏆
+    </div>
+
+    <div>
+      <span>Most active day</span>
+
+      <strong>
+        {{
+          weeklyAnalytics
+            .busiestDay
+            ?.shortDateLabel
+        }}
+      </strong>
+
+      <p>
+        {{
+          weeklyAnalytics
+            .busiestDay
+            ?.totalActivities
+        }}
+        activities recorded
+      </p>
+    </div>
+  </article>
+</section>
+    <!-- GENERATED INSIGHTS -->
+    <section class="generated-insights-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">
+            Interpretation
+          </p>
+
+          <h2>Daily insights</h2>
+        </div>
+      </div>
+
+      <div class="insight-list">
+
+        <article
+          class="insight-card"
+          *ngFor="
+            let insight of insightMessages;
+            trackBy: trackByInsightTitle
+          "
+          [class.feeding-insight]="
+            insight.type === 'feeding'
+          "
+          [class.sleep-insight]="
+            insight.type === 'sleep'
+          "
+          [class.diaper-insight]="
+            insight.type === 'diaper'
+          ">
+
+          <div class="insight-icon">
+            {{ insight.icon }}
+          </div>
+
+          <div>
+            <h3>{{ insight.title }}</h3>
+
+            <p>{{ insight.message }}</p>
+          </div>
+        </article>
+      </div>
+
+      <p class="analytics-disclaimer">
+        Insights are based only on activities recorded in this app and are not medical advice.
+      </p>
+    </section>
+  </main>
+</ion-content>

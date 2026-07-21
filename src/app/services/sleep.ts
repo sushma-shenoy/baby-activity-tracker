@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-interface SleepState {
+export interface SleepState {
   isRunning: boolean;
   startTime: number | null;
   elapsed: number;
@@ -24,7 +24,7 @@ export class SleepService {
   private sleepSubject = new BehaviorSubject<SleepState>(this.loadState());
   sleep$ = this.sleepSubject.asObservable();
 
-  start() {
+  start(): void {
   const state = this.getState();
 
   state.sessionActive = true;
@@ -42,7 +42,7 @@ getTime(state: SleepState): number {
 
   return total;
 }
-  reset() {
+  reset() : void{
   const resetState = {
     isRunning: false,
     startTime: null,
@@ -54,7 +54,7 @@ getTime(state: SleepState): number {
   this.sleepSubject.next(resetState);
 }
 
-  pause() {
+  pause(): void {
   const state = this.getState();
 
   if (state.startTime) {
@@ -66,7 +66,7 @@ getTime(state: SleepState): number {
 
   this.save(state);
 }
-  resume() {
+  resume(): void {
   const state = this.getState();
 
   state.isRunning = true;
@@ -75,7 +75,7 @@ getTime(state: SleepState): number {
   this.save(state);
 }
 
-  stop() {
+  stop(): void {
   const state = this.getState();
 
   // freeze current time first
@@ -94,7 +94,7 @@ getTime(state: SleepState): number {
     return this.sleepSubject.value;
   }
 
-  private save(state: SleepState) {
+  private save(state: SleepState) : void{
     localStorage.setItem(this.stateKey, JSON.stringify(state));
     this.sleepSubject.next(state);
   }

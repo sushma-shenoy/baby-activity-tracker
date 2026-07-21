@@ -11,7 +11,6 @@
 
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
 /* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
@@ -34,7 +33,7 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+// @import '@ionic/angular/css/palettes/dark.system.css';
 ion-content {
   --color: #1f1f1f;
 }
@@ -143,5 +142,198 @@ ion-tab-bar {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+/* Visible action button used on history cards */
+.more-button {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  margin: 0 2px 0 8px;
+
+  --padding-start: 0;
+  --padding-end: 0;
+  --border-radius: 13px;
+
+  --color: #4f46e5;
+  --color-activated: #3730a3;
+
+  --background: #eef2ff;
+  --background-hover: #e0e7ff;
+  --background-activated: #dbe2ff;
+
+  --box-shadow:
+    0 5px 13px
+    rgba(79, 70, 229, 0.16);
+
+ion-icon {
+  display: block;
+
+  width: 22px;
+  height: 22px;
+
+  color: #4338ca !important;
+
+  font-size: 22px;
+  opacity: 1 !important;
+
+  visibility: visible !important;
+}
+}
+.more-button::part(native) {
+  color: #4338ca;
+}
+
+/* Feeding may use a normal HTML button instead of ion-button */
+button.more-button {
+  padding: 0;
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4f46e5;
+  background: #eef2ff;
+
+  box-shadow:
+    0 5px 13px
+    rgba(79, 70, 229, 0.16);
+
+  cursor: pointer;
+
+  ion-icon {
+    color: #4f46e5;
+    font-size: 21px;
+  }
+
+  &:active {
+    background: #dbe2ff;
+    transform: scale(0.94);
+  }
+}
+/* Premium activity action sheet */
+ion-action-sheet.activity-action-sheet {
+  --backdrop-opacity: 0.42;
+
+  .action-sheet-wrapper {
+    padding: 0 12px 14px;
+  }
+  .action-sheet-destructive {
+  color: #dc2626 !important;
+}
+.action-sheet-destructive ion-icon {
+  color: #dc2626 !important;
+  background: #fee2e2 !important;
+}
+  .action-sheet-container {
+    padding-bottom:
+      env(safe-area-inset-bottom);
+  }
+
+  .action-sheet-group {
+    margin: 0;
+    padding: 8px;
+
+    border-radius: 26px;
+
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #fafaff 100%
+      );
+
+    box-shadow:
+      0 22px 55px
+      rgba(31, 41, 55, 0.2);
+
+    overflow: hidden;
+  }
+
+  .action-sheet-group-cancel {
+    margin-top: 10px;
+    padding: 4px 8px;
+
+    border-radius: 22px;
+
+    background: #ffffff;
+
+    box-shadow:
+      0 12px 28px
+      rgba(31, 41, 55, 0.13);
+  }
+
+  .action-sheet-title {
+    padding:
+      18px 18px 12px;
+
+    color: #111827;
+    font-size: 16px;
+    font-weight: 900;
+    text-align: left;
+  }
+.action-sheet-cancel ion-icon {
+  color: #4b5563 !important;
+  background: #f3f4f6 !important;
+}
+  .action-sheet-button {
+    color: #1f2937 !important;
+
+  opacity: 1 !important;
+    min-height: 58px;
+    margin: 4px 0;
+    border-radius: 17px;
+
+    color: #374151;
+    font-size: 16px;
+    font-weight: 750;
+
+    transition:
+      background 0.15s ease,
+      transform 0.15s ease;
+
+    ion-icon {
+     display: inline-flex !important;
+
+  width: 38px !important;
+  height: 38px !important;
+
+  margin-inline-end: 14px !important;
+  padding: 9px !important;
+
+  border-radius: 13px;
+
+  color: #4f46e5 !important;
+  background: #eef2ff !important;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+    }
+
+    &:active {
+      background: #f3f4f6;
+      transform: scale(0.985);
+    }
+  }
+
+  .action-sheet-destructive {
+    color: #dc2626;
+
+    ion-icon {
+      color: #dc2626;
+      background: #fee2e2;
+    }
+  }
+
+  .action-sheet-cancel {
+    color: #4b5563;
+    font-weight: 800;
+
+    ion-icon {
+      color: #6b7280;
+      background: #f3f4f6;
+    }
   }
 }

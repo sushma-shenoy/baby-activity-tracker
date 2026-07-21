@@ -1,55 +1,240 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Baby Dashboard 👶</ion-title>
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-title>Baby Dashboard</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="app-bg">
+<ion-content class="dashboard-page">
+  <main class="dashboard-content">
 
-  <!-- HERO SUMMARY -->
-  <div class="hero">
-    <h2>Good Day</h2>
-    <p>Last feed: {{ stats.lastFeedAgo }}</p>
-  </div>
+    <!-- HERO -->
+    <section class="dashboard-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">
+          Daily overview
+        </p>
 
-  <!-- QUICK ACTIONS -->
-  <div class="actions">
-    <button (click)="add('feeding')">🍼 Feed</button>
-    <button (click)="add('sleep')">😴 Sleep</button>
-    <button (click)="add('diaper')">🧷 Diaper</button>
-  </div>
+        <h1>{{ greeting }}</h1>
 
-  <!-- STATS GRID -->
-  <div class="grid">
+        <p>
+          Last feed:
+          <strong>{{ stats.lastFeedAgo }}</strong>
+        </p>
+      </div>
 
-    <div class="card feed">
-      <h1>{{ stats.feeding }}</h1>
-      <p>Feeds Today</p>
-    </div>
+      <div class="hero-icon">
+        👶
+      </div>
+    </section>
 
-    <div class="card sleep">
-      <h1>{{ stats.sleep }}</h1>
-      <p>Sleep Hours</p>
-    </div>
+    <!-- ACTIVE SLEEP -->
+    <button type="button" class="active-sleep-card" *ngIf="hasActiveSleepSession" (click)="goTo('sleep')">
 
-    <div class="card diaper">
-      <h1>{{ stats.diaper }}</h1>
-      <p>Diaper Changes</p>
-    </div>
+      <div class="active-sleep-icon">
+        😴
+      </div>
 
-  </div>
+      <div class="active-sleep-content">
+        <p>
+          {{
+          isSleepRunning
+          ? 'Sleep timer running'
+          : 'Sleep timer paused'
+          }}
+        </p>
 
-  <!-- TIMELINE -->
-  <div class="timeline">
-    <h3>Today Timeline</h3>
+        <h2>{{ sleepTimerDisplay }}</h2>
+      </div>
 
-  <app-activity-card
-  *ngFor="let a of activities"
-  [icon]="getIcon(a.type)"
-  [title]="a.title"
-  [value]="a.value"
-  [time]="a.time">
-</app-activity-card>
-  </div>
+      <ion-icon name="chevron-forward-outline">
+      </ion-icon>
+    </button>
 
+    <!-- QUICK ACTIONS -->
+    <section class="quick-actions-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">
+            Quick log
+          </p>
+
+          <h2>Add activity</h2>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+
+        <button type="button" class="quick-action feed-action" (click)="add('feeding')">
+
+          <span class="quick-action-icon">
+            🍼
+          </span>
+
+          <span class="quick-action-label">
+            Feeding
+          </span>
+        </button>
+
+        <button type="button" class="quick-action sleep-action" (click)="add('sleep')">
+
+          <span class="quick-action-icon">
+            😴
+          </span>
+
+          <span class="quick-action-label">
+            Sleep
+          </span>
+        </button>
+
+        <button type="button" class="quick-action diaper-action" (click)="add('diaper')">
+
+          <span class="quick-action-icon">
+            🧷
+          </span>
+
+          <span class="quick-action-label">
+            Diaper
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TODAY STATS -->
+    <section class="stats-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-eyebrow">
+            Today
+          </p>
+
+          <h2>Daily summary</h2>
+        </div>
+
+        <span class="today-label">
+          {{ todayLabel }}
+        </span>
+      </div>
+
+      <div class="stats-grid">
+
+        <button type="button" class="stat-card feed-stat" (click)="goTo('feeding')">
+
+          <div class="stat-icon">
+            🍼
+          </div>
+
+          <strong>
+            {{ stats.feeding }}
+          </strong>
+
+          <span>
+            {{
+            stats.feeding === 1
+            ? 'Feed'
+            : 'Feeds'
+            }}
+          </span>
+        </button>
+
+        <button type="button" class="stat-card sleep-stat" (click)="goTo('sleep')">
+
+          <div class="stat-icon">
+            😴
+          </div>
+
+          <strong>
+            {{ stats.sleep }}
+          </strong>
+
+          <span>
+            Sleep
+          </span>
+        </button>
+
+        <button type="button" class="stat-card diaper-stat" (click)="goTo('diaper')">
+
+          <div class="stat-icon">
+            🧷
+          </div>
+
+          <strong>
+            {{ stats.diaper }}
+          </strong>
+
+          <span>
+            {{
+            stats.diaper === 1
+            ? 'Change'
+            : 'Changes'
+            }}
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="timeline-section">
+      <div class="section-heading timeline-heading">
+        <div>
+          <p class="section-eyebrow">
+            Latest updates
+          </p>
+
+          <h2>Recent activity</h2>
+        </div>
+
+        <span class="activity-count">
+          {{ todayActivityCount }}
+        </span>
+      </div>
+
+      <div class="empty-timeline" *ngIf="activities.length === 0">
+
+        <div class="empty-icon">
+          📝
+        </div>
+
+        <h3>No activity recorded</h3>
+
+        <p>
+          Feeding, sleep and diaper entries will appear here.
+        </p>
+      </div>
+
+      <div class="timeline-list" *ngIf="activities.length > 0">
+
+        <button type="button" class="timeline-item" *ngFor="
+            let activity of activities;
+            trackBy: trackByActivityId
+          " (click)="goTo(activity.type)">
+
+          <div class="timeline-icon" [class.feed-icon]="
+              activity.type === 'feeding'
+            " [class.sleep-icon]="
+              activity.type === 'sleep'
+            " [class.diaper-icon]="
+              activity.type === 'diaper'
+            ">
+
+            {{ getIcon(activity.type) }}
+          </div>
+
+          <div class="timeline-copy">
+            <div class="timeline-title-row">
+              <h3>{{ activity.title }}</h3>
+
+              <time>
+                {{ activity.time }}
+              </time>
+            </div>
+
+            <p>{{ activity.value }}</p>
+          </div>
+
+          <ion-icon class="timeline-arrow" name="chevron-forward-outline">
+          </ion-icon>
+        </button>
+      </div>
+    </section>
+  </main>
 </ion-content>

@@ -1,46 +1,370 @@
 <ion-header translucent="true">
   <ion-toolbar>
-
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+      <ion-back-button defaultHref="/dashboard">
+      </ion-back-button>
     </ion-buttons>
 
-    <ion-title>Feeding</ion-title>
-
+    <ion-title>Sleep</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="bg">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>Sleep</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content
+  [fullscreen]="true"
+  class="sleep-page">
 
-  <ion-content class="ion-padding bg">
+  <main class="sleep-page-content">
 
-    <div class="timer-card">
+    <!-- HERO -->
+    <section class="sleep-hero">
+      <div class="sleep-hero-content">
+        <p class="eyebrow">
+          Sleep tracker
+        </p>
+
+        <h1>Nap timer</h1>
+
+        <p class="hero-description">
+          Track naps and completed sleep sessions.
+        </p>
+      </div>
+
+      <div class="hero-icon">
+        😴
+      </div>
+    </section>
+
+    <!-- TIMER -->
+    <section class="timer-card">
+      <p class="timer-label">
+        Current session
+      </p>
 
       <div class="timer">
         {{ timerDisplay }}
       </div>
 
-      <div class="controls">
+      <div
+        class="timer-status"
+        [class.running]="isRunning">
 
-        <ion-button *ngIf="!sleepService.getState().isRunning" (click)="start()">
-          ▶ Start
-        </ion-button>
+        <span class="status-dot"></span>
 
-        <ion-button color="danger" *ngIf="sleepService.getState().isRunning" (click)="pause()">
-          ⏸ Pause
-        </ion-button>
-        <ion-button color="dark" (click)="stop()">
-          ⏹ Stop
-        </ion-button>
-
+        {{
+          isRunning
+            ? 'Sleep timer is running'
+            : hasActiveSession
+              ? 'Sleep timer is paused'
+              : 'Ready to start'
+        }}
       </div>
 
-    </div>
+      <div class="controls">
 
-  </ion-content>
+        <!-- START / RESUME -->
+        <button
+          type="button"
+          class="timer-control-button start-button"
+          *ngIf="!isRunning"
+          (click)="start()">
+
+          <ion-icon name="play-outline">
+          </ion-icon>
+
+          <span>
+            {{
+              hasActiveSession
+                ? 'Resume'
+                : 'Start'
+            }}
+          </span>
+        </button>
+
+        <!-- PAUSE -->
+        <button
+          type="button"
+          class="timer-control-button pause-button"
+          *ngIf="isRunning"
+          (click)="pause()">
+
+          <ion-icon name="pause-outline">
+          </ion-icon>
+
+          <span>Pause</span>
+        </button>
+
+        <!-- STOP -->
+        <button
+          type="button"
+          class="timer-control-button stop-button"
+          [disabled]="!hasActiveSession"
+          (click)="stop()">
+
+          <ion-icon name="stop-outline">
+          </ion-icon>
+
+          <span>Stop &amp; save</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="history-section">
+      <div class="section-title">
+        <div>
+          <p class="section-eyebrow">
+            Recent activity
+          </p>
+
+          <h2>Sleep history</h2>
+        </div>
+
+        <span class="history-count">
+          {{ sleepActivities.length }}
+        </span>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div
+        class="empty-state"
+        *ngIf="sleepActivities.length === 0">
+
+        <div class="empty-icon">
+          😴
+        </div>
+
+        <h3>No sleep sessions</h3>
+
+        <p>
+          Start the timer to record a nap.
+        </p>
+      </div>
+
+      <!-- HISTORY LIST -->
+      <ion-list
+        class="history-list"
+        lines="none"
+        *ngIf="sleepActivities.length > 0">
+
+        <ion-item-sliding
+          *ngFor="
+            let activity of sleepActivities;
+            trackBy: trackByActivityId
+          ">
+
+          <ion-item
+            button="true"
+            detail="false"
+            lines="none"
+            class="history-item"
+            (click)="openSleepEdit(activity)">
+
+            <div
+              class="history-icon"
+              slot="start">
+
+              😴
+            </div>
+
+            <ion-label>
+              <h3>{{ activity.value }}</h3>
+
+              <p>
+                <ion-icon name="time-outline">
+                </ion-icon>
+
+                {{ activity.time }}
+              </p>
+            </ion-label>
+
+            <ion-button
+              type="button"
+              slot="end"
+              fill="clear"
+              class="more-button"
+              aria-label="Sleep options"
+              (click)="
+                openSleepActions(
+                  activity,
+                  $event
+                )
+              ">
+
+              <ion-icon
+                slot="icon-only"
+                name="ellipsis-horizontal-outline">
+              </ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item-options side="end">
+
+            <ion-item-option
+              class="edit-option"
+              (click)="openSleepEdit(activity)">
+
+              Edit
+            </ion-item-option>
+
+            <ion-item-option
+              class="delete-option"
+              (click)="confirmDeleteSleep(activity)">
+
+              Delete
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
+    </section>
+  </main>
+
+  <!-- EDIT SLEEP MODAL -->
+  <ion-modal
+    [isOpen]="isSleepEditOpen"
+    cssClass="sleep-edit-modal"
+    (didDismiss)="closeSleepEdit()">
+
+    <ng-template>
+      <ion-header>
+        <ion-toolbar class="edit-modal-toolbar">
+
+          <ion-buttons slot="start">
+            <ion-button
+              type="button"
+              aria-label="Close edit sleep"
+              (click)="closeSleepEdit()">
+
+              <ion-icon
+                slot="icon-only"
+                name="close-outline">
+              </ion-icon>
+            </ion-button>
+          </ion-buttons>
+
+          <ion-title>Edit sleep</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="edit-modal-bg">
+
+        <div class="edit-modal-shell">
+
+          <!-- EDIT HERO -->
+          <section class="edit-modal-hero">
+            <div>
+              <p>Edit activity</p>
+              <h2>Sleep session</h2>
+            </div>
+
+            <div class="edit-modal-icon">
+              😴
+            </div>
+          </section>
+
+          <!-- EDIT FORM -->
+          <section class="edit-modal-card">
+
+            <div class="field-section">
+              <p class="field-label">
+                Sleep duration
+              </p>
+
+              <div class="duration-grid">
+
+                <ion-item lines="none">
+                  <ion-input
+                    type="number"
+                    min="0"
+                    inputmode="numeric"
+                    label="Hours"
+                    labelPlacement="stacked"
+                    [(ngModel)]="
+                      editSleep.durationHours
+                    ">
+                  </ion-input>
+                </ion-item>
+
+                <ion-item lines="none">
+                  <ion-input
+                    type="number"
+                    min="0"
+                    max="59"
+                    inputmode="numeric"
+                    label="Minutes"
+                    labelPlacement="stacked"
+                    [(ngModel)]="
+                      editSleep.durationMinutes
+                    ">
+                  </ion-input>
+                </ion-item>
+              </div>
+            </div>
+
+            <div class="field-section">
+              <p class="field-label">
+                Completed date and time
+              </p>
+
+              <div class="date-time-field">
+                <div>
+                  <span class="date-time-title">
+                    Completed
+                  </span>
+
+                  <span class="date-time-subtitle">
+                    Tap to adjust
+                  </span>
+                </div>
+
+                <ion-datetime-button
+                  datetime="edit-sleep-datetime">
+                </ion-datetime-button>
+              </div>
+
+              <ion-modal
+                [keepContentsMounted]="true"
+                cssClass="sleep-date-modal">
+
+                <ng-template>
+                  <ion-datetime
+                    id="edit-sleep-datetime"
+                    presentation="date-time"
+                    [preferWheel]="true"
+                    [(ngModel)]="editSleep.dateTime">
+                  </ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="edit-sleep-actions">
+
+              <ion-button
+                type="button"
+                expand="block"
+                class="edit-sleep-cancel-button"
+                (click)="closeSleepEdit()">
+
+                <span class="cancel-button-text">
+                  Cancel
+                </span>
+              </ion-button>
+
+              <ion-button
+                type="button"
+                expand="block"
+                class="edit-sleep-save-button"
+                [disabled]="!isEditDurationValid"
+                (click)="saveSleepEdit()">
+
+                <span class="save-button-text">
+                  Save changes
+                </span>
+              </ion-button>
+            </div>
+          </section>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
