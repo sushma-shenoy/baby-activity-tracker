@@ -68,20 +68,25 @@
 
 </ion-text>
           <ion-button
-  expand="block"
-  type="submit"
-  [disabled]="isLoading">
+            expand="block"
+            type="submit"
+            [disabled]="isLoading">
 
-  <ion-spinner
-    *ngIf="isLoading"
-    name="crescent">
-  </ion-spinner>
+            <ion-spinner
+              *ngIf="isLoading"
+              name="crescent">
+            </ion-spinner>
 
-  <span *ngIf="!isLoading">
-    Create Account
-  </span>
+            <span *ngIf="!isLoading">
+              Create Account
+            </span>
 
-</ion-button>
+          </ion-button>
+
+          <p class="auth-switch">
+            Already have an account?
+            <a routerLink="/login">Log in</a>
+          </p>
         </form>
 
       </ion-card-content>

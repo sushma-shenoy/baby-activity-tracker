@@ -1,0 +1,61 @@
+<ion-content [fullscreen]="true">
+  <div class="login-container">
+    <ion-card>
+      <ion-card-content>
+        <h1>Welcome Back</h1>
+        <p class="intro">Log in to continue tracking your baby's day.</p>
+
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+          <ion-item>
+            <ion-input
+              type="email"
+              label="Email"
+              labelPlacement="stacked"
+              autocomplete="email"
+              formControlName="email">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-input
+              type="password"
+              label="Password"
+              labelPlacement="stacked"
+              autocomplete="current-password"
+              formControlName="password">
+            </ion-input>
+          </ion-item>
+
+          <button
+            class="forgot-password"
+            type="button"
+            [disabled]="isLoading || isResettingPassword"
+            (click)="resetPassword()">
+            {{ isResettingPassword ? 'Sending…' : 'Forgot password?' }}
+          </button>
+
+          <ion-text color="danger" *ngIf="errorMessage">
+            <p class="status-message">{{ errorMessage }}</p>
+          </ion-text>
+
+          <ion-text color="success" *ngIf="successMessage">
+            <p class="status-message">{{ successMessage }}</p>
+          </ion-text>
+
+          <ion-button
+            expand="block"
+            type="submit"
+            [disabled]="isLoading || isResettingPassword">
+            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+            <span *ngIf="!isLoading">Log In</span>
+          </ion-button>
+
+          <p class="auth-switch">
+            New to Baby Tracker?
+            <a routerLink="/signup">Create an account</a>
+          </p>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

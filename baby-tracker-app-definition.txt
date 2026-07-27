@@ -65,6 +65,11 @@ CORE FEATURES
 9. SETTINGS (planned)
    - Route and page scaffold exist for baby profile and app preferences
 
+10. AUTHENTICATION
+   - Email/password account creation and login with Firebase Authentication
+   - Password reset email from the login screen
+   - Persistent browser sessions
+
 
 DATA MODEL
 ----------
@@ -125,6 +130,8 @@ ROUTES
   /medicine     — Medicine log (scaffold)
   /vaccination  — Vaccination records (scaffold)
   /settings     — App settings (scaffold)
+  /signup       — Create an account
+  /login        — Log in or request a password reset
 
 
 PLATFORMS
@@ -153,6 +160,7 @@ Implemented:
   - Full feeding CRUD with formula/breast types and time editing
   - Sleep timer with start/pause/stop and persistence
   - Activity timeline shared across Home and Dashboard
+  - Firebase email/password signup, login, logout service, and password reset
   - Capacitor iOS and Android project scaffolding
 
 Not yet implemented:
