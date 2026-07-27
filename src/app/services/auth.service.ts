@@ -202,17 +202,6 @@ export class AuthService {
       (user: User | null) => {
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
-
-        if (user) {
-          console.log(
-            'Authenticated user:',
-            user.email
-          );
-        } else {
-          console.log(
-            'No authenticated user'
-          );
-        }
       },
       (error: Error) => {
         console.error(

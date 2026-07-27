@@ -12,11 +12,6 @@ import {
   IonButton,
   IonInput,
   IonItem,
-  IonLabel,
-  IonText,
-  IonIcon,
-  IonCard,
-  IonCardContent,
   IonSpinner
 } from '@ionic/angular/standalone';
 
@@ -35,11 +30,6 @@ import { CommonModule } from '@angular/common';
     IonButton,
     IonInput,
     IonItem,
-    IonLabel,
-    IonText,
-    IonIcon,
-    IonCard,
-    IonCardContent,
     IonSpinner
   ]
 })
@@ -101,11 +91,6 @@ export class SignupPage {
         'Unable to create your account.';
       return;
     }
-
-    console.log(
-      'Account created:',
-      result.user
-    );
 
     await this.router.navigateByUrl(
       '/home',

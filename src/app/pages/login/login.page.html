@@ -1,61 +1,135 @@
-<ion-content [fullscreen]="true">
-  <div class="login-container">
-    <ion-card>
-      <ion-card-content>
-        <h1>Welcome Back</h1>
-        <p class="intro">Log in to continue tracking your baby's day.</p>
+<ion-content [fullscreen]="true" class="auth-page">
+  <main class="auth-shell">
+    <section class="brand-panel" aria-label="Baby Tracker">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="moon"></span>
+          <span class="star star-one">✦</span>
+          <span class="star star-two">•</span>
+        </div>
+        <span>little moments</span>
+      </div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="login()">
-          <ion-item>
+      <div class="brand-message">
+        <span class="eyebrow">Your daily rhythm</span>
+        <h2>Care feels lighter when everything is in one place.</h2>
+        <p>Feeds, sleep and all the tiny moments—beautifully organized.</p>
+      </div>
+
+      <div class="floating-card" aria-hidden="true">
+        <span class="floating-icon">☾</span>
+        <div>
+          <small>Last sleep</small>
+          <strong>2h 14m</strong>
+        </div>
+        <span class="check">✓</span>
+      </div>
+    </section>
+
+    <section class="form-panel">
+      <div class="mobile-brand" aria-hidden="true">
+        <div class="brand-mark small">
+          <span class="moon"></span>
+        </div>
+        <span>little moments</span>
+      </div>
+
+      <div class="form-heading">
+        <span class="eyebrow">Welcome back</span>
+        <h1>Good to see you</h1>
+        <p>Sign in to continue your baby’s story.</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+        <div class="field-group">
+          <label for="login-email">Email address</label>
+          <ion-item
+            lines="none"
+            [class.field-invalid]="
+              loginForm.get('email')?.touched &&
+              loginForm.get('email')?.invalid
+            ">
             <ion-input
+              id="login-email"
               type="email"
-              label="Email"
-              labelPlacement="stacked"
+              placeholder="you@example.com"
               autocomplete="email"
+              inputmode="email"
               formControlName="email">
             </ion-input>
           </ion-item>
+          <span
+            class="field-error"
+            *ngIf="
+              loginForm.get('email')?.touched &&
+              loginForm.get('email')?.invalid
+            ">
+            Enter a valid email address
+          </span>
+        </div>
 
-          <ion-item>
+        <div class="field-group">
+          <div class="label-row">
+            <label for="login-password">Password</label>
+            <button
+              class="forgot-password"
+              type="button"
+              [disabled]="isLoading || isResettingPassword"
+              (click)="resetPassword()">
+              {{ isResettingPassword ? 'Sending…' : 'Forgot password?' }}
+            </button>
+          </div>
+
+          <ion-item
+            lines="none"
+            [class.field-invalid]="
+              loginForm.get('password')?.touched &&
+              loginForm.get('password')?.invalid
+            ">
             <ion-input
+              id="login-password"
               type="password"
-              label="Password"
-              labelPlacement="stacked"
+              placeholder="Enter your password"
               autocomplete="current-password"
               formControlName="password">
             </ion-input>
           </ion-item>
+        </div>
 
-          <button
-            class="forgot-password"
-            type="button"
-            [disabled]="isLoading || isResettingPassword"
-            (click)="resetPassword()">
-            {{ isResettingPassword ? 'Sending…' : 'Forgot password?' }}
-          </button>
+        <div
+          class="status-message error"
+          role="alert"
+          *ngIf="errorMessage">
+          <span>!</span>
+          {{ errorMessage }}
+        </div>
 
-          <ion-text color="danger" *ngIf="errorMessage">
-            <p class="status-message">{{ errorMessage }}</p>
-          </ion-text>
+        <div
+          class="status-message success"
+          role="status"
+          *ngIf="successMessage">
+          <span>✓</span>
+          {{ successMessage }}
+        </div>
 
-          <ion-text color="success" *ngIf="successMessage">
-            <p class="status-message">{{ successMessage }}</p>
-          </ion-text>
+        <ion-button
+          class="primary-action"
+          expand="block"
+          type="submit"
+          [disabled]="isLoading || isResettingPassword">
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">Continue</span>
+        </ion-button>
 
-          <ion-button
-            expand="block"
-            type="submit"
-            [disabled]="isLoading || isResettingPassword">
-            <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
-            <span *ngIf="!isLoading">Log In</span>
-          </ion-button>
+        <p class="auth-switch">
+          New here?
+          <a routerLink="/signup">Create your account</a>
+        </p>
+      </form>
 
-          <p class="auth-switch">
-            New to Baby Tracker?
-            <a routerLink="/signup">Create an account</a>
-          </p>
-        </form>
-      </ion-card-content>
-    </ion-card>
-  </div>
+      <p class="privacy-note">
+        Your family’s data stays private and secure.
+      </p>
+    </section>
+  </main>
 </ion-content>

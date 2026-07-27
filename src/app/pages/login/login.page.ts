@@ -9,13 +9,10 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonInput,
   IonItem,
-  IonSpinner,
-  IonText
+  IonSpinner
 } from '@ionic/angular/standalone';
 import { AuthService } from '../../services/auth.service';
 
@@ -29,13 +26,10 @@ import { AuthService } from '../../services/auth.service';
     ReactiveFormsModule,
     RouterLink,
     IonButton,
-    IonCard,
-    IonCardContent,
     IonContent,
     IonInput,
     IonItem,
-    IonSpinner,
-    IonText
+    IonSpinner
   ]
 })
 export class LoginPage {

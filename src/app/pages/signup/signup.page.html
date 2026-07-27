@@ -1,98 +1,161 @@
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="auth-page">
+  <main class="auth-shell">
+    <section class="brand-panel" aria-label="Baby Tracker">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="moon"></span>
+          <span class="star star-one">✦</span>
+          <span class="star star-two">•</span>
+        </div>
+        <span>little moments</span>
+      </div>
 
-  <div class="signup-container">
-
-    <ion-card>
-
-      <ion-card-content>
-
-        <h1>Create Account</h1>
-
+      <div class="brand-message">
+        <span class="eyebrow">A calmer day starts here</span>
+        <h2>Understand your baby’s natural rhythm.</h2>
         <p>
-          Welcome! Let's create your Baby Tracker account.
+          Build a gentle routine with simple tracking and meaningful insights.
         </p>
+      </div>
 
-        <form
-          [formGroup]="signupForm"
-          (ngSubmit)="signUp()">
+      <div class="rhythm-preview" aria-hidden="true">
+        <div class="preview-head">
+          <div>
+            <small>Today’s rhythm</small>
+            <strong>Looking lovely</strong>
+          </div>
+          <span>♡</span>
+        </div>
+        <div class="rhythm-line">
+          <i class="feed"></i>
+          <i class="sleep"></i>
+          <i class="diaper"></i>
+          <i class="feed last"></i>
+        </div>
+        <div class="rhythm-labels">
+          <span>Feed</span>
+          <span>Sleep</span>
+          <span>Change</span>
+          <span>Feed</span>
+        </div>
+      </div>
+    </section>
 
-          <ion-item>
+    <section class="form-panel">
+      <div class="mobile-brand" aria-hidden="true">
+        <div class="brand-mark small">
+          <span class="moon"></span>
+        </div>
+        <span>little moments</span>
+      </div>
 
+      <div class="form-heading">
+        <span class="eyebrow">Let’s get started</span>
+        <h1>Create your account</h1>
+        <p>A more peaceful way to keep track of every little thing.</p>
+      </div>
+
+      <form [formGroup]="signupForm" (ngSubmit)="signUp()" novalidate>
+        <div class="field-group">
+          <label for="signup-name">Your name</label>
+          <ion-item
+            lines="none"
+            [class.field-invalid]="
+              signupForm.get('name')?.touched &&
+              signupForm.get('name')?.invalid
+            ">
             <ion-input
-              label="Full Name"
-              labelPlacement="stacked"
+              id="signup-name"
+              placeholder="How should we call you?"
+              autocomplete="name"
               formControlName="name">
             </ion-input>
-
           </ion-item>
+        </div>
 
-          <ion-item>
-
+        <div class="field-group">
+          <label for="signup-email">Email address</label>
+          <ion-item
+            lines="none"
+            [class.field-invalid]="
+              signupForm.get('email')?.touched &&
+              signupForm.get('email')?.invalid
+            ">
             <ion-input
+              id="signup-email"
               type="email"
-              label="Email"
-              labelPlacement="stacked"
+              placeholder="you@example.com"
+              autocomplete="email"
+              inputmode="email"
               formControlName="email">
             </ion-input>
-
           </ion-item>
+        </div>
 
-          <ion-item>
+        <div class="password-grid">
+          <div class="field-group">
+            <label for="signup-password">Password</label>
+            <ion-item
+              lines="none"
+              [class.field-invalid]="
+                signupForm.get('password')?.touched &&
+                signupForm.get('password')?.invalid
+              ">
+              <ion-input
+                id="signup-password"
+                type="password"
+                placeholder="6+ characters"
+                autocomplete="new-password"
+                formControlName="password">
+              </ion-input>
+            </ion-item>
+          </div>
 
-            <ion-input
-              type="password"
-              label="Password"
-              labelPlacement="stacked"
-              formControlName="password">
-            </ion-input>
+          <div class="field-group">
+            <label for="signup-confirm-password">Confirm password</label>
+            <ion-item
+              lines="none"
+              [class.field-invalid]="
+                signupForm.get('confirmPassword')?.touched &&
+                signupForm.get('confirmPassword')?.invalid
+              ">
+              <ion-input
+                id="signup-confirm-password"
+                type="password"
+                placeholder="Type it again"
+                autocomplete="new-password"
+                formControlName="confirmPassword">
+              </ion-input>
+            </ion-item>
+          </div>
+        </div>
 
-          </ion-item>
+        <div
+          class="status-message error"
+          role="alert"
+          *ngIf="errorMessage">
+          <span>!</span>
+          {{ errorMessage }}
+        </div>
 
-          <ion-item>
+        <ion-button
+          class="primary-action"
+          expand="block"
+          type="submit"
+          [disabled]="isLoading">
+          <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+          <span *ngIf="!isLoading">Create my account</span>
+        </ion-button>
 
-            <ion-input
-              type="password"
-              label="Confirm Password"
-              labelPlacement="stacked"
-              formControlName="confirmPassword">
-            </ion-input>
+        <p class="terms">
+          By continuing, you agree to keep your baby’s data safe on this device.
+        </p>
 
-          </ion-item>
-<ion-text
-  color="danger"
-  *ngIf="errorMessage">
-
-  <p class="error-message">
-    {{ errorMessage }}
-  </p>
-
-</ion-text>
-          <ion-button
-            expand="block"
-            type="submit"
-            [disabled]="isLoading">
-
-            <ion-spinner
-              *ngIf="isLoading"
-              name="crescent">
-            </ion-spinner>
-
-            <span *ngIf="!isLoading">
-              Create Account
-            </span>
-
-          </ion-button>
-
-          <p class="auth-switch">
-            Already have an account?
-            <a routerLink="/login">Log in</a>
-          </p>
-        </form>
-
-      </ion-card-content>
-
-    </ion-card>
-
-  </div>
-
+        <p class="auth-switch">
+          Already have an account?
+          <a routerLink="/login">Sign in</a>
+        </p>
+      </form>
+    </section>
+  </main>
 </ion-content>

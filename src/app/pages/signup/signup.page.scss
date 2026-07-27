@@ -1,58 +1,124 @@
-.signup-container {
+@use '../login/login.page.scss';
 
+.brand-panel {
+  background:
+    radial-gradient(circle at 78% 18%, rgba(250, 218, 185, 0.32), transparent 26%),
+    radial-gradient(circle at 10% 88%, rgba(205, 222, 217, 0.24), transparent 32%),
+    linear-gradient(145deg, #7e72aa 0%, #696091 58%, #5a527f 100%);
+}
+
+.rhythm-preview {
+  z-index: 1;
+  width: min(100%, 390px);
+  padding: 20px 21px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 21px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 42px rgba(50, 38, 83, 0.2);
+  backdrop-filter: blur(14px);
+}
+
+.preview-head {
   display: flex;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.preview-head div {
+  display: grid;
+  gap: 4px;
+}
+
+.preview-head small {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.67rem;
+}
+
+.preview-head strong {
+  font-size: 0.9rem;
+}
+
+.preview-head > span {
+  color: #f2d9d7;
+  font-size: 1.2rem;
+}
+
+.rhythm-line {
+  position: relative;
+  display: flex;
   align-items: center;
-
-  min-height: 100%;
-
-  padding: 24px;
+  justify-content: space-between;
+  margin: 23px 8px 11px;
 }
 
-ion-card {
-
-  width: 100%;
-  max-width: 420px;
-
-  border-radius: 20px;
+.rhythm-line::before {
+  position: absolute;
+  right: 5px;
+  left: 5px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  content: '';
 }
 
-h1 {
-
-  font-size: 28px;
-  font-weight: bold;
-
-  margin-bottom: 8px;
+.rhythm-line i {
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  border: 3px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  background: #f4d5cc;
+  box-sizing: content-box;
 }
 
-p {
-
-  color: gray;
-
-  margin-bottom: 24px;
+.rhythm-line i.sleep {
+  background: #d8d0ed;
 }
 
-ion-item {
-
-  margin-bottom: 14px;
+.rhythm-line i.diaper {
+  background: #cee1dc;
 }
 
-ion-button {
-
-  margin-top: 28px;
+.rhythm-line i.last {
+  box-shadow: 0 0 0 5px rgba(244, 213, 204, 0.15);
 }
-.error-message {
-  margin: 12px 4px 0;
-  font-size: 14px;
+
+.rhythm-labels {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.59rem;
+}
+
+.password-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.terms {
+  max-width: 370px;
+  margin: 15px auto 0;
+  color: #9893a3;
+  text-align: center;
+  font-size: 0.67rem;
+  line-height: 1.5;
 }
 
 .auth-switch {
-  margin: 20px 0 0;
-  text-align: center;
-  font-size: 14px;
+  margin-top: 17px;
+}
 
-  a {
-    font-weight: 600;
-    text-decoration: none;
+@media (max-width: 480px) {
+  .password-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-panel {
+    justify-content: flex-start;
+  }
+
+  .mobile-brand {
+    margin-bottom: 35px;
   }
 }
