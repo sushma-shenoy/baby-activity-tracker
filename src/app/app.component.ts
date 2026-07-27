@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-
+import {
+  FirebaseTestService
+} from './services/firebase-test.service';
 import {
   closeOutline,
   createOutline,
@@ -20,7 +22,10 @@ import {
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent {
-  constructor() {
+  constructor( private readonly firebaseTestService:
+    FirebaseTestService) {
+      this.firebaseTestService
+    .verifyConnection();
     addIcons({
       closeOutline,
       addOutline,

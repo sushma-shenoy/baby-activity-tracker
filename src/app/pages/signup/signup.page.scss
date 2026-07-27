@@ -1,0 +1,47 @@
+.signup-container {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 100%;
+
+  padding: 24px;
+}
+
+ion-card {
+
+  width: 100%;
+  max-width: 420px;
+
+  border-radius: 20px;
+}
+
+h1 {
+
+  font-size: 28px;
+  font-weight: bold;
+
+  margin-bottom: 8px;
+}
+
+p {
+
+  color: gray;
+
+  margin-bottom: 24px;
+}
+
+ion-item {
+
+  margin-bottom: 14px;
+}
+
+ion-button {
+
+  margin-top: 28px;
+}
+.error-message {
+  margin: 12px 4px 0;
+  font-size: 14px;
+}

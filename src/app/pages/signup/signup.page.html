@@ -1,0 +1,93 @@
+<ion-content [fullscreen]="true">
+
+  <div class="signup-container">
+
+    <ion-card>
+
+      <ion-card-content>
+
+        <h1>Create Account</h1>
+
+        <p>
+          Welcome! Let's create your Baby Tracker account.
+        </p>
+
+        <form
+          [formGroup]="signupForm"
+          (ngSubmit)="signUp()">
+
+          <ion-item>
+
+            <ion-input
+              label="Full Name"
+              labelPlacement="stacked"
+              formControlName="name">
+            </ion-input>
+
+          </ion-item>
+
+          <ion-item>
+
+            <ion-input
+              type="email"
+              label="Email"
+              labelPlacement="stacked"
+              formControlName="email">
+            </ion-input>
+
+          </ion-item>
+
+          <ion-item>
+
+            <ion-input
+              type="password"
+              label="Password"
+              labelPlacement="stacked"
+              formControlName="password">
+            </ion-input>
+
+          </ion-item>
+
+          <ion-item>
+
+            <ion-input
+              type="password"
+              label="Confirm Password"
+              labelPlacement="stacked"
+              formControlName="confirmPassword">
+            </ion-input>
+
+          </ion-item>
+<ion-text
+  color="danger"
+  *ngIf="errorMessage">
+
+  <p class="error-message">
+    {{ errorMessage }}
+  </p>
+
+</ion-text>
+          <ion-button
+  expand="block"
+  type="submit"
+  [disabled]="isLoading">
+
+  <ion-spinner
+    *ngIf="isLoading"
+    name="crescent">
+  </ion-spinner>
+
+  <span *ngIf="!isLoading">
+    Create Account
+  </span>
+
+</ion-button>
+        </form>
+
+      </ion-card-content>
+
+    </ion-card>
+
+  </div>
+
+</ion-content>
