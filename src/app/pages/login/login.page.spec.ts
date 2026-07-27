@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginPage } from './login.page';
 
@@ -22,7 +22,15 @@ describe('LoginPage', () => {
       providers: [
         FormBuilder,
         { provide: AuthService, useValue: authService },
-        { provide: Router, useValue: router }
+        { provide: Router, useValue: router },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              queryParamMap: convertToParamMap({})
+            }
+          }
+        }
       ]
     }).compileComponents();
 

@@ -1,13 +1,46 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>settings</ion-title>
+    <ion-title>Settings</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="settings-page">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">settings</ion-title>
+      <ion-title size="large">Settings</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <div class="settings-shell">
+    <ion-card>
+      <ion-card-content>
+        <div class="profile-avatar" aria-hidden="true">
+          {{ displayName.charAt(0).toUpperCase() }}
+        </div>
+
+        <div class="profile-copy">
+          <p class="eyebrow">Signed in as</p>
+          <h1>{{ displayName }}</h1>
+          <p>{{ email }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <p class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
+
+    <ion-button
+      expand="block"
+      fill="outline"
+      color="danger"
+      [disabled]="isLoggingOut"
+      (click)="logout()">
+      <ion-spinner
+        *ngIf="isLoggingOut"
+        name="crescent">
+      </ion-spinner>
+      <span *ngIf="!isLoggingOut">Log out</span>
+    </ion-button>
+  </div>
 </ion-content>

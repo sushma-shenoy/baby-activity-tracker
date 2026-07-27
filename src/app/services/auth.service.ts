@@ -4,7 +4,10 @@ import {
 
 import {
   BehaviorSubject,
-  Observable
+  Observable,
+  filter,
+  firstValueFrom,
+  take
 } from 'rxjs';
 
 import {
@@ -55,6 +58,19 @@ export class AuthService {
 
   get isLoggedIn(): boolean {
     return this.currentUser !== null;
+  }
+
+  waitUntilReady(): Promise<void> {
+    if (this.authReadySubject.value) {
+      return Promise.resolve();
+    }
+
+    return firstValueFrom(
+      this.authReady$.pipe(
+        filter(Boolean),
+        take(1)
+      )
+    ).then(() => undefined);
   }
 
   async signUp(

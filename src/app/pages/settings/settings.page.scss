@@ -1,0 +1,76 @@
+.settings-page {
+  --background: #f7f8fc;
+}
+
+.settings-shell {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+ion-card {
+  margin: 0 0 24px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(37, 45, 75, 0.08);
+}
+
+ion-card-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.profile-avatar {
+  display: grid;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #7c6ff0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.profile-copy {
+  min-width: 0;
+}
+
+.profile-copy p,
+.profile-copy h1 {
+  margin: 0;
+}
+
+.profile-copy h1 {
+  margin: 3px 0;
+  color: #252d4b;
+  font-size: 1.25rem;
+}
+
+.profile-copy p:last-child {
+  overflow: hidden;
+  color: #6b7280;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eyebrow {
+  color: #7c6ff0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.error-message {
+  margin: 0 0 16px;
+  color: var(--ion-color-danger);
+  text-align: center;
+}
+
+ion-spinner {
+  width: 20px;
+  height: 20px;
+}

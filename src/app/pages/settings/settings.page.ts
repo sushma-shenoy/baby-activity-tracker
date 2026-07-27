@@ -1,20 +1,62 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { Router } from '@angular/router';
+import {
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonContent,
+  IonHeader,
+  IonSpinner,
+  IonTitle,
+  IonToolbar
+} from '@ionic/angular/standalone';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    IonButton,
+    IonCard,
+    IonCardContent,
+    IonContent,
+    IonHeader,
+    IonSpinner,
+    IonTitle,
+    IonToolbar
+  ]
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  constructor() { }
+  isLoggingOut = false;
+  errorMessage = '';
 
-  ngOnInit() {
+  get displayName(): string {
+    return this.authService.currentUser?.displayName || 'Parent';
   }
 
+  get email(): string {
+    return this.authService.currentUser?.email || '';
+  }
+
+  async logout(): Promise<void> {
+    this.errorMessage = '';
+    this.isLoggingOut = true;
+
+    const result = await this.authService.logout();
+    this.isLoggingOut = false;
+
+    if (!result.success) {
+      this.errorMessage = result.errorMessage ?? 'Unable to log out.';
+      return;
+    }
+
+    await this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
 }

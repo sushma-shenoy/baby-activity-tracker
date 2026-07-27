@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonButton,
   IonCard,
@@ -42,6 +42,7 @@ export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -74,7 +75,10 @@ export class LoginPage {
       return;
     }
 
-    await this.router.navigateByUrl('/home', { replaceUrl: true });
+    const returnUrl =
+      this.route.snapshot.queryParamMap.get('returnUrl') ?? '/home';
+
+    await this.router.navigateByUrl(returnUrl, { replaceUrl: true });
   }
 
   async resetPassword(): Promise<void> {
