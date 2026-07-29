@@ -30,8 +30,8 @@ import {
 } from '../../services/activity.service';
 
 import {
-  ActivityCardComponent
-} from '../../components/activity-card/activity-card.component';
+  PreferencesService
+} from '../../services/preferences.service';
 
 interface ProgressItem {
   label: string;
@@ -51,8 +51,7 @@ interface ProgressItem {
   imports: [
     CommonModule,
     IonicModule,
-    RouterLink,
-    ActivityCardComponent
+    RouterLink
   ]
 })
 export class HomePage implements OnInit, OnDestroy {
@@ -75,17 +74,19 @@ export class HomePage implements OnInit, OnDestroy {
   donuts: ProgressItem[] = [];
 
   baby = {
-    name: 'Aradhya',
-    age: '6 months',
+    name: 'Baby',
+    age: 'Age not set',
     mood: 'Happy 😊'
   };
 
   private activitiesSubscription?: Subscription;
+  private preferencesSubscription?: Subscription;
   private clockTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly router: Router,
-    private readonly activityService: ActivityService
+    private readonly activityService: ActivityService,
+    private readonly preferencesService: PreferencesService
   ) {}
 
   ngOnInit(): void {
@@ -95,6 +96,21 @@ export class HomePage implements OnInit, OnDestroy {
       this.activityService.activities$.subscribe(() => {
         this.refreshHomeData();
       });
+
+    this.preferencesSubscription =
+      this.preferencesService.preferences$.subscribe(
+        preferences => {
+          this.baby = {
+            name: preferences.baby.name,
+            age:
+              this.preferencesService.getAgeLabel(
+                preferences.baby.birthDate
+              ),
+            mood: preferences.baby.mood
+          };
+          this.updateDonuts();
+        }
+      );
 
     this.clockTimer = setInterval(() => {
       this.updateGreeting();
@@ -108,6 +124,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.activitiesSubscription?.unsubscribe();
+    this.preferencesSubscription?.unsubscribe();
 
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
@@ -275,14 +292,17 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private updateDonuts(): void {
+    const goals =
+      this.preferencesService.preferences.goals;
+
     this.donuts = [
       {
         label: 'Feeds',
         value: this.stats.feeds,
-        goal: 8,
+        goal: goals.feeds,
         percent: this.calculatePercent(
           this.stats.feeds,
-          8
+          goals.feeds
         ),
         icon: '🍼',
         class: 'feed-donut',
@@ -291,10 +311,10 @@ export class HomePage implements OnInit, OnDestroy {
       {
         label: 'Sleep',
         value: this.stats.sleep,
-        goal: 5,
+        goal: goals.sleepSessions,
         percent: this.calculatePercent(
           this.stats.sleep,
-          5
+          goals.sleepSessions
         ),
         icon: '😴',
         class: 'sleep-donut',
@@ -303,10 +323,10 @@ export class HomePage implements OnInit, OnDestroy {
       {
         label: 'Diapers',
         value: this.stats.diapers,
-        goal: 7,
+        goal: goals.diapers,
         percent: this.calculatePercent(
           this.stats.diapers,
-          7
+          goals.diapers
         ),
         icon: '🧷',
         class: 'diaper-donut',

@@ -1,0 +1,67 @@
+.milestones-page { --background: linear-gradient(180deg, #fff8ed, #fbf8ff 52%, #fff); }
+.milestones-content { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(38px + env(safe-area-inset-bottom)); }
+.milestones-hero { display:flex; align-items:center; justify-content:space-between; padding:23px; border-radius:29px; color:#fff; background:radial-gradient(circle at top right,rgba(255,255,255,.35),transparent 35%),linear-gradient(135deg,#e8ad66,#b98acb); box-shadow:0 16px 34px rgba(159,105,135,.2); }
+.milestones-hero h1,.milestones-hero p { margin:0; }
+.milestones-hero h1 { margin:5px 0 7px; font-size:1.75rem; }
+.milestones-hero p:last-child { max-width:280px; color:rgba(255,255,255,.84); font-size:.82rem; }
+.eyebrow { margin:0; color:#9a668b; font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+.milestones-hero .eyebrow { color:rgba(255,255,255,.8); }
+.hero-icon { display:grid; width:64px; height:64px; place-items:center; border-radius:21px; background:rgba(255,255,255,.22); font-size:2rem; }
+.development-note { margin:14px 0; padding:13px 15px; border:1px solid #eadcf0; border-radius:16px; color:#715c75; background:#fcf8ff; font-size:.72rem; line-height:1.5; }
+.form-card,.history-card { margin-top:14px; padding:21px; border:1px solid #ece4ee; border-radius:23px; background:#fff; box-shadow:0 8px 28px rgba(70,45,82,.055); }
+.section-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.section-heading h2 { margin:4px 0 0; color:#46394a; font-size:1.08rem; }
+.full-field { display:block; margin-top:15px; }
+label > span { display:block; margin:0 0 8px 2px; color:#574b59; font-size:.76rem; font-weight:750; }
+label small { color:#978d99; font-weight:500; }
+form ion-item { --min-height:52px; --padding-start:14px; --inner-padding-end:10px; --background:#fcf9fd; --border-radius:14px; border:1px solid #eae2ec; border-radius:14px; }
+.category-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:15px; }
+.category-grid button { display:grid; gap:4px; padding:10px 5px; border:1px solid #e9dfec; border-radius:13px; color:#756679; background:#fff; font-size:.67rem; font-weight:700; }
+.category-grid button span { font-size:1.15rem; }
+.category-grid button.active { border-color:#bd8abe; color:#865b87; background:#faf1fb; box-shadow:0 0 0 1px #bd8abe; }
+form ion-button { --background:#a975aa; --border-radius:14px; min-height:50px; margin-top:19px; text-transform:none; }
+.cancel-button { padding:8px 11px; border:0; border-radius:10px; color:#875c88; background:#f8edf9; font-weight:750; }
+.error,.success { margin:12px 2px 0; font-size:.75rem; }.error{color:#b5545b}.success{color:#3c8767}
+.count { display:grid; min-width:34px; height:34px; place-items:center; border-radius:11px; color:#865b87; background:#f8edf9; font-size:.76rem; font-weight:800; }
+.empty { padding:28px 8px; color:#978d99; text-align:center; font-size:.78rem; }
+.timeline-tools { margin: -5px -8px 12px; }
+.timeline-tools ion-searchbar {
+  --background: #faf6fb;
+  --border-radius: 13px;
+  --box-shadow: none;
+  --color: #554658;
+  --placeholder-color: #9c8f9e;
+  padding-top: 0;
+  padding-bottom: 8px;
+}
+.filter-scroll {
+  display:flex;
+  gap:7px;
+  padding:0 8px 5px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.filter-scroll::-webkit-scrollbar { display:none; }
+.filter-scroll button {
+  flex:0 0 auto;
+  padding:8px 10px;
+  border:1px solid #eadfec;
+  border-radius:999px;
+  color:#806e83;
+  background:#fff;
+  font-size:.66rem;
+  font-weight:750;
+}
+.filter-scroll button.active {
+  border-color:#b77eb9;
+  color:#fff;
+  background:#a975aa;
+}
+.milestone-row { display:flex; align-items:center; border-top:1px solid #f0e8f1; }
+.milestone-row:first-of-type { border-top:0; }
+.milestone-row > button { display:flex; flex:1; align-items:flex-start; gap:12px; padding:15px 2px; border:0; color:#46394a; background:transparent; text-align:left; }
+.milestone-icon { display:grid; width:43px; height:43px; flex:0 0 43px; place-items:center; border-radius:14px; background:#faf1fb; }
+.milestone-copy { display:grid; gap:4px; line-height:1.35; }
+.milestone-copy small,.milestone-copy > span { color:#8d818f; font-size:.7rem; }
+.milestone-copy .age-label { color:#9a689b; font-weight:700; }
+@media(max-width:480px){.milestones-content{padding-right:13px;padding-left:13px}.form-card,.history-card{padding:18px}.category-grid{grid-template-columns:repeat(2,1fr)}}

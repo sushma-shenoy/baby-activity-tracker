@@ -1,13 +1,172 @@
-<ion-header [translucent]="true">
+<ion-header translucent="true" class="app-header">
   <ion-toolbar>
-    <ion-title>medicine</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
+    <ion-title>Medicine</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="app-bg">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">medicine</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="medicine-page">
+  <main class="medicine-content">
+    <section class="medicine-hero">
+      <div>
+        <p class="eyebrow">Care log</p>
+        <h1>Medicine tracker</h1>
+        <p>Keep an accurate record of doses already given.</p>
+      </div>
+      <div class="hero-icon" aria-hidden="true">💊</div>
+    </section>
+
+    <aside class="safety-note">
+      <span aria-hidden="true">ⓘ</span>
+      <p>
+        Record only medicine already given. Always follow instructions from
+        your child’s healthcare professional.
+      </p>
+    </aside>
+
+    <section class="medicine-form-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">
+            {{ isEditing ? 'Editing entry' : 'New entry' }}
+          </p>
+          <h2>
+            {{ isEditing ? 'Update medicine' : 'Log medicine' }}
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="cancel-button"
+          *ngIf="isEditing"
+          (click)="cancelEdit()">
+          Cancel
+        </button>
+      </div>
+
+      <form
+        [formGroup]="medicineForm"
+        (ngSubmit)="saveMedicine()">
+        <div class="form-grid">
+          <label>
+            <span>Medicine name</span>
+            <ion-item
+              lines="none"
+              [class.field-invalid]="
+                medicineForm.controls.name.touched &&
+                medicineForm.controls.name.invalid
+              ">
+              <ion-input
+                placeholder="e.g. Vitamin D"
+                autocomplete="off"
+                formControlName="name">
+              </ion-input>
+            </ion-item>
+          </label>
+
+          <label>
+            <span>Dose given</span>
+            <ion-item
+              lines="none"
+              [class.field-invalid]="
+                medicineForm.controls.dose.touched &&
+                medicineForm.controls.dose.invalid
+              ">
+              <ion-input
+                placeholder="e.g. 1 mL"
+                autocomplete="off"
+                formControlName="dose">
+              </ion-input>
+            </ion-item>
+          </label>
+        </div>
+
+        <label class="full-field">
+          <span>Date and time given</span>
+          <ion-item lines="none">
+            <ion-input
+              type="datetime-local"
+              [max]="maximumDateTime"
+              formControlName="givenAt">
+            </ion-input>
+          </ion-item>
+        </label>
+
+        <label class="full-field">
+          <span>Notes <small>optional</small></span>
+          <ion-item lines="none">
+            <ion-textarea
+              rows="3"
+              maxlength="240"
+              placeholder="Reason, reaction, or instructions followed"
+              formControlName="notes">
+            </ion-textarea>
+          </ion-item>
+        </label>
+
+        <p class="form-error" role="alert" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </p>
+        <p class="form-success" role="status" *ngIf="successMessage">
+          ✓ {{ successMessage }}
+        </p>
+
+        <ion-button
+          expand="block"
+          type="submit">
+          {{ isEditing ? 'Update entry' : 'Save medicine' }}
+        </ion-button>
+      </form>
+    </section>
+
+    <section class="history-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">History</p>
+          <h2>Recent medicine</h2>
+        </div>
+        <span class="entry-count">{{ entries.length }}</span>
+      </div>
+
+      <div class="empty-state" *ngIf="entries.length === 0">
+        <span aria-hidden="true">💊</span>
+        <h3>No medicine logged</h3>
+        <p>Saved doses will appear here.</p>
+      </div>
+
+      <article
+        class="medicine-entry"
+        *ngFor="
+          let entry of entries;
+          trackBy: trackByEntryId
+        ">
+        <button
+          type="button"
+          class="entry-main"
+          (click)="editEntry(entry)">
+          <span class="entry-icon" aria-hidden="true">💊</span>
+          <span class="entry-copy">
+            <strong>{{ entry.name }}</strong>
+            <small>
+              {{ entry.dose }} · {{ formatDateTime(entry.givenAt) }}
+            </small>
+            <span *ngIf="entry.notes">{{ entry.notes }}</span>
+          </span>
+        </button>
+
+        <ion-button
+          fill="clear"
+          color="danger"
+          aria-label="Delete medicine entry"
+          (click)="confirmDelete(entry)">
+          <ion-icon
+            slot="icon-only"
+            name="trash-outline">
+          </ion-icon>
+        </ion-button>
+      </article>
+    </section>
+  </main>
 </ion-content>

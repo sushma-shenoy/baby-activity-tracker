@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { User } from 'firebase/auth';
 import { AuthService } from '../../services/auth.service';
 import { SettingsPage } from './settings.page';
@@ -24,11 +24,8 @@ describe('SettingsPage', () => {
     await TestBed.configureTestingModule({
       imports: [SettingsPage],
       providers: [
+        provideRouter([]),
         { provide: AuthService, useValue: authService },
-        {
-          provide: Router,
-          useValue: jasmine.createSpyObj<Router>('Router', ['navigateByUrl'])
-        }
       ]
     }).compileComponents();
 
@@ -39,5 +36,31 @@ describe('SettingsPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('rejects a future date of birth', () => {
+    component.preferencesForm.controls.birthDate.setValue('2999-01-01');
+    component.preferencesForm.controls.birthDate.markAsTouched();
+
+    expect(component.preferencesForm.controls.birthDate.hasError('futureDate'))
+      .toBeTrue();
+    expect(component.birthDateError)
+      .toBe('Date of birth cannot be in the future.');
+  });
+
+  it('rejects an impossible calendar date', () => {
+    component.preferencesForm.controls.birthDate.setValue('2025-02-30');
+    component.preferencesForm.controls.birthDate.markAsTouched();
+
+    expect(component.preferencesForm.controls.birthDate.hasError('invalidDate'))
+      .toBeTrue();
+  });
+
+  it('requires a date of birth', () => {
+    component.preferencesForm.controls.birthDate.setValue('');
+    component.savePreferences();
+
+    expect(component.preferencesForm.controls.birthDate.hasError('required'))
+      .toBeTrue();
   });
 });

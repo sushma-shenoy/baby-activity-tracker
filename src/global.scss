@@ -37,6 +37,40 @@
 ion-content {
   --color: #1f1f1f;
 }
+
+/* Shared top-level page navigation */
+ion-header.app-header {
+  box-shadow: none;
+}
+
+ion-header.app-header ion-toolbar {
+  --min-height: 58px;
+  --background: rgba(250, 248, 252, 0.94);
+  --border-color: transparent;
+  --color: #292642;
+  padding-right: max(4px, env(safe-area-inset-right));
+  padding-left: max(4px, env(safe-area-inset-left));
+  backdrop-filter: blur(18px);
+}
+
+ion-header.app-header ion-title {
+  color: #292642;
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+ion-header.app-header ion-back-button {
+  --color: #645681;
+  --icon-font-size: 1.45rem;
+  --min-height: 42px;
+  --min-width: 42px;
+  font-weight: 700;
+}
+
+ion-header.app-header ion-buttons {
+  min-width: 48px;
+}
 ion-item[button] {
   --background: #ffffff;
   --background-activated: #f5f6f8;

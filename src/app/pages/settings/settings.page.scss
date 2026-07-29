@@ -3,18 +3,18 @@
 }
 
 .settings-shell {
-  max-width: 560px;
+  max-width: 620px;
   margin: 0 auto;
   padding: 24px 16px;
 }
 
-ion-card {
+.account-card {
   margin: 0 0 24px;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(37, 45, 75, 0.08);
 }
 
-ion-card-content {
+.account-card ion-card-content {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -57,6 +57,7 @@ ion-card-content {
 }
 
 .eyebrow {
+  margin: 0;
   color: #7c6ff0;
   font-size: 0.75rem;
   font-weight: 700;
@@ -64,13 +65,238 @@ ion-card-content {
   text-transform: uppercase;
 }
 
+.settings-section,
+.account-actions {
+  margin-bottom: 20px;
+  padding: 22px;
+  border: 1px solid #ebe9f3;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 8px 26px rgba(37, 45, 75, 0.055);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-heading h2,
+.account-actions h2 {
+  margin: 4px 0 0;
+  color: #252d4b;
+  font-size: 1.15rem;
+}
+
+.section-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: #f0edff;
+  font-size: 1.25rem;
+}
+
+.section-description {
+  margin: -8px 0 18px;
+  color: #7b8091;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.field-group {
+  margin-bottom: 16px;
+}
+
+.field-group:last-child {
+  margin-bottom: 0;
+}
+
+.field-group > label {
+  display: block;
+  margin: 0 0 8px 2px;
+  color: #42475e;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.field-group ion-item {
+  --min-height: 52px;
+  --padding-start: 15px;
+  --inner-padding-end: 12px;
+  --background: #fafafe;
+  --border-radius: 14px;
+  border: 1px solid #e8e7ef;
+  border-radius: 14px;
+}
+
+.field-group ion-item:focus-within {
+  border-color: #9a8de2;
+  box-shadow: 0 0 0 3px rgba(124, 111, 240, 0.1);
+}
+
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.goal-field {
+  display: grid;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid #e8e7ef;
+  border-radius: 15px;
+  color: #42475e;
+  background: #fafafe;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.goal-field ion-input {
+  --padding-start: 4px;
+  --padding-end: 4px;
+  min-height: 34px;
+  border-radius: 9px;
+  color: #252d4b;
+  background: #fff;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.save-button {
+  --background: #7566a8;
+  --background-hover: #5b4d8a;
+  --border-radius: 14px;
+  --box-shadow: 0 10px 22px rgba(91, 77, 138, 0.2);
+  min-height: 52px;
+  margin: 4px 0 24px;
+  font-weight: 700;
+  text-transform: none;
+}
+
 .error-message {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: var(--ion-color-danger);
   text-align: center;
+  font-size: 0.82rem;
+}
+
+.field-error {
+  margin: 7px 4px 0;
+  color: #b64755;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.field-group:has(.field-error) ion-item {
+  border-color: #d96d78;
+  box-shadow: 0 0 0 2px rgba(217, 109, 120, 0.08);
+}
+
+.data-section {
+  border-color: #dce9e6;
+  background: linear-gradient(145deg, #fff, #f4fbf9);
+}
+
+.export-button {
+  --border-color: #609b8d;
+  --border-radius: 14px;
+  --color: #397a6b;
+  min-height: 48px;
+  margin-top: 16px;
+  text-transform: none;
+  font-weight: 800;
+}
+
+.export-message {
+  margin: 10px 2px 0;
+  color: #397a6b;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.restore-button {
+  display: grid;
+  min-height: 48px;
+  margin-top: 9px;
+  place-items: center;
+  border: 1px solid #d5dfdd;
+  border-radius: 14px;
+  color: #657774;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.restore-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.restore-button.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.restore-note {
+  margin: 9px 2px 0;
+  color: #82918e;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.success-message {
+  margin: 0 0 12px;
+  color: #398264;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.account-actions {
+  margin-bottom: 0;
+}
+
+.account-actions ion-button {
+  --border-radius: 13px;
+  margin: 18px 0 0;
+  text-transform: none;
 }
 
 ion-spinner {
   width: 20px;
   height: 20px;
+}
+
+@media (max-width: 480px) {
+  .settings-shell {
+    padding: 18px 13px 28px;
+  }
+
+  .settings-section,
+  .account-actions {
+    padding: 18px;
+  }
+
+  .goal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .goal-field ion-input {
+    flex: 0 0 74px;
+    max-width: 74px;
+  }
 }

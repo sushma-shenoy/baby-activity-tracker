@@ -11,7 +11,8 @@ import {
   timeOutline,
   trashOutline,
   addOutline,
-  chevronForwardOutline
+  chevronForwardOutline,
+  settingsOutline
 } from 'ionicons/icons';
 @Component({
   selector: 'app-root',
@@ -31,6 +32,7 @@ export class AppComponent {
       playOutline,
       stopOutline,
       timeOutline,
+      settingsOutline,
 
     });
   }

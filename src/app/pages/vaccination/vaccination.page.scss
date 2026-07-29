@@ -1,0 +1,324 @@
+.vaccination-page {
+  --background:
+    linear-gradient(180deg, #effafa 0%, #f8fafb 48%, #fff 100%);
+}
+
+.vaccination-content {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 16px 16px calc(38px + env(safe-area-inset-bottom));
+}
+
+.vaccination-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 23px;
+  border-radius: 29px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.32), transparent 35%),
+    linear-gradient(135deg, #55b9b0, #338f91);
+  box-shadow: 0 16px 34px rgba(44, 132, 132, 0.22);
+}
+
+.vaccination-hero h1,
+.vaccination-hero p {
+  margin: 0;
+}
+
+.vaccination-hero h1 {
+  margin: 5px 0 7px;
+  font-size: 1.75rem;
+}
+
+.vaccination-hero > div > p:last-child {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #2d8584;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.vaccination-hero .eyebrow {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.hero-icon {
+  display: grid;
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border-radius: 21px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 2rem;
+}
+
+.record-note {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 13px 15px;
+  border: 1px solid #cfe9e7;
+  border-radius: 16px;
+  color: #416c6b;
+  background: #f0fbfa;
+}
+
+.record-note p {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.upcoming-section,
+.vaccination-form-card,
+.history-section {
+  margin-top: 14px;
+  padding: 21px;
+  border: 1px solid #e1eceb;
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(39, 84, 84, 0.055);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 19px;
+}
+
+.section-heading h2 {
+  margin: 4px 0 0;
+  color: #293d42;
+  font-size: 1.08rem;
+}
+
+.upcoming-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border: 0;
+  border-top: 1px solid #e7efee;
+  color: #293d42;
+  background: transparent;
+  text-align: left;
+}
+
+.upcoming-row:first-of-type {
+  border-top: 0;
+}
+
+.upcoming-row > span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.upcoming-row small {
+  color: #748a8a;
+}
+
+.calendar-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: #def3f1;
+}
+
+.cancel-button {
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 10px;
+  color: #357b7b;
+  background: #e7f7f5;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.form-grid label > span,
+.full-field > span {
+  display: block;
+  margin: 0 0 8px 2px;
+  color: #43575b;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.full-field {
+  display: block;
+  margin-top: 15px;
+}
+
+.full-field:first-of-type {
+  margin-top: 0;
+}
+
+.full-field small,
+.form-grid small {
+  color: #89999b;
+  font-weight: 500;
+}
+
+form ion-item {
+  --min-height: 52px;
+  --padding-start: 14px;
+  --inner-padding-end: 10px;
+  --background: #f8fbfb;
+  --border-radius: 14px;
+  border: 1px solid #dfe9e8;
+  border-radius: 14px;
+}
+
+form ion-item.field-invalid {
+  border-color: #c96c72;
+  box-shadow: 0 0 0 3px rgba(201, 108, 114, 0.09);
+}
+
+form ion-button {
+  --background: #3f9996;
+  --background-hover: #327f7d;
+  --border-radius: 14px;
+  --box-shadow: 0 10px 22px rgba(50, 135, 132, 0.2);
+  min-height: 50px;
+  margin-top: 19px;
+  font-weight: 750;
+  text-transform: none;
+}
+
+.form-error,
+.form-success {
+  margin: 12px 2px 0;
+  font-size: 0.75rem;
+}
+
+.form-error {
+  color: #b5545b;
+}
+
+.form-success {
+  color: #3c8767;
+}
+
+.entry-count {
+  display: grid;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  place-items: center;
+  border-radius: 11px;
+  color: #337c7a;
+  background: #e3f5f3;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.empty-state {
+  padding: 30px 12px;
+  color: #829395;
+  text-align: center;
+}
+
+.empty-state > span {
+  font-size: 2rem;
+}
+
+.empty-state h3 {
+  margin: 9px 0 5px;
+  color: #43575b;
+  font-size: 0.95rem;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+.vaccination-entry {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #e8efee;
+}
+
+.vaccination-entry:first-of-type {
+  border-top: 0;
+}
+
+.entry-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 2px;
+  border: 0;
+  color: #293d42;
+  background: transparent;
+  text-align: left;
+}
+
+.entry-icon {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: #e3f5f3;
+}
+
+.entry-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.entry-copy small,
+.entry-copy > span {
+  overflow: hidden;
+  color: #829395;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .vaccination-content {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+
+  .vaccination-hero {
+    padding: 21px;
+  }
+
+  .upcoming-section,
+  .vaccination-form-card,
+  .history-section {
+    padding: 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

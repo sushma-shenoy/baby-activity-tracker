@@ -1,13 +1,187 @@
-<ion-header [translucent]="true">
+<ion-header translucent="true" class="app-header">
   <ion-toolbar>
-    <ion-title>growth</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
+    <ion-title>Growth</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">growth</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="growth-page">
+  <main class="growth-content">
+    <section class="growth-hero">
+      <div>
+        <p class="eyebrow">Daily check-in</p>
+        <h1>Weight tracker</h1>
+        <p>Follow steady changes over time.</p>
+      </div>
+      <div class="hero-icon" aria-hidden="true">⚖️</div>
+    </section>
+
+    <section class="summary-row">
+      <article>
+        <span>Latest weight</span>
+        <strong>
+          {{
+            latestEntry
+              ? (latestEntry.weightKg | number: '1.1-2') + ' kg'
+              : '—'
+          }}
+        </strong>
+      </article>
+      <article>
+        <span>Last change</span>
+        <strong
+          [class.positive]="weightChange !== null && weightChange > 0"
+          [class.negative]="weightChange !== null && weightChange < 0">
+          {{
+            weightChange === null
+              ? '—'
+              : (weightChange > 0 ? '+' : '') +
+                (weightChange | number: '1.1-2') +
+                ' kg'
+          }}
+        </strong>
+      </article>
+    </section>
+
+    <section class="chart-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Trend</p>
+          <h2>Weight over time</h2>
+        </div>
+        <span>{{ entries.length }} checks</span>
+      </div>
+
+      <div
+        class="chart-empty"
+        *ngIf="entries.length === 0">
+        <span>📈</span>
+        <p>Add the first daily weight to start the graph.</p>
+      </div>
+
+      <div
+        class="chart-wrap"
+        [class.is-empty]="entries.length === 0">
+        <canvas
+          #weightChart
+          role="img"
+          aria-label="Baby weight trend in kilograms">
+        </canvas>
+      </div>
+    </section>
+
+    <section class="entry-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Measurement</p>
+          <h2>Daily weight check</h2>
+        </div>
+      </div>
+
+      <form
+        [formGroup]="weightForm"
+        (ngSubmit)="saveWeight()">
+        <div class="form-grid">
+          <label>
+            <span>Date</span>
+            <ion-item
+              lines="none"
+              [class.field-invalid]="dateError">
+              <ion-input
+                type="date"
+                [min]="minimumDate"
+                [max]="todayDate"
+                formControlName="date">
+              </ion-input>
+            </ion-item>
+            <small
+              class="field-error"
+              *ngIf="dateError">
+              {{ dateError }}
+            </small>
+          </label>
+
+          <label>
+            <span>Weight (kg)</span>
+            <ion-item
+              lines="none"
+              [class.field-invalid]="weightError">
+              <ion-input
+                type="number"
+                min="0.5"
+                max="40"
+                step="0.01"
+                inputmode="decimal"
+                placeholder="6.25"
+                formControlName="weightKg">
+              </ion-input>
+            </ion-item>
+            <small
+              class="field-error"
+              *ngIf="weightError">
+              {{ weightError }}
+            </small>
+          </label>
+        </div>
+
+        <p class="form-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </p>
+        <p class="form-success" *ngIf="savedMessage">
+          ✓ {{ savedMessage }}
+        </p>
+
+        <ion-button
+          expand="block"
+          type="submit">
+          Save daily weight
+        </ion-button>
+      </form>
+    </section>
+
+    <section
+      class="history-section"
+      *ngIf="entries.length > 0">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">History</p>
+          <h2>Weight checks</h2>
+        </div>
+      </div>
+
+      <div
+        class="history-row"
+        *ngFor="
+          let entry of entries;
+          trackBy: trackByEntryId
+        ">
+        <button
+          type="button"
+          class="history-main"
+          (click)="editEntry(entry)">
+          <span class="history-icon">⚖️</span>
+          <span>
+            <strong>
+              {{ entry.weightKg | number: '1.1-2' }} kg
+            </strong>
+            <small>{{ formatDate(entry.date) }}</small>
+          </span>
+        </button>
+
+        <ion-button
+          fill="clear"
+          color="danger"
+          aria-label="Delete weight entry"
+          (click)="confirmDeleteEntry(entry)">
+          <ion-icon
+            slot="icon-only"
+            name="trash-outline">
+          </ion-icon>
+        </ion-button>
+      </div>
+    </section>
+  </main>
 </ion-content>

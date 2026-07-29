@@ -30,6 +30,29 @@ import {
 } from '../../services/sleep';
 
 import {
+  GrowthService,
+  WeightEntry
+} from '../../services/growth.service';
+
+import {
+  VaccinationEntry,
+  VaccinationService
+} from '../../services/vaccination.service';
+import {
+  TemperatureEntry,
+  TemperatureService,
+  TemperatureUnit
+} from '../../services/temperature.service';
+import {
+  Milestone,
+  MilestoneService
+} from '../../services/milestone.service';
+import {
+  ActiveNursingSession,
+  NursingService
+} from '../../services/nursing.service';
+
+import {
   Activity
 } from '../../shared/models/activity-model';
 
@@ -73,11 +96,29 @@ export class DashboardPage
   isSleepRunning = false;
 
   hasActiveSleepSession = false;
+  latestWeight?: WeightEntry;
+  nextVaccination?: VaccinationEntry;
+  latestTemperature?: TemperatureEntry;
+  temperatureUnit: TemperatureUnit = 'celsius';
+  latestMilestone?: Milestone;
+  activeNursing?: ActiveNursingSession | null;
 
   private activitySubscription?:
     Subscription;
 
   private timerSubscription?:
+    Subscription;
+
+  private growthSubscription?:
+    Subscription;
+
+  private vaccinationSubscription?:
+    Subscription;
+  private temperatureSubscription?:
+    Subscription;
+  private temperatureUnitSubscription?:
+    Subscription;
+  private milestoneSubscription?:
     Subscription;
 
   private allActivities: Activity[] = [];
@@ -87,7 +128,17 @@ export class DashboardPage
     private readonly activityService:
       ActivityService,
     private readonly sleepService:
-      SleepService
+      SleepService,
+    private readonly growthService:
+      GrowthService,
+    private readonly vaccinationService:
+      VaccinationService,
+    private readonly temperatureService:
+      TemperatureService,
+    private readonly milestoneService:
+      MilestoneService,
+    private readonly nursingService:
+      NursingService
   ) { }
 
   ngOnInit(): void {
@@ -109,9 +160,58 @@ export class DashboardPage
 
     this.updateSleepTimer();
 
+    this.growthSubscription =
+      this.growthService.entries$.subscribe(
+        entries => {
+          this.latestWeight =
+            entries.length > 0
+              ? entries[entries.length - 1]
+              : undefined;
+        }
+      );
+
+    this.vaccinationSubscription =
+      this.vaccinationService.entries$.subscribe(
+        entries => {
+          const today = this.toDateValue(new Date());
+
+          this.nextVaccination = entries
+            .filter(entry =>
+              entry.nextDueDate &&
+              entry.nextDueDate >= today
+            )
+            .sort((first, second) =>
+              first.nextDueDate.localeCompare(
+                second.nextDueDate
+              )
+            )[0];
+        }
+      );
+
+    this.temperatureSubscription =
+      this.temperatureService.entries$.subscribe(
+        entries => {
+          this.latestTemperature = entries[0];
+        }
+      );
+    this.temperatureUnitSubscription =
+      this.temperatureService.unit$.subscribe(
+      unit => (this.temperatureUnit = unit)
+    );
+
+    this.milestoneSubscription =
+      this.milestoneService.milestones$.subscribe(
+        milestones => {
+          this.latestMilestone = milestones[0];
+        }
+      );
+
+    this.updateNursingTimer();
+
     this.timerSubscription =
       interval(1000).subscribe(() => {
         this.updateSleepTimer();
+        this.updateNursingTimer();
 
         /*
          * Refreshes relative text such as
@@ -165,6 +265,80 @@ export class DashboardPage
     activity: Activity
   ): string {
     return activity.id;
+  }
+
+  get latestWeightDate(): string {
+    if (!this.latestWeight) {
+      return 'No weight recorded';
+    }
+
+    return new Date(
+      `${this.latestWeight.date}T00:00:00`
+    ).toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  get nextVaccinationDate(): string {
+    if (!this.nextVaccination) {
+      return 'No upcoming date recorded';
+    }
+
+    return new Date(
+      `${this.nextVaccination.nextDueDate}T00:00:00`
+    ).toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  get latestTemperatureDetail(): string {
+    if (!this.latestTemperature) {
+      return 'No reading recorded';
+    }
+
+    return new Date(
+      this.latestTemperature.measuredAt
+    ).toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  get latestTemperatureDisplay(): string {
+    if (!this.latestTemperature) return 'Add a check';
+    const value = this.temperatureService.toDisplay(
+      this.latestTemperature.celsius,
+      this.temperatureUnit
+    );
+    return `${value.toFixed(1)} ${
+      this.temperatureUnit === 'fahrenheit' ? '°F' : '°C'
+    }`;
+  }
+
+  get latestMilestoneDate(): string {
+    if (!this.latestMilestone) {
+      return 'Start a memory timeline';
+    }
+
+    return new Date(
+      `${this.latestMilestone.achievedDate}T00:00:00`
+    ).toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  get nursingTimerDisplay(): string {
+    const seconds =
+      (this.activeNursing?.leftSeconds || 0) +
+      (this.activeNursing?.rightSeconds || 0);
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
   }
 
   private updateDashboard(
@@ -347,6 +521,11 @@ export class DashboardPage
       );
   }
 
+  private updateNursingTimer(): void {
+    this.activeNursing =
+      this.nursingService.snapshot();
+  }
+
   private formatTimer(
     milliseconds: number
   ): string {
@@ -491,11 +670,34 @@ export class DashboardPage
       .padStart(2, '0');
   }
 
+  private toDateValue(date: Date): string {
+    return (
+      `${date.getFullYear()}-` +
+      `${String(date.getMonth() + 1).padStart(2, '0')}-` +
+      `${String(date.getDate()).padStart(2, '0')}`
+    );
+  }
+
   ngOnDestroy(): void {
     this.activitySubscription
       ?.unsubscribe();
 
     this.timerSubscription
+      ?.unsubscribe();
+
+    this.growthSubscription
+      ?.unsubscribe();
+
+    this.vaccinationSubscription
+      ?.unsubscribe();
+
+    this.temperatureSubscription
+      ?.unsubscribe();
+
+    this.temperatureUnitSubscription
+      ?.unsubscribe();
+
+    this.milestoneSubscription
       ?.unsubscribe();
   }
 }

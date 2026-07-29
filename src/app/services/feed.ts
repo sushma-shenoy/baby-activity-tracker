@@ -4,7 +4,7 @@ export interface Feed {
   id: string;
   time: string;
   quantity: number;
-  type: 'breast' | 'formula';
+  type: 'expressed' | 'formula';
 }
 
 @Injectable({
@@ -18,7 +18,12 @@ export class FeedService {
 
   // 📥 GET ALL FEEDS
   getFeeds(): Feed[] {
-    return JSON.parse(localStorage.getItem(this.key) || '[]');
+    const feeds = JSON.parse(localStorage.getItem(this.key) || '[]') as
+      Array<Feed | (Omit<Feed, 'type'> & { type: 'breast' })>;
+    return feeds.map(feed => ({
+      ...feed,
+      type: feed.type === 'breast' ? 'expressed' : feed.type
+    }));
   }
 
   // ➕ ADD FEED

@@ -48,6 +48,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/vaccination/vaccination.page').then( m => m.VaccinationPage)
   },
   {
+    path: 'temperature',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/temperature/temperature.page').then( m => m.TemperaturePage)
+  },
+  {
+    path: 'milestones',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/milestones/milestones.page').then( m => m.MilestonesPage)
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage)

@@ -1,0 +1,179 @@
+.temperature-page {
+  --background: linear-gradient(180deg, #fff3f3 0%, #faf9fc 50%, #fff 100%);
+}
+
+.temperature-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 16px calc(38px + env(safe-area-inset-bottom));
+}
+
+.temperature-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 23px;
+  border-radius: 29px;
+  color: #fff;
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,.34), transparent 35%),
+    linear-gradient(135deg, #e88d91, #cb626c);
+  box-shadow: 0 16px 34px rgba(190, 82, 92, .22);
+}
+
+.temperature-hero h1,
+.temperature-hero p { margin: 0; }
+.temperature-hero h1 { margin: 5px 0 7px; font-size: 1.75rem; }
+.temperature-hero p:last-child { color: rgba(255,255,255,.82); font-size: .82rem; }
+.eyebrow {
+  margin: 0;
+  color: #bd5c65;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.temperature-hero .eyebrow { color: rgba(255,255,255,.78); }
+.hero-icon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border-radius: 21px;
+  background: rgba(255,255,255,.22);
+  font-size: 2rem;
+}
+.medical-note {
+  margin: 14px 0;
+  padding: 13px 15px;
+  border: 1px solid #f0d3d5;
+  border-radius: 16px;
+  color: #7d5054;
+  background: #fff7f7;
+  font-size: .72rem;
+  line-height: 1.5;
+}
+.unit-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 5px;
+  border: 1px solid #eedfe1;
+  border-radius: 15px;
+  background: rgba(255,255,255,.8);
+}
+.unit-toggle button {
+  padding: 10px;
+  border: 0;
+  border-radius: 11px;
+  color: #8b777b;
+  background: transparent;
+  font-size: .72rem;
+  font-weight: 750;
+}
+.unit-toggle button.active {
+  color: #fff;
+  background: #cb626c;
+  box-shadow: 0 5px 12px rgba(190,82,92,.18);
+}
+.latest-card,
+.chart-card,
+.form-card,
+.history-card {
+  margin-top: 14px;
+  padding: 21px;
+  border: 1px solid #eee2e4;
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(89, 47, 53, .055);
+}
+.latest-card { display: grid; gap: 5px; }
+.latest-card span, .latest-card small { color: #8e8085; font-size: .72rem; }
+.latest-card strong { color: #49363d; font-size: 1.5rem; }
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-heading h2 { margin: 4px 0 0; color: #49363d; font-size: 1.08rem; }
+.chart-wrap { height: 230px; }
+.chart-wrap.hidden { display: none; }
+.empty-chart { padding: 40px 10px; color: #978b90; text-align: center; font-size: .78rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label > span {
+  display: block;
+  margin: 0 0 8px 2px;
+  color: #584b50;
+  font-size: .76rem;
+  font-weight: 750;
+}
+.full-field { display: block; margin-top: 15px; }
+.full-field small { color: #978d91; font-weight: 500; }
+form ion-item {
+  --min-height: 52px;
+  --padding-start: 14px;
+  --inner-padding-end: 10px;
+  --background: #fdf9f9;
+  --border-radius: 14px;
+  border: 1px solid #ebe1e2;
+  border-radius: 14px;
+}
+form ion-button {
+  --background: #cb626c;
+  --border-radius: 14px;
+  min-height: 50px;
+  margin-top: 19px;
+  text-transform: none;
+}
+.cancel-button {
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 10px;
+  color: #a64e57;
+  background: #fff0f1;
+  font-weight: 750;
+}
+.error, .success { margin: 12px 2px 0; font-size: .75rem; }
+.error { color: #b5545b; }
+.success { color: #3c8767; }
+.count {
+  display: grid;
+  min-width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  color: #a7515a;
+  background: #fff0f1;
+  font-size: .76rem;
+  font-weight: 800;
+}
+.reading-row { display: flex; align-items: center; border-top: 1px solid #f0e7e8; }
+.reading-row:first-of-type { border-top: 0; }
+.reading-row > button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 2px;
+  border: 0;
+  color: #49363d;
+  background: transparent;
+  text-align: left;
+}
+.reading-row > button > span:last-child { display: grid; gap: 4px; }
+.reading-row small { color: #8e8085; }
+.reading-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: #fff0f1;
+}
+@media (max-width: 480px) {
+  .temperature-content { padding-right: 13px; padding-left: 13px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .latest-card, .chart-card, .form-card, .history-card { padding: 18px; }
+}

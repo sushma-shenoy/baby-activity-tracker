@@ -1,13 +1,201 @@
-<ion-header [translucent]="true">
+<ion-header translucent="true" class="app-header">
   <ion-toolbar>
-    <ion-title>vaccination</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
+    <ion-title>Vaccinations</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">vaccination</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="vaccination-page">
+  <main class="vaccination-content">
+    <section class="vaccination-hero">
+      <div>
+        <p class="eyebrow">Health records</p>
+        <h1>Vaccination tracker</h1>
+        <p>Keep administered doses and provider dates together.</p>
+      </div>
+      <div class="hero-icon" aria-hidden="true">🩹</div>
+    </section>
+
+    <aside class="record-note">
+      <span aria-hidden="true">ⓘ</span>
+      <p>
+        This page stores records you enter. Confirm vaccine timing and future
+        doses with your child’s healthcare professional.
+      </p>
+    </aside>
+
+    <section
+      class="upcoming-section"
+      *ngIf="upcomingEntries.length > 0">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Coming up</p>
+          <h2>Next due dates</h2>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="upcoming-row"
+        *ngFor="let entry of upcomingEntries"
+        (click)="editEntry(entry)">
+        <span class="calendar-icon">📅</span>
+        <span>
+          <strong>{{ entry.vaccineName }}</strong>
+          <small>Due {{ formatDate(entry.nextDueDate) }}</small>
+        </span>
+      </button>
+    </section>
+
+    <section class="vaccination-form-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">
+            {{ isEditing ? 'Editing record' : 'New record' }}
+          </p>
+          <h2>
+            {{ isEditing ? 'Update vaccination' : 'Add vaccination' }}
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="cancel-button"
+          *ngIf="isEditing"
+          (click)="cancelEdit()">
+          Cancel
+        </button>
+      </div>
+
+      <form
+        [formGroup]="vaccinationForm"
+        (ngSubmit)="saveVaccination()">
+        <label class="full-field">
+          <span>Vaccine name</span>
+          <ion-item
+            lines="none"
+            [class.field-invalid]="
+              vaccinationForm.controls.vaccineName.touched &&
+              vaccinationForm.controls.vaccineName.invalid
+            ">
+            <ion-input
+              placeholder="Enter the recorded vaccine name"
+              autocomplete="off"
+              formControlName="vaccineName">
+            </ion-input>
+          </ion-item>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            <span>Administered date</span>
+            <ion-item lines="none">
+              <ion-input
+                type="date"
+                [max]="todayDate"
+                formControlName="administeredDate">
+              </ion-input>
+            </ion-item>
+          </label>
+
+          <label>
+            <span>Next due date <small>optional</small></span>
+            <ion-item lines="none">
+              <ion-input
+                type="date"
+                formControlName="nextDueDate">
+              </ion-input>
+            </ion-item>
+          </label>
+        </div>
+
+        <label class="full-field">
+          <span>Provider or clinic <small>optional</small></span>
+          <ion-item lines="none">
+            <ion-input
+              placeholder="Where it was administered"
+              autocomplete="organization"
+              formControlName="provider">
+            </ion-input>
+          </ion-item>
+        </label>
+
+        <label class="full-field">
+          <span>Notes <small>optional</small></span>
+          <ion-item lines="none">
+            <ion-textarea
+              rows="3"
+              maxlength="240"
+              placeholder="Lot number, reaction, or record notes"
+              formControlName="notes">
+            </ion-textarea>
+          </ion-item>
+        </label>
+
+        <p class="form-error" role="alert" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </p>
+        <p class="form-success" role="status" *ngIf="successMessage">
+          ✓ {{ successMessage }}
+        </p>
+
+        <ion-button expand="block" type="submit">
+          {{ isEditing ? 'Update record' : 'Save vaccination' }}
+        </ion-button>
+      </form>
+    </section>
+
+    <section class="history-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">History</p>
+          <h2>Vaccination records</h2>
+        </div>
+        <span class="entry-count">{{ entries.length }}</span>
+      </div>
+
+      <div class="empty-state" *ngIf="entries.length === 0">
+        <span aria-hidden="true">🩹</span>
+        <h3>No vaccinations recorded</h3>
+        <p>Records you add will appear here.</p>
+      </div>
+
+      <article
+        class="vaccination-entry"
+        *ngFor="
+          let entry of entries;
+          trackBy: trackByEntryId
+        ">
+        <button
+          type="button"
+          class="entry-main"
+          (click)="editEntry(entry)">
+          <span class="entry-icon" aria-hidden="true">🩹</span>
+          <span class="entry-copy">
+            <strong>{{ entry.vaccineName }}</strong>
+            <small>
+              {{ formatDate(entry.administeredDate) }}
+              <ng-container *ngIf="entry.provider">
+                · {{ entry.provider }}
+              </ng-container>
+            </small>
+            <span *ngIf="entry.notes">{{ entry.notes }}</span>
+          </span>
+        </button>
+
+        <ion-button
+          fill="clear"
+          color="danger"
+          aria-label="Delete vaccination record"
+          (click)="confirmDelete(entry)">
+          <ion-icon
+            slot="icon-only"
+            name="trash-outline">
+          </ion-icon>
+        </ion-button>
+      </article>
+    </section>
+  </main>
 </ion-content>

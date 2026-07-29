@@ -1,9 +1,12 @@
-<ion-header translucent="true">
+<ion-header translucent="true" class="app-header">
   <ion-toolbar>
     <ion-title>Home</ion-title>
 
     <ion-buttons slot="end">
-      <ion-button routerLink="/settings">
+      <ion-button
+        class="settings-button"
+        routerLink="/settings"
+        aria-label="Open settings">
         <ion-icon
           slot="icon-only"
           name="settings-outline">
@@ -106,11 +109,47 @@
 
       <button
         type="button"
+        class="quick-card growth"
+        routerLink="/growth">
+
+        <div class="quick-icon">⚖️</div>
+        <span>Growth</span>
+      </button>
+
+      <button
+        type="button"
         class="quick-card medicine"
         routerLink="/medicine">
 
         <div class="quick-icon">💊</div>
         <span>Medicine</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card vaccination"
+        routerLink="/vaccination">
+
+        <div class="quick-icon">🩹</div>
+        <span>Vaccines</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card temperature"
+        routerLink="/temperature">
+
+        <div class="quick-icon">🌡️</div>
+        <span>Temperature</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card milestones"
+        routerLink="/milestones">
+
+        <div class="quick-icon">🌟</div>
+        <span>Milestones</span>
       </button>
     </div>
   </section>

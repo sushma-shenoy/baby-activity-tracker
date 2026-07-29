@@ -1,0 +1,156 @@
+<ion-header translucent="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Milestones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="milestones-page">
+  <main class="milestones-content">
+    <section class="milestones-hero">
+      <div>
+        <p class="eyebrow">Little moments, remembered</p>
+        <h1>Milestones</h1>
+        <p>Save new skills, sweet firsts, and proud moments.</p>
+      </div>
+      <div class="hero-icon">🌟</div>
+    </section>
+
+    <p class="development-note">
+      Every child develops at their own pace. This journal is not a developmental
+      assessment; speak with your pediatrician if you have concerns.
+    </p>
+
+    <section class="form-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">{{ editingId ? 'Update memory' : 'New memory' }}</p>
+          <h2>{{ editingId ? 'Edit milestone' : 'Add a milestone' }}</h2>
+        </div>
+        <button *ngIf="editingId" type="button" class="cancel-button" (click)="reset()">
+          Cancel
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <label class="full-field">
+          <span>What happened?</span>
+          <ion-item lines="none">
+            <ion-input
+              formControlName="title"
+              maxlength="80"
+              placeholder="Took their first steps">
+            </ion-input>
+          </ion-item>
+        </label>
+
+        <div class="category-grid" role="group" aria-label="Milestone category">
+          <button
+            *ngFor="let category of categories"
+            type="button"
+            [class.active]="form.controls.category.value === category.value"
+            (click)="form.controls.category.setValue(category.value)">
+            <span>{{ category.icon }}</span>
+            {{ category.label }}
+          </button>
+        </div>
+
+        <label class="full-field">
+          <span>Date achieved</span>
+          <ion-item lines="none">
+            <ion-input
+              type="date"
+              formControlName="achievedDate"
+              [max]="today">
+            </ion-input>
+          </ion-item>
+        </label>
+
+        <label class="full-field">
+          <span>Memory note <small>optional</small></span>
+          <ion-item lines="none">
+            <ion-textarea
+              formControlName="notes"
+              maxlength="240"
+              autoGrow="true"
+              placeholder="Where it happened, who was there…">
+            </ion-textarea>
+          </ion-item>
+        </label>
+
+        <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+        <ion-button expand="block" type="submit">
+          {{ editingId ? 'Save changes' : 'Save milestone' }}
+        </ion-button>
+      </form>
+    </section>
+
+    <section class="history-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Memory book</p>
+          <h2>Milestone timeline</h2>
+        </div>
+        <span class="count">{{ milestones.length }}</span>
+      </div>
+
+      <div class="timeline-tools" *ngIf="milestones.length">
+        <ion-searchbar
+          aria-label="Search milestones"
+          placeholder="Search memories"
+          [debounce]="100"
+          [(ngModel)]="searchTerm">
+        </ion-searchbar>
+
+        <div class="filter-scroll" role="group" aria-label="Filter milestones by category">
+          <button
+            type="button"
+            [class.active]="categoryFilter === 'all'"
+            (click)="categoryFilter = 'all'">
+            All
+          </button>
+          <button
+            *ngFor="let category of categories"
+            type="button"
+            [class.active]="categoryFilter === category.value"
+            (click)="categoryFilter = category.value">
+            {{ category.icon }} {{ category.label }}
+          </button>
+        </div>
+      </div>
+
+      <p class="empty" *ngIf="!milestones.length">
+        Your baby’s special moments will appear here.
+      </p>
+
+      <p class="empty" *ngIf="milestones.length && !filteredMilestones.length">
+        No milestones match this search.
+      </p>
+
+      <article class="milestone-row" *ngFor="let milestone of filteredMilestones">
+        <button type="button" (click)="edit(milestone)">
+          <span class="milestone-icon">{{ categoryIcon(milestone.category) }}</span>
+          <span class="milestone-copy">
+            <strong>{{ milestone.title }}</strong>
+            <small>
+              {{ categoryLabel(milestone.category) }} ·
+              {{ milestone.achievedDate | date:'mediumDate':'UTC' }}
+            </small>
+            <small class="age-label">{{ ageWhenAchieved(milestone) }}</small>
+            <span *ngIf="milestone.notes">{{ milestone.notes }}</span>
+          </span>
+        </button>
+        <ion-button
+          fill="clear"
+          color="medium"
+          aria-label="Delete milestone"
+          (click)="confirmDelete(milestone)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </article>
+    </section>
+  </main>
+</ion-content>

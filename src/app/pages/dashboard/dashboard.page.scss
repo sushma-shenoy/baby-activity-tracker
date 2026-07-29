@@ -200,6 +200,230 @@ ion-title {
   font-size: 21px;
 }
 
+/* GROWTH SNAPSHOT */
+
+.growth-snapshot {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 13px;
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid #e7e0ef;
+  border-radius: 21px;
+  color: #292642;
+  background:
+    linear-gradient(135deg, #fff 0%, #f5f0fa 100%);
+  box-shadow: 0 9px 24px rgba(80, 62, 105, 0.07);
+  text-align: left;
+}
+
+.growth-snapshot:active {
+  transform: scale(0.985);
+}
+
+.growth-snapshot-icon {
+  display: grid;
+  flex: 0 0 47px;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  border-radius: 15px;
+  background: #e9e1f2;
+  font-size: 1.35rem;
+}
+
+.growth-snapshot-copy {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.growth-snapshot-copy small,
+.growth-snapshot-copy span {
+  color: #858196;
+  font-size: 0.68rem;
+}
+
+.growth-snapshot-copy strong {
+  color: #403653;
+  font-size: 1rem;
+}
+
+.growth-snapshot > ion-icon {
+  color: #7566a8;
+  font-size: 1.15rem;
+}
+
+.vaccination-snapshot {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 13px;
+  margin-top: 11px;
+  padding: 15px;
+  border: 1px solid #dcecea;
+  border-radius: 21px;
+  color: #293d42;
+  background:
+    linear-gradient(135deg, #fff 0%, #eef9f8 100%);
+  box-shadow: 0 9px 24px rgba(39, 96, 94, 0.065);
+  text-align: left;
+}
+
+.vaccination-snapshot:active {
+  transform: scale(0.985);
+}
+
+.vaccination-snapshot-icon {
+  display: grid;
+  flex: 0 0 47px;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  border-radius: 15px;
+  background: #dff5f2;
+  font-size: 1.35rem;
+}
+
+.vaccination-snapshot-copy {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.vaccination-snapshot-copy small,
+.vaccination-snapshot-copy span {
+  color: #748a8a;
+  font-size: 0.68rem;
+}
+
+.vaccination-snapshot-copy strong {
+  color: #315755;
+  font-size: 1rem;
+}
+
+.vaccination-snapshot > ion-icon {
+  color: #3f9996;
+  font-size: 1.15rem;
+}
+
+.care-snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  margin-top: 11px;
+}
+
+.care-snapshot {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #eadfe8;
+  border-radius: 20px;
+  color: #443742;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 8px 21px rgba(73, 48, 69, 0.055);
+}
+
+.care-snapshot:active {
+  transform: scale(0.975);
+}
+
+.care-snapshot > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.care-snapshot-icon {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  margin-bottom: 10px;
+  place-items: center;
+  border-radius: 13px;
+  font-size: 1.12rem;
+}
+
+.temperature-snapshot {
+  background: linear-gradient(145deg, #fff, #fff3f3);
+}
+
+.temperature-snapshot .care-snapshot-icon {
+  background: #ffe7e9;
+}
+
+.milestone-snapshot {
+  background: linear-gradient(145deg, #fff, #fbf2fd);
+}
+
+.milestone-snapshot .care-snapshot-icon {
+  background: #f7e7fb;
+}
+
+.care-snapshot small,
+.care-snapshot > span:last-child > span {
+  overflow: hidden;
+  color: #8d7e88;
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.care-snapshot strong {
+  overflow: hidden;
+  color: #513e4b;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-nursing-card {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  margin-top: 11px;
+  padding: 14px;
+  border: 0;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, #e96f9f, #b76297);
+  text-align: left;
+  box-shadow: 0 10px 24px rgba(183, 76, 133, 0.18);
+}
+
+.active-nursing-card > span:first-child {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255,255,255,.2);
+}
+
+.active-nursing-card > span:nth-child(2) {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.active-nursing-card small {
+  color: rgba(255,255,255,.8);
+  text-transform: capitalize;
+}
+
+.active-nursing-card strong {
+  color: #fff;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.active-nursing-card ion-icon {
+  color: #fff;
+}
+
 /* SECTION HEADINGS */
 
 .quick-actions-section,

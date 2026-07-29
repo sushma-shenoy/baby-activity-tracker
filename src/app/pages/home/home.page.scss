@@ -22,6 +22,31 @@ ion-title {
   font-weight: 800;
 }
 
+.settings-button {
+  --color: #645681;
+  --background: rgba(255, 255, 255, 0.92);
+  --background-hover: #f6f1fb;
+  --background-activated: #eee7f6;
+  --border-color: rgba(100, 86, 129, 0.14);
+  --border-radius: 50%;
+  --border-style: solid;
+  --border-width: 1px;
+  --box-shadow:
+    0 5px 14px rgba(79, 65, 108, 0.12),
+    0 1px 3px rgba(79, 65, 108, 0.08);
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  margin-right: 10px;
+  overflow: visible;
+}
+
+.settings-button ion-icon {
+  color: #645681;
+  font-size: 1.25rem;
+  stroke-width: 1.8;
+}
+
 /* HERO */
 
 .hero-card {
@@ -214,11 +239,12 @@ ion-title {
 .quick-actions {
   display: grid;
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(6, minmax(0, 1fr));
   gap: 10px;
 }
 
 .quick-card {
+  grid-column: span 2;
   min-width: 0;
   height: 96px;
   padding: 8px;
@@ -275,6 +301,27 @@ ion-title {
 
 .medicine .quick-icon {
   background: #fef3c7;
+}
+
+.growth .quick-icon {
+  background: #ede9fe;
+}
+
+.vaccination .quick-icon {
+  background: #dff5f2;
+}
+
+.temperature,
+.milestones {
+  grid-column: span 3;
+}
+
+.temperature .quick-icon {
+  background: #ffe8e9;
+}
+
+.milestones .quick-icon {
+  background: #faeefe;
 }
 
 /* PROGRESS */

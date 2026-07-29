@@ -1,5 +1,9 @@
-<ion-header translucent="true">
+<ion-header translucent="true" class="app-header">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
     <ion-title>Baby Dashboard</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -48,6 +52,100 @@
 
       <ion-icon name="chevron-forward-outline">
       </ion-icon>
+    </button>
+
+    <!-- LATEST GROWTH -->
+    <button
+      type="button"
+      class="growth-snapshot"
+      (click)="goTo('growth')">
+      <span class="growth-snapshot-icon">⚖️</span>
+
+      <span class="growth-snapshot-copy">
+        <small>Latest weight</small>
+        <strong>
+          {{
+            latestWeight
+              ? (latestWeight.weightKg | number: '1.1-2') + ' kg'
+              : 'Add daily weight'
+          }}
+        </strong>
+        <span>{{ latestWeightDate }}</span>
+      </span>
+
+      <ion-icon name="chevron-forward-outline">
+      </ion-icon>
+    </button>
+
+    <button
+      type="button"
+      class="vaccination-snapshot"
+      (click)="goTo('vaccination')">
+      <span class="vaccination-snapshot-icon">🩹</span>
+
+      <span class="vaccination-snapshot-copy">
+        <small>Next vaccination date</small>
+        <strong>
+          {{
+            nextVaccination
+              ? nextVaccination.vaccineName
+              : 'Add vaccination record'
+          }}
+        </strong>
+        <span>{{ nextVaccinationDate }}</span>
+      </span>
+
+      <ion-icon name="chevron-forward-outline">
+      </ion-icon>
+    </button>
+
+    <section class="care-snapshot-grid">
+      <button
+        type="button"
+        class="care-snapshot temperature-snapshot"
+        (click)="goTo('temperature')">
+        <span class="care-snapshot-icon">🌡️</span>
+        <span>
+          <small>Latest temperature</small>
+          <strong>
+            {{ latestTemperatureDisplay }}
+          </strong>
+          <span>{{ latestTemperatureDetail }}</span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="care-snapshot milestone-snapshot"
+        (click)="goTo('milestones')">
+        <span class="care-snapshot-icon">🌟</span>
+        <span>
+          <small>Latest milestone</small>
+          <strong>
+            {{ latestMilestone?.title || 'Add a milestone' }}
+          </strong>
+          <span>{{ latestMilestoneDate }}</span>
+        </span>
+      </button>
+    </section>
+
+    <button
+      type="button"
+      class="active-nursing-card"
+      *ngIf="activeNursing"
+      (click)="goTo('feeding')">
+      <span>🤱</span>
+      <span>
+        <small>
+          {{
+            activeNursing.activeSide
+              ? ('Nursing on ' + activeNursing.activeSide)
+              : 'Nursing paused'
+          }}
+        </small>
+        <strong>{{ nursingTimerDisplay }}</strong>
+      </span>
+      <ion-icon name="chevron-forward-outline"></ion-icon>
     </button>
 
     <!-- QUICK ACTIONS -->

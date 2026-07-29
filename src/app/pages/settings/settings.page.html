@@ -1,18 +1,17 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="app-header">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
     <ion-title>Settings</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="settings-page">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Settings</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   <div class="settings-shell">
-    <ion-card>
+    <ion-card class="account-card">
       <ion-card-content>
         <div class="profile-avatar" aria-hidden="true">
           {{ displayName.charAt(0).toUpperCase() }}
@@ -26,9 +25,178 @@
       </ion-card-content>
     </ion-card>
 
-    <p class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </p>
+    <form
+      [formGroup]="preferencesForm"
+      (ngSubmit)="savePreferences()">
+      <section class="settings-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Baby profile</p>
+            <h2>Personal details</h2>
+          </div>
+          <span class="section-icon">👶</span>
+        </div>
+
+        <div class="field-group">
+          <label for="baby-name">Baby’s name</label>
+          <ion-item lines="none">
+            <ion-input
+              id="baby-name"
+              placeholder="Baby"
+              autocomplete="off"
+              formControlName="babyName">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="field-group">
+          <label for="birth-date">Date of birth</label>
+          <ion-item lines="none">
+            <ion-input
+              id="birth-date"
+              type="date"
+              [max]="maximumBirthDate"
+              [class.invalid]="birthDateError"
+              formControlName="birthDate">
+            </ion-input>
+          </ion-item>
+          <p class="field-error" *ngIf="birthDateError">
+            {{ birthDateError }}
+          </p>
+        </div>
+
+        <div class="field-group">
+          <label>Mood</label>
+          <ion-item lines="none">
+            <ion-select
+              interface="popover"
+              formControlName="mood">
+              <ion-select-option value="Happy 😊">
+                Happy 😊
+              </ion-select-option>
+              <ion-select-option value="Sleepy 😴">
+                Sleepy 😴
+              </ion-select-option>
+              <ion-select-option value="Playful 🧸">
+                Playful 🧸
+              </ion-select-option>
+              <ion-select-option value="Fussy 🥺">
+                Fussy 🥺
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Daily goals</p>
+            <h2>Today’s targets</h2>
+          </div>
+          <span class="section-icon">✨</span>
+        </div>
+
+        <p class="section-description">
+          These targets control the progress rings on Home.
+        </p>
+
+        <div class="goal-grid">
+          <label class="goal-field">
+            <span>🍼 Feeds</span>
+            <ion-input
+              type="number"
+              min="1"
+              max="24"
+              inputmode="numeric"
+              formControlName="feedsGoal">
+            </ion-input>
+          </label>
+
+          <label class="goal-field">
+            <span>😴 Sleeps</span>
+            <ion-input
+              type="number"
+              min="1"
+              max="24"
+              inputmode="numeric"
+              formControlName="sleepGoal">
+            </ion-input>
+          </label>
+
+          <label class="goal-field">
+            <span>🧷 Diapers</span>
+            <ion-input
+              type="number"
+              min="1"
+              max="24"
+              inputmode="numeric"
+              formControlName="diapersGoal">
+            </ion-input>
+          </label>
+        </div>
+      </section>
+
+      <p class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </p>
+
+      <p class="success-message" *ngIf="isSaved">
+        ✓ Preferences saved
+      </p>
+
+      <ion-button
+        class="save-button"
+        expand="block"
+        type="submit">
+        Save changes
+      </ion-button>
+    </form>
+
+    <section class="settings-section data-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Privacy and data</p>
+          <h2>Download your records</h2>
+        </div>
+        <span class="section-icon">🔐</span>
+      </div>
+
+      <p class="section-description">
+        Create a JSON backup of tracker records stored on this device.
+        Sign-in tokens and unrelated browser data are never included.
+      </p>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="export-button"
+        (click)="downloadBackup()">
+        Download baby data
+      </ion-button>
+
+      <label class="restore-button" [class.disabled]="isRestoring">
+        <span>{{ isRestoring ? 'Restoring…' : 'Restore from backup' }}</span>
+        <input
+          type="file"
+          accept="application/json,.json"
+          [disabled]="isRestoring"
+          (change)="selectBackup($event)">
+      </label>
+
+      <p class="restore-note">
+        Restoring replaces tracker data on this device. You’ll be asked to
+        confirm before anything changes.
+      </p>
+
+      <p class="export-message" *ngIf="exportMessage">
+        ✓ {{ exportMessage }}
+      </p>
+    </section>
+
+    <div class="account-actions">
+      <p class="eyebrow">Account</p>
+      <h2>Session</h2>
 
     <ion-button
       expand="block"
@@ -42,5 +210,6 @@
       </ion-spinner>
       <span *ngIf="!isLoggingOut">Log out</span>
     </ion-button>
+    </div>
   </div>
 </ion-content>

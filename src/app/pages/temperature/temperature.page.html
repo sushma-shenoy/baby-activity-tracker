@@ -1,0 +1,171 @@
+<ion-header translucent="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Temperature</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="temperature-page">
+  <main class="temperature-content">
+    <section class="temperature-hero">
+      <div>
+        <p class="eyebrow">Health check</p>
+        <h1>Temperature</h1>
+        <p>Record readings and see changes over time.</p>
+      </div>
+      <div class="hero-icon">🌡️</div>
+    </section>
+
+    <aside class="medical-note">
+      This log does not diagnose illness. Contact a healthcare professional
+      if you are concerned about a reading or your child’s symptoms.
+    </aside>
+
+    <div class="unit-toggle" role="group" aria-label="Temperature unit">
+      <button type="button" [class.active]="unit === 'celsius'" (click)="setUnit('celsius')">
+        Celsius °C
+      </button>
+      <button type="button" [class.active]="unit === 'fahrenheit'" (click)="setUnit('fahrenheit')">
+        Fahrenheit °F
+      </button>
+    </div>
+
+    <section class="latest-card">
+      <span>Latest reading</span>
+      <strong>
+        {{ latest ? displayTemperature(latest.celsius) : '—' }}
+      </strong>
+      <small>
+        {{ latest ? formatDate(latest.measuredAt) : 'No readings yet' }}
+      </small>
+    </section>
+
+    <section class="chart-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Trend</p>
+          <h2>Temperature history</h2>
+        </div>
+      </div>
+      <div class="empty-chart" *ngIf="entries.length === 0">
+        Add a reading to start the chart.
+      </div>
+      <div class="chart-wrap" [class.hidden]="entries.length === 0">
+        <canvas
+          #temperatureChart
+          role="img"
+          [attr.aria-label]="'Temperature trend in ' + unitSymbol">
+        </canvas>
+      </div>
+    </section>
+
+    <section class="form-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">
+            {{ editingId ? 'Editing' : 'New check' }}
+          </p>
+          <h2>{{ editingId ? 'Update reading' : 'Log temperature' }}</h2>
+        </div>
+        <button
+          type="button"
+          class="cancel-button"
+          *ngIf="editingId"
+          (click)="cancelEdit()">
+          Cancel
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="form-grid">
+          <label>
+            <span>Temperature ({{ unitSymbol }})</span>
+            <ion-item lines="none">
+              <ion-input
+                type="number"
+                [min]="inputMinimum"
+                [max]="inputMaximum"
+                step="0.1"
+                inputmode="decimal"
+                [placeholder]="unit === 'fahrenheit' ? '98.6' : '37.0'"
+                formControlName="celsius">
+              </ion-input>
+            </ion-item>
+          </label>
+          <label>
+            <span>Measured at</span>
+            <ion-item lines="none">
+              <ion-input
+                type="datetime-local"
+                [max]="maximumDateTime"
+                formControlName="measuredAt">
+              </ion-input>
+            </ion-item>
+          </label>
+        </div>
+
+        <label class="full-field">
+          <span>Measurement method</span>
+          <ion-item lines="none">
+            <ion-select formControlName="method" interface="popover">
+              <ion-select-option value="axillary">Underarm</ion-select-option>
+              <ion-select-option value="oral">Oral</ion-select-option>
+              <ion-select-option value="rectal">Rectal</ion-select-option>
+              <ion-select-option value="ear">Ear</ion-select-option>
+              <ion-select-option value="forehead">Forehead</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </label>
+
+        <label class="full-field">
+          <span>Notes <small>optional</small></span>
+          <ion-item lines="none">
+            <ion-textarea
+              rows="2"
+              maxlength="240"
+              placeholder="Symptoms or context"
+              formControlName="notes">
+            </ion-textarea>
+          </ion-item>
+        </label>
+
+        <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+        <p class="success" *ngIf="successMessage">✓ {{ successMessage }}</p>
+
+        <ion-button expand="block" type="submit">
+          {{ editingId ? 'Update reading' : 'Save temperature' }}
+        </ion-button>
+      </form>
+    </section>
+
+    <section class="history-card" *ngIf="entries.length > 0">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Readings</p>
+          <h2>Recent checks</h2>
+        </div>
+        <span class="count">{{ entries.length }}</span>
+      </div>
+      <article class="reading-row" *ngFor="let entry of entries">
+        <button type="button" (click)="edit(entry)">
+          <span class="reading-icon">🌡️</span>
+          <span>
+            <strong>{{ displayTemperature(entry.celsius) }}</strong>
+            <small>
+              {{ methodLabel(entry.method) }} · {{ formatDate(entry.measuredAt) }}
+            </small>
+          </span>
+        </button>
+        <ion-button
+          fill="clear"
+          color="danger"
+          aria-label="Delete temperature reading"
+          (click)="confirmDelete(entry)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </article>
+    </section>
+  </main>
+</ion-content>

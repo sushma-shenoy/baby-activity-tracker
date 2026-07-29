@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
-import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router,
+  convertToParamMap,
+  provideRouter
+} from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginPage } from './login.page';
 
@@ -15,14 +20,12 @@ describe('LoginPage', () => {
       'AuthService',
       ['login', 'resetPassword']
     );
-    router = jasmine.createSpyObj<Router>('Router', ['navigateByUrl']);
-
     await TestBed.configureTestingModule({
       imports: [LoginPage],
       providers: [
+        provideRouter([]),
         FormBuilder,
         { provide: AuthService, useValue: authService },
-        { provide: Router, useValue: router },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -36,6 +39,8 @@ describe('LoginPage', () => {
 
     fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    spyOn(router, 'navigateByUrl').and.resolveTo(true);
     fixture.detectChanges();
   });
 
@@ -52,7 +57,6 @@ describe('LoginPage', () => {
 
   it('logs in and routes home', async () => {
     authService.login.and.resolveTo({ success: true });
-    router.navigateByUrl.and.resolveTo(true);
     component.loginForm.setValue({
       email: 'parent@example.com',
       password: 'secret'

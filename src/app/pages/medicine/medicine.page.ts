@@ -1,20 +1,234 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy
+} from '@angular/core';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonicModule
+} from '@ionic/angular';
+import { Subscription } from 'rxjs';
+import {
+  MedicineEntry,
+  MedicineService
+} from '../../services/medicine.service';
 
 @Component({
   selector: 'app-medicine',
   templateUrl: './medicine.page.html',
   styleUrls: ['./medicine.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonicModule
+  ]
 })
-export class MedicinePage implements OnInit {
+export class MedicinePage implements OnDestroy {
+  entries: MedicineEntry[] = [];
+  editingId = '';
+  errorMessage = '';
+  successMessage = '';
+  readonly maximumDateTime =
+    this.toDateTimeLocal(new Date());
 
-  constructor() { }
+  readonly medicineForm =
+    this.formBuilder.nonNullable.group({
+      name: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(60)
+        ]
+      ],
+      dose: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(30)
+        ]
+      ],
+      givenAt: [
+        this.maximumDateTime,
+        Validators.required
+      ],
+      notes: [
+        '',
+        Validators.maxLength(240)
+      ]
+    });
 
-  ngOnInit() {
+  private entriesSubscription?: Subscription;
+
+  constructor(
+    private readonly formBuilder: FormBuilder,
+    private readonly medicineService: MedicineService,
+    private readonly alertController: AlertController
+  ) {
+    this.entriesSubscription =
+      this.medicineService.entries$.subscribe(
+        entries => {
+          this.entries = entries;
+        }
+      );
   }
 
+  ngOnDestroy(): void {
+    this.entriesSubscription?.unsubscribe();
+  }
+
+  get isEditing(): boolean {
+    return Boolean(this.editingId);
+  }
+
+  saveMedicine(): void {
+    this.clearMessages();
+
+    if (this.medicineForm.invalid) {
+      this.medicineForm.markAllAsTouched();
+      this.errorMessage =
+        'Enter the medicine name, dose, and time it was given.';
+      return;
+    }
+
+    const formValue =
+      this.medicineForm.getRawValue();
+    const givenAt =
+      new Date(formValue.givenAt).getTime();
+
+    if (
+      !Number.isFinite(givenAt) ||
+      givenAt > Date.now() + 60_000
+    ) {
+      this.errorMessage =
+        'The time given must be a valid time and cannot be in the future.';
+      return;
+    }
+
+    const wasSaved = this.medicineService.save({
+      id:
+        this.editingId ||
+        `medicine-${Date.now()}`,
+      name: formValue.name,
+      dose: formValue.dose,
+      givenAt,
+      notes: formValue.notes
+    });
+
+    if (!wasSaved) {
+      this.errorMessage =
+        'The medicine entry could not be saved. Check each field.';
+      return;
+    }
+
+    this.successMessage =
+      this.isEditing
+        ? 'Medicine entry updated.'
+        : 'Medicine entry saved.';
+    this.resetForm(false);
+  }
+
+  editEntry(entry: MedicineEntry): void {
+    this.editingId = entry.id;
+    this.clearMessages();
+    this.medicineForm.setValue({
+      name: entry.name,
+      dose: entry.dose,
+      givenAt:
+        this.toDateTimeLocal(
+          new Date(entry.givenAt)
+        ),
+      notes: entry.notes
+    });
+  }
+
+  cancelEdit(): void {
+    this.resetForm();
+  }
+
+  async confirmDelete(
+    entry: MedicineEntry
+  ): Promise<void> {
+    const alert =
+      await this.alertController.create({
+        header: 'Delete medicine entry?',
+        message:
+          `${entry.name} (${entry.dose}) will be permanently removed.`,
+        cssClass: 'activity-delete-alert',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel'
+          },
+          {
+            text: 'Delete',
+            role: 'destructive',
+            handler: () => {
+              this.medicineService.delete(entry.id);
+
+              if (this.editingId === entry.id) {
+                this.resetForm();
+              }
+            }
+          }
+        ]
+      });
+
+    await alert.present();
+  }
+
+  formatDateTime(timestamp: number): string {
+    return new Date(timestamp).toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
+  trackByEntryId(
+    _index: number,
+    entry: MedicineEntry
+  ): string {
+    return entry.id;
+  }
+
+  private resetForm(
+    clearMessages = true
+  ): void {
+    this.editingId = '';
+
+    if (clearMessages) {
+      this.clearMessages();
+    }
+
+    this.medicineForm.reset({
+      name: '',
+      dose: '',
+      givenAt: this.toDateTimeLocal(new Date()),
+      notes: ''
+    });
+  }
+
+  private clearMessages(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  private toDateTimeLocal(date: Date): string {
+    const localDate =
+      new Date(
+        date.getTime() -
+        date.getTimezoneOffset() * 60_000
+      );
+
+    return localDate
+      .toISOString()
+      .slice(0, 16);
+  }
 }

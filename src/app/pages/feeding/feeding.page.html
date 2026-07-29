@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+<ion-header translucent="true" class="app-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button
@@ -23,6 +23,158 @@
 
     <div class="hero-icon">
       🍼
+    </div>
+  </section>
+
+  <section class="nursing-card">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">Live timer</p>
+        <h2>Nursing</h2>
+      </div>
+      <span class="nursing-total">
+        {{ formatDuration((activeNursing?.leftSeconds || 0) + (activeNursing?.rightSeconds || 0)) }}
+      </span>
+    </div>
+
+    <div class="last-side-reminder">
+      <span>Last side</span>
+      <strong>{{ lastNursingSide }}</strong>
+      <button type="button" (click)="openManualNursing()">＋ Manual entry</button>
+    </div>
+
+    <div class="nursing-summary">
+      <div class="summary-heading">
+        <span>Last 24 hours</span>
+        <strong>
+          {{ nursingSummary24Hours.count }}
+          {{ nursingSummary24Hours.count === 1 ? 'session' : 'sessions' }}
+        </strong>
+      </div>
+      <div class="summary-metrics">
+        <div>
+          <small>Total time</small>
+          <strong>{{ formatSummaryDuration(nursingSummary24Hours.totalSeconds) }}</strong>
+        </div>
+        <div>
+          <small>Left</small>
+          <strong>{{ formatSummaryDuration(nursingSummary24Hours.leftSeconds) }}</strong>
+        </div>
+        <div>
+          <small>Right</small>
+          <strong>{{ formatSummaryDuration(nursingSummary24Hours.rightSeconds) }}</strong>
+        </div>
+      </div>
+      <div
+        class="side-balance"
+        *ngIf="nursingSummary24Hours.totalSeconds"
+        aria-label="Left and right nursing time balance">
+        <span
+          class="left-balance"
+          [style.width.%]="nursingSummary24Hours.leftPercent">
+        </span>
+        <span
+          class="right-balance"
+          [style.width.%]="nursingSummary24Hours.rightPercent">
+        </span>
+      </div>
+      <div class="balance-labels" *ngIf="nursingSummary24Hours.totalSeconds">
+        <span>L {{ nursingSummary24Hours.leftPercent }}%</span>
+        <span>R {{ nursingSummary24Hours.rightPercent }}%</span>
+      </div>
+    </div>
+
+    <div class="side-timers">
+      <button
+        type="button"
+        class="side-timer left"
+        [class.active]="activeNursing?.activeSide === 'left'"
+        (click)="toggleNursing('left')">
+        <span>Left</span>
+        <strong>{{ formatDuration(activeNursing?.leftSeconds || 0) }}</strong>
+        <small>{{ activeNursing?.activeSide === 'left' ? 'Tap to pause' : 'Tap to start' }}</small>
+      </button>
+      <button
+        type="button"
+        class="side-timer right"
+        [class.active]="activeNursing?.activeSide === 'right'"
+        (click)="toggleNursing('right')">
+        <span>Right</span>
+        <strong>{{ formatDuration(activeNursing?.rightSeconds || 0) }}</strong>
+        <small>{{ activeNursing?.activeSide === 'right' ? 'Tap to pause' : 'Tap to start' }}</small>
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="finish-nursing"
+      [disabled]="!activeNursing || (activeNursing.leftSeconds + activeNursing.rightSeconds) < 1"
+      (click)="finishNursing()">
+      Finish nursing session
+    </button>
+
+    <form
+      class="manual-nursing-form"
+      *ngIf="showManualNursing"
+      (ngSubmit)="saveManualNursing()">
+      <div class="manual-heading">
+        <strong>{{ editingNursingId ? 'Edit nursing session' : 'Manual nursing entry' }}</strong>
+        <button type="button" (click)="closeManualNursing()">Close</button>
+      </div>
+
+      <div class="manual-duration-grid">
+        <label>
+          <span>Left minutes</span>
+          <input type="number" min="0" max="240" [(ngModel)]="manualNursing.leftMinutes" name="leftMinutes">
+        </label>
+        <label>
+          <span>Right minutes</span>
+          <input type="number" min="0" max="240" [(ngModel)]="manualNursing.rightMinutes" name="rightMinutes">
+        </label>
+      </div>
+
+      <label>
+        <span>Started at</span>
+        <input type="datetime-local" [(ngModel)]="manualNursing.dateTime" name="dateTime">
+      </label>
+
+      <div class="manual-side-toggle">
+        <span>Last side used</span>
+        <button type="button" [class.active]="manualNursing.lastSide === 'left'" (click)="manualNursing.lastSide = 'left'">Left</button>
+        <button type="button" [class.active]="manualNursing.lastSide === 'right'" (click)="manualNursing.lastSide = 'right'">Right</button>
+      </div>
+
+      <label>
+        <span>Notes <small>optional</small></span>
+        <textarea maxlength="240" rows="2" [(ngModel)]="manualNursing.notes" name="nursingNotes"></textarea>
+      </label>
+
+      <p class="nursing-error" *ngIf="nursingError">{{ nursingError }}</p>
+      <button type="submit" class="save-manual-nursing">
+        {{ editingNursingId ? 'Save changes' : 'Save nursing session' }}
+      </button>
+    </form>
+
+    <div class="nursing-history" *ngIf="nursingSessions.length">
+      <p class="field-label">Recent nursing</p>
+      <article *ngFor="let session of nursingSessions | slice:0:3">
+        <span>🤱</span>
+        <div>
+          <strong>{{ formatDuration(session.leftSeconds + session.rightSeconds) }}</strong>
+          <small>
+            L {{ formatDuration(session.leftSeconds) }} ·
+            R {{ formatDuration(session.rightSeconds) }} ·
+            {{ session.endedAt | date:'shortTime' }}
+          </small>
+          <small *ngIf="session.notes">{{ session.notes }}</small>
+        </div>
+        <ion-button fill="clear" color="medium" aria-label="Edit nursing session" (click)="openManualNursing(session)">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" color="medium" aria-label="Delete nursing session" (click)="deleteNursing(session)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </article>
     </div>
   </section>
 
@@ -60,13 +212,13 @@
         <button
           type="button"
           [class.active]="
-            newFeed.type === 'breast'
+            newFeed.type === 'expressed'
           "
           (click)="
-            newFeed.type = 'breast'
+            newFeed.type = 'expressed'
           ">
 
-          Breast
+          Expressed milk
         </button>
       </div>
     </div>
@@ -223,7 +375,7 @@
             {{
               feed.type === 'formula'
                 ? 'Formula feeding'
-                : 'Breast feeding'
+                : 'Expressed milk'
             }}
           </div>
 
@@ -302,13 +454,13 @@
             <button
               type="button"
               [class.active]="
-                editFeed.type === 'breast'
+                editFeed.type === 'expressed'
               "
               (click)="
-                editFeed.type = 'breast'
+                editFeed.type = 'expressed'
               ">
 
-              Breast
+              Expressed milk
             </button>
           </div>
         </div>
