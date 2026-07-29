@@ -102,6 +102,20 @@ ion-title {
   font-size: 14px;
 }
 
+.baby-switcher {
+  --padding-start: 10px;
+  --padding-end: 8px;
+  width: fit-content;
+  min-height: 30px;
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  color: #4d416c;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .baby-bubble {
   width: 78px;
   height: 78px;

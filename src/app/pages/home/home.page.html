@@ -30,6 +30,20 @@
       <p class="baby-details">
         {{ baby.age }} · {{ baby.mood }}
       </p>
+
+      <ion-select
+        *ngIf="babyProfileService.profiles.length > 1"
+        class="baby-switcher"
+        interface="popover"
+        aria-label="Switch baby profile"
+        [value]="babyProfileService.activeProfileId"
+        (ionChange)="switchBaby($event.detail.value)">
+        <ion-select-option
+          *ngFor="let profile of babyProfileService.profiles"
+          [value]="profile.id">
+          {{ profile.name }}
+        </ion-select-option>
+      </ion-select>
     </div>
 
     <div class="baby-bubble">

@@ -25,6 +25,123 @@
       </ion-card-content>
     </ion-card>
 
+    <section class="settings-section profiles-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Your family</p>
+          <h2>Baby profiles</h2>
+        </div>
+        <span class="section-icon">🧸</span>
+      </div>
+
+      <p class="section-description">
+        Each baby has a separate timeline, growth history and care records.
+      </p>
+
+      <div class="profile-list">
+        <article
+          class="baby-profile-row"
+          *ngFor="let profile of profiles"
+          [class.active]="profile.id === activeProfileId">
+          <button
+            type="button"
+            class="profile-switch"
+            [disabled]="profile.id === activeProfileId"
+            (click)="switchProfile(profile.id)">
+            <span class="baby-avatar">
+              {{ profile.name.charAt(0).toUpperCase() }}
+            </span>
+            <span class="baby-profile-copy">
+              <strong>{{ profile.name }}</strong>
+              <small>
+                {{ preferencesService.getAgeLabel(profile.birthDate) }}
+              </small>
+            </span>
+            <span class="active-pill" *ngIf="profile.id === activeProfileId">
+              Active
+            </span>
+            <span class="switch-label" *ngIf="profile.id !== activeProfileId">
+              Switch
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="profile-delete"
+            *ngIf="profile.id !== activeProfileId"
+            (click)="deleteProfile(profile)"
+            [attr.aria-label]="'Remove ' + profile.name">
+            ×
+          </button>
+        </article>
+      </div>
+
+      <button
+        type="button"
+        class="add-profile-toggle"
+        (click)="isAddingProfile = !isAddingProfile">
+        {{ isAddingProfile ? 'Cancel' : '+ Add another baby' }}
+      </button>
+
+      <form
+        class="new-profile-form"
+        *ngIf="isAddingProfile"
+        [formGroup]="newProfileForm"
+        (ngSubmit)="addProfile()">
+        <div class="field-group">
+          <label for="new-baby-name">Baby’s name</label>
+          <ion-item lines="none">
+            <ion-input
+              id="new-baby-name"
+              placeholder="Name"
+              formControlName="name">
+            </ion-input>
+          </ion-item>
+        </div>
+
+        <div class="field-group">
+          <label for="new-baby-birth-date">Date of birth</label>
+          <ion-item lines="none">
+            <ion-input
+              id="new-baby-birth-date"
+              type="date"
+              [max]="maximumBirthDate"
+              [class.invalid]="newProfileBirthDateError"
+              [attr.aria-invalid]="newProfileBirthDateError ? 'true' : null"
+              aria-describedby="new-baby-birth-date-error"
+              formControlName="birthDate">
+            </ion-input>
+          </ion-item>
+          <p
+            id="new-baby-birth-date-error"
+            class="field-error"
+            role="alert"
+            *ngIf="newProfileBirthDateError">
+            {{ newProfileBirthDateError }}
+          </p>
+        </div>
+
+        <div class="field-group">
+          <label>Mood</label>
+          <ion-item lines="none">
+            <ion-select interface="popover" formControlName="mood">
+              <ion-select-option value="Happy 😊">Happy 😊</ion-select-option>
+              <ion-select-option value="Sleepy 😴">Sleepy 😴</ion-select-option>
+              <ion-select-option value="Playful 🧸">Playful 🧸</ion-select-option>
+              <ion-select-option value="Fussy 🥺">Fussy 🥺</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <ion-button
+          class="create-profile-button"
+          expand="block"
+          type="submit">
+          Create and switch
+        </ion-button>
+      </form>
+    </section>
+
     <form
       [formGroup]="preferencesForm"
       (ngSubmit)="savePreferences()">
@@ -152,6 +269,72 @@
         Save changes
       </ion-button>
     </form>
+
+    <section class="settings-section reminders-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Gentle nudges</p>
+          <h2>Activity reminders</h2>
+        </div>
+        <span class="section-icon">🔔</span>
+      </div>
+
+      <p class="section-description">
+        Choose a daily time for each reminder. Notifications use the active
+        baby profile and still arrive when the app is closed.
+      </p>
+
+      <div class="reminder-list">
+        <article
+          class="reminder-row"
+          *ngFor="let reminder of reminderService.reminders">
+          <div class="reminder-icon" aria-hidden="true">
+            {{ reminder.icon }}
+          </div>
+
+          <div class="reminder-copy">
+            <strong>{{ reminder.label }}</strong>
+            <label>
+              <span class="sr-only">{{ reminder.label }} time</span>
+              <input
+                type="time"
+                [value]="reminder.time"
+                [disabled]="reminderSavingType === reminder.type"
+                (change)="
+                  updateReminder(
+                    reminder,
+                    reminder.enabled,
+                    $any($event.target).value
+                  )
+                ">
+            </label>
+          </div>
+
+          <ion-toggle
+            [checked]="reminder.enabled"
+            [disabled]="reminderSavingType === reminder.type"
+            [attr.aria-label]="'Enable ' + reminder.label"
+            (ionChange)="
+              updateReminder(reminder, $event.detail.checked)
+            ">
+          </ion-toggle>
+        </article>
+      </div>
+
+      <button
+        type="button"
+        class="test-reminder-button"
+        (click)="sendTestReminder()">
+        Send a test reminder
+      </button>
+
+      <p class="reminder-success" *ngIf="reminderMessage">
+        ✓ {{ reminderMessage }}
+      </p>
+      <p class="reminder-error" role="alert" *ngIf="reminderError">
+        {{ reminderError }}
+      </p>
+    </section>
 
     <section class="settings-section data-section">
       <div class="section-heading">

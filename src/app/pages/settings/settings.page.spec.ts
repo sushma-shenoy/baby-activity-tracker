@@ -63,4 +63,20 @@ describe('SettingsPage', () => {
     expect(component.preferencesForm.controls.birthDate.hasError('required'))
       .toBeTrue();
   });
+
+  it('shows a future-date error for a new baby profile', () => {
+    component.newProfileForm.controls.birthDate.setValue('2999-01-01');
+    component.newProfileForm.controls.birthDate.markAsTouched();
+
+    expect(component.newProfileBirthDateError)
+      .toBe('Date of birth cannot be in the future.');
+  });
+
+  it('shows an invalid-calendar error for a new baby profile', () => {
+    component.newProfileForm.controls.birthDate.setValue('2025-02-30');
+    component.newProfileForm.controls.birthDate.markAsTouched();
+
+    expect(component.newProfileBirthDateError)
+      .toBe('Enter a valid calendar date.');
+  });
 });

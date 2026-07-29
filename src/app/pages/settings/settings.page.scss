@@ -106,6 +106,232 @@
   line-height: 1.5;
 }
 
+.profiles-section {
+  background:
+    linear-gradient(145deg, #ffffff 0%, #faf8ff 100%);
+}
+
+.profile-list {
+  display: grid;
+  gap: 10px;
+}
+
+.baby-profile-row {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #e8e3f1;
+  border-radius: 17px;
+  background: #fff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.baby-profile-row.active {
+  border-color: #9a8de2;
+  box-shadow: 0 7px 20px rgba(117, 102, 168, 0.12);
+}
+
+.profile-switch {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.profile-switch:disabled {
+  opacity: 1;
+}
+
+.baby-avatar {
+  display: grid;
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(145deg, #8f80c8, #6e5fa5);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.baby-profile-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.baby-profile-copy strong {
+  overflow: hidden;
+  color: #2d2947;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.baby-profile-copy small {
+  color: #8a8598;
+  font-size: 0.7rem;
+}
+
+.active-pill,
+.switch-label {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.active-pill {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #65569a;
+  background: #eee9ff;
+}
+
+.switch-label {
+  color: #7566a8;
+}
+
+.profile-delete {
+  align-self: stretch;
+  width: 42px;
+  border: 0;
+  color: #b85c68;
+  background: #fff4f5;
+  font-size: 1.35rem;
+}
+
+.add-profile-toggle {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px dashed #a99fd0;
+  border-radius: 14px;
+  color: #675997;
+  background: #f8f5ff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.new-profile-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ece8f2;
+}
+
+.create-profile-button {
+  --background: #7566a8;
+  --border-radius: 13px;
+  min-height: 48px;
+  margin: 8px 0 0;
+  text-transform: none;
+  font-weight: 800;
+}
+
+.reminders-section {
+  border-color: #eee4ce;
+  background: linear-gradient(145deg, #fff, #fffbf2);
+}
+
+.reminder-list {
+  display: grid;
+  gap: 9px;
+}
+
+.reminder-row {
+  display: flex;
+  min-height: 67px;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid #ece7dd;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.reminder-icon {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: #f7f1e6;
+  font-size: 1.15rem;
+}
+
+.reminder-copy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+}
+
+.reminder-copy strong {
+  color: #343047;
+  font-size: 0.8rem;
+}
+
+.reminder-copy input[type='time'] {
+  width: 105px;
+  padding: 3px 5px;
+  border: 0;
+  border-radius: 7px;
+  color: #7566a8;
+  background: #f6f3fb;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.reminder-row ion-toggle {
+  --track-background: #ddd8e5;
+  --track-background-checked: #a99ad8;
+  --handle-background-checked: #67599b;
+}
+
+.test-reminder-button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #ddd2b9;
+  border-radius: 13px;
+  color: #74603b;
+  background: #fffaf0;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.reminder-success,
+.reminder-error {
+  margin: 10px 2px 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.reminder-success {
+  color: #397a6b;
+}
+
+.reminder-error {
+  color: #b64755;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .field-group {
   margin-bottom: 16px;
 }

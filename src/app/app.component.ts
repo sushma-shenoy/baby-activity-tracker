@@ -14,13 +14,18 @@ import {
   chevronForwardOutline,
   settingsOutline
 } from 'ionicons/icons';
+import {
+  ActivityReminderService
+} from './services/notification';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent {
-  constructor() {
+  constructor(
+    private readonly activityReminderService: ActivityReminderService
+  ) {
     addIcons({
       closeOutline,
       addOutline,
@@ -35,5 +40,7 @@ export class AppComponent {
       settingsOutline,
 
     });
+
+    void this.activityReminderService.initialize();
   }
 }

@@ -10,6 +10,8 @@ export interface BabyTrackerBackup {
 @Injectable({ providedIn: 'root' })
 export class DataExportService {
   private readonly allowedKeys = [
+    'baby_profiles_v2',
+    'active_baby_profile_id',
     'baby_preferences',
     'baby_activities',
     'feeds',
@@ -21,13 +23,28 @@ export class DataExportService {
     'baby_temperature_unit',
     'baby_milestones',
     'nursing_sessions',
-    'active_nursing_session'
+    'active_nursing_session',
+    'baby_activity_reminders'
   ] as const;
 
   createBackup(): BabyTrackerBackup {
     const data: Record<string, unknown> = {};
 
     for (const key of this.allowedKeys) {
+      const rawValue = localStorage.getItem(key);
+      if (rawValue === null) continue;
+
+      try {
+        data[key] = JSON.parse(rawValue);
+      } catch {
+        data[key] = rawValue;
+      }
+    }
+
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (!key?.startsWith('baby_profile_data:')) continue;
+
       const rawValue = localStorage.getItem(key);
       if (rawValue === null) continue;
 
@@ -98,6 +115,15 @@ export class DataExportService {
     for (const key of this.allowedKeys) {
       localStorage.removeItem(key);
     }
+    const scopedKeys = Array.from(
+      { length: localStorage.length },
+      (_, index) => localStorage.key(index)
+    ).filter(
+      (key): key is string => Boolean(key?.startsWith('baby_profile_data:'))
+    );
+    for (const key of scopedKeys) {
+      localStorage.removeItem(key);
+    }
     for (const [key, value] of safeEntries) {
       localStorage.setItem(
         key,
@@ -108,10 +134,19 @@ export class DataExportService {
   }
 
   private isAllowedKey(key: string): boolean {
-    return (this.allowedKeys as readonly string[]).includes(key);
+    return (
+      (this.allowedKeys as readonly string[]).includes(key) ||
+      key.startsWith('baby_profile_data:')
+    );
   }
 
   private isValidValue(key: string, value: unknown): boolean {
+    if (key.startsWith('baby_profile_data:')) {
+      const keyParts = key.split(':');
+      const baseKey = keyParts[keyParts.length - 1];
+      return Boolean(baseKey) && this.isValidValue(baseKey, value);
+    }
+
     const arrayKeys = [
       'baby_activities',
       'feeds',
@@ -120,9 +155,14 @@ export class DataExportService {
       'baby_vaccination_entries',
       'baby_temperature_entries',
       'baby_milestones',
-      'nursing_sessions'
+      'nursing_sessions',
+      'baby_activity_reminders'
     ];
     if (arrayKeys.includes(key)) return Array.isArray(value);
+    if (key === 'baby_profiles_v2') return Array.isArray(value);
+    if (key === 'active_baby_profile_id') {
+      return typeof value === 'string' && value.length > 0;
+    }
     if (key === 'baby_temperature_unit') {
       return value === 'celsius' || value === 'fahrenheit';
     }

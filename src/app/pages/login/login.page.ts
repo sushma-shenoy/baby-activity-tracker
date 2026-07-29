@@ -61,8 +61,9 @@ export class LoginPage {
     const result = await this.authService.login(
       this.loginForm.value.email,
       this.loginForm.value.password
-    );
-    this.isLoading = false;
+    ).finally(() => {
+      this.isLoading = false;
+    });
 
     if (!result.success) {
       this.errorMessage = result.errorMessage ?? 'Unable to log in.';

@@ -32,6 +32,9 @@ import {
 import {
   PreferencesService
 } from '../../services/preferences.service';
+import {
+  BabyProfileService
+} from '../../services/baby-profile.service';
 
 interface ProgressItem {
   label: string;
@@ -86,7 +89,8 @@ export class HomePage implements OnInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly activityService: ActivityService,
-    private readonly preferencesService: PreferencesService
+    private readonly preferencesService: PreferencesService,
+    readonly babyProfileService: BabyProfileService
   ) {}
 
   ngOnInit(): void {
@@ -220,6 +224,12 @@ export class HomePage implements OnInit, OnDestroy {
     void this.router.navigate([
       routeByType[type]
     ]);
+  }
+
+  switchBaby(profileId: string): void {
+    if (this.babyProfileService.switchProfile(profileId)) {
+      window.location.reload();
+    }
   }
 
   private refreshHomeData(): void {

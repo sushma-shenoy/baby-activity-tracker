@@ -7,7 +7,8 @@ import {
 
 import {
   Auth,
-  getAuth
+  browserLocalPersistence,
+  initializeAuth
 } from 'firebase/auth';
 
 const firebaseApp =
@@ -18,4 +19,6 @@ const firebaseApp =
       );
 
 export const firebaseAuth: Auth =
-  getAuth(firebaseApp);
+  initializeAuth(firebaseApp, {
+    persistence: browserLocalPersistence
+  });

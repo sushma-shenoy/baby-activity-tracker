@@ -14,11 +14,9 @@ import {
   AuthError,
   User,
   UserCredential,
-  browserLocalPersistence,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendPasswordResetEmail,
-  setPersistence,
   signInWithEmailAndPassword,
   signOut,
   updateProfile
@@ -36,6 +34,9 @@ import {
   providedIn: 'root'
 })
 export class AuthService {
+  private static readonly AUTH_READY_TIMEOUT_MS = 5000;
+  private static readonly AUTH_REQUEST_TIMEOUT_MS = 10000;
+
   private readonly currentUserSubject =
     new BehaviorSubject<User | null>(null);
 
@@ -65,12 +66,29 @@ export class AuthService {
       return Promise.resolve();
     }
 
-    return firstValueFrom(
+    const authStateReady = firstValueFrom(
       this.authReady$.pipe(
         filter(Boolean),
         take(1)
       )
     ).then(() => undefined);
+
+    const startupTimeout = new Promise<void>((resolve) => {
+      window.setTimeout(() => {
+        if (!this.authReadySubject.value) {
+          console.warn(
+            'Firebase authentication startup timed out. Continuing signed out.'
+          );
+        }
+
+        resolve();
+      }, AuthService.AUTH_READY_TIMEOUT_MS);
+    });
+
+    return Promise.race([
+      authStateReady,
+      startupTimeout
+    ]);
   }
 
   async signUp(
@@ -127,11 +145,19 @@ export class AuthService {
         email.trim().toLowerCase();
 
       const userCredential: UserCredential =
-        await signInWithEmailAndPassword(
-          firebaseAuth,
-          normalizedEmail,
-          password
+        await this.withRequestTimeout(
+          signInWithEmailAndPassword(
+            firebaseAuth,
+            normalizedEmail,
+            password
+          )
         );
+
+      // Route guards should not have to wait for the auth listener to
+      // publish a user that this request has already authenticated.
+      this.currentUserSubject.next(
+        userCredential.user
+      );
 
       return {
         success: true,
@@ -187,16 +213,6 @@ export class AuthService {
   }
 
   private initializeAuthentication(): void {
-    setPersistence(
-      firebaseAuth,
-      browserLocalPersistence
-    ).catch((error: unknown) => {
-      console.error(
-        'Unable to configure authentication persistence:',
-        error
-      );
-    });
-
     onAuthStateChanged(
       firebaseAuth,
       (user: User | null) => {
@@ -228,6 +244,14 @@ export class AuthService {
     const authError =
       error as AuthError;
 
+    if (
+      authError.code.startsWith(
+        'auth/requests-from-referer-'
+      )
+    ) {
+      return 'Firebase is blocking this app origin. Update the API key restrictions for the iOS app.';
+    }
+
     switch (authError.code) {
       case 'auth/email-already-in-use':
         return 'An account already exists with this email address.';
@@ -250,11 +274,21 @@ export class AuthService {
       case 'auth/network-request-failed':
         return 'Network error. Check your internet connection.';
 
+      case 'auth/request-timeout':
+        return 'Sign in is taking too long. Check your connection and Firebase API key restrictions, then try again.';
+
       case 'auth/missing-password':
         return 'Please enter your password.';
 
       case 'auth/operation-not-allowed':
         return 'Email and password authentication is not enabled.';
+
+      case 'auth/unauthorized-domain':
+        return 'This app origin is not authorized in Firebase Authentication settings.';
+
+      case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+      case 'auth/invalid-api-key':
+        return 'The Firebase API key is invalid or blocked by its restrictions.';
 
       default:
         console.error(
@@ -264,5 +298,28 @@ export class AuthService {
 
         return 'Authentication failed. Please try again.';
     }
+  }
+
+  private withRequestTimeout<T>(
+    request: Promise<T>
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        reject({
+          code: 'auth/request-timeout'
+        });
+      }, AuthService.AUTH_REQUEST_TIMEOUT_MS);
+
+      request.then(
+        (value) => {
+          window.clearTimeout(timeoutId);
+          resolve(value);
+        },
+        (error: unknown) => {
+          window.clearTimeout(timeoutId);
+          reject(error);
+        }
+      );
+    });
   }
 }

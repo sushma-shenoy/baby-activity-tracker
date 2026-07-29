@@ -22,6 +22,7 @@ import {
   IonSelect,
   IonSelectOption,
   IonSpinner,
+  IonToggle,
   IonTitle,
   IonToolbar
 } from '@ionic/angular/standalone';
@@ -32,6 +33,14 @@ import {
 } from '../../services/preferences.service';
 import { DataExportService } from '../../services/data-export.service';
 import { AlertController } from '@ionic/angular';
+import {
+  BabyProfileService,
+  ManagedBabyProfile
+} from '../../services/baby-profile.service';
+import {
+  ActivityReminder,
+  ActivityReminderService
+} from '../../services/notification';
 
 @Component({
   selector: 'app-settings',
@@ -53,18 +62,21 @@ import { AlertController } from '@ionic/angular';
     IonSelect,
     IonSelectOption,
     IonSpinner,
+    IonToggle,
     IonTitle,
     IonToolbar
   ]
 })
 export class SettingsPage {
   private readonly authService = inject(AuthService);
-  private readonly preferencesService =
+  readonly preferencesService =
     inject(PreferencesService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly dataExportService = inject(DataExportService);
   private readonly alertController = inject(AlertController);
+  private readonly babyProfileService = inject(BabyProfileService);
+  readonly reminderService = inject(ActivityReminderService);
 
   isLoggingOut = false;
   isSaved = false;
@@ -72,6 +84,16 @@ export class SettingsPage {
   exportMessage = '';
   isRestoring = false;
   readonly maximumBirthDate = this.toDateInput(new Date());
+  isAddingProfile = false;
+  reminderMessage = '';
+  reminderError = '';
+  reminderSavingType = '';
+
+  readonly newProfileForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(30)]],
+    birthDate: ['', [Validators.required, this.validBirthDateValidator()]],
+    mood: ['Happy 😊']
+  });
 
   readonly preferencesForm = this.fb.nonNullable.group({
     babyName: [
@@ -110,11 +132,34 @@ export class SettingsPage {
     return this.authService.currentUser?.email || '';
   }
 
+  get profiles(): ManagedBabyProfile[] {
+    return this.babyProfileService.profiles;
+  }
+
+  get activeProfileId(): string {
+    return this.babyProfileService.activeProfileId;
+  }
+
   get birthDateError(): string {
     const control = this.preferencesForm.controls.birthDate;
     if (!control.touched || !control.errors) return '';
     if (control.hasError('required')) return 'Enter the baby’s date of birth.';
     if (control.hasError('invalidDate')) return 'Enter a valid calendar date.';
+    if (control.hasError('futureDate')) {
+      return 'Date of birth cannot be in the future.';
+    }
+    return '';
+  }
+
+  get newProfileBirthDateError(): string {
+    const control = this.newProfileForm.controls.birthDate;
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) {
+      return 'Enter the baby’s date of birth.';
+    }
+    if (control.hasError('invalidDate')) {
+      return 'Enter a valid calendar date.';
+    }
     if (control.hasError('futureDate')) {
       return 'Date of birth cannot be in the future.';
     }
@@ -146,8 +191,98 @@ export class SettingsPage {
     };
 
     this.preferencesService.save(preferences);
+    this.babyProfileService.syncActiveProfile(preferences.baby);
     this.errorMessage = '';
     this.isSaved = true;
+  }
+
+  addProfile(): void {
+    if (this.newProfileForm.invalid) {
+      this.newProfileForm.markAllAsTouched();
+      this.errorMessage = 'Enter a valid name and date of birth.';
+      return;
+    }
+
+    const value = this.newProfileForm.getRawValue();
+    this.babyProfileService.addProfile(
+      {
+        name: value.name,
+        birthDate: value.birthDate,
+        mood: value.mood
+      },
+      this.preferencesService.preferences.goals
+    );
+
+    window.location.assign('/home');
+  }
+
+  switchProfile(profileId: string): void {
+    if (this.babyProfileService.switchProfile(profileId)) {
+      window.location.assign('/home');
+    }
+  }
+
+  async deleteProfile(profile: ManagedBabyProfile): Promise<void> {
+    const alert = await this.alertController.create({
+      header: `Remove ${profile.name}?`,
+      message:
+        'This removes this baby profile and its tracker records from this device.',
+      cssClass: 'activity-delete-alert',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Remove profile',
+          role: 'destructive',
+          handler: () => {
+            this.babyProfileService.deleteProfile(profile.id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async updateReminder(
+    reminder: ActivityReminder,
+    enabled: boolean,
+    time = reminder.time
+  ): Promise<void> {
+    this.reminderMessage = '';
+    this.reminderError = '';
+    this.reminderSavingType = reminder.type;
+
+    const result = await this.reminderService.update(
+      reminder.type,
+      { enabled, time }
+    );
+
+    this.reminderSavingType = '';
+    if (!result.success) {
+      this.reminderError = result.message || 'Could not update the reminder.';
+      return;
+    }
+
+    this.reminderMessage = enabled
+      ? `${reminder.label} set for ${this.formatReminderTime(time)}.`
+      : `${reminder.label} turned off.`;
+  }
+
+  async sendTestReminder(): Promise<void> {
+    this.reminderMessage = '';
+    this.reminderError = '';
+
+    try {
+      const result = await this.reminderService.sendTest();
+      if (result.success) {
+        this.reminderMessage = result.message;
+      } else {
+        this.reminderError = result.message;
+      }
+    } catch {
+      this.reminderError =
+        'Could not schedule a test notification on this device.';
+    }
   }
 
   downloadBackup(): void {
@@ -251,5 +386,13 @@ export class SettingsPage {
       `${String(date.getMonth() + 1).padStart(2, '0')}-` +
       `${String(date.getDate()).padStart(2, '0')}`
     );
+  }
+
+  private formatReminderTime(value: string): string {
+    const [hour, minute] = value.split(':').map(Number);
+    return new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(new Date(2000, 0, 1, hour, minute));
   }
 }
