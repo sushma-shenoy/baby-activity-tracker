@@ -37,4 +37,16 @@ describe('TemperatureService', () => {
     expect(service.toDisplay(37)).toBeCloseTo(98.6, 1);
     expect(service.toCelsius(98.6)).toBeCloseTo(37, 1);
   });
+
+  it('ignores malformed stored readings', () => {
+    localStorage.setItem(
+      'baby_temperature_entries',
+      JSON.stringify([{ id: 'bad', celsius: 99 }])
+    );
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(TemperatureService);
+
+    expect(service.entries).toEqual([]);
+  });
 });

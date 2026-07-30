@@ -68,9 +68,13 @@
               id="signup-name"
               placeholder="How should we call you?"
               autocomplete="name"
+              maxlength="50"
               formControlName="name">
             </ion-input>
           </ion-item>
+          <span class="field-error" *ngIf="fieldError('name')">
+            {{ fieldError('name') }}
+          </span>
         </div>
 
         <div class="field-group">
@@ -90,6 +94,9 @@
               formControlName="email">
             </ion-input>
           </ion-item>
+          <span class="field-error" *ngIf="fieldError('email')">
+            {{ fieldError('email') }}
+          </span>
         </div>
 
         <div class="password-grid">
@@ -106,9 +113,13 @@
                 type="password"
                 placeholder="6+ characters"
                 autocomplete="new-password"
+                maxlength="128"
                 formControlName="password">
               </ion-input>
             </ion-item>
+            <span class="field-error" *ngIf="fieldError('password')">
+              {{ fieldError('password') }}
+            </span>
           </div>
 
           <div class="field-group">
@@ -124,9 +135,22 @@
                 type="password"
                 placeholder="Type it again"
                 autocomplete="new-password"
+                maxlength="128"
                 formControlName="confirmPassword">
               </ion-input>
             </ion-item>
+            <span
+              class="field-error"
+              *ngIf="signupForm.controls['confirmPassword'].touched &&
+                signupForm.controls['confirmPassword'].hasError('passwordMismatch')">
+              Passwords do not match.
+            </span>
+            <span
+              class="field-error"
+              *ngIf="fieldError('confirmPassword') &&
+                !signupForm.controls['confirmPassword'].hasError('passwordMismatch')">
+              {{ fieldError('confirmPassword') }}
+            </span>
           </div>
         </div>
 

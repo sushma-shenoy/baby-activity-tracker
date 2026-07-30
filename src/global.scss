@@ -371,3 +371,17 @@ ion-action-sheet.activity-action-sheet {
     }
   }
 }
+.field-error {
+  display: block;
+  margin: 6px 3px 0;
+  color: #b5545b;
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+ion-item.field-invalid {
+  --border-color: #c8646b;
+  --highlight-color-focused: #c8646b;
+  outline: 1px solid rgba(200, 100, 107, 0.35);
+}

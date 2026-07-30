@@ -17,6 +17,11 @@ import {
   MedicineEntry,
   MedicineService
 } from '../../services/medicine.service';
+import {
+  notFutureDateTimeValidator,
+  trimmedRequiredValidator,
+  validDateTimeValidator
+} from '../../shared/form-validators';
 
 @Component({
   selector: 'app-medicine',
@@ -43,6 +48,7 @@ export class MedicinePage implements OnDestroy {
         '',
         [
           Validators.required,
+          trimmedRequiredValidator(),
           Validators.maxLength(60)
         ]
       ],
@@ -50,12 +56,17 @@ export class MedicinePage implements OnDestroy {
         '',
         [
           Validators.required,
+          trimmedRequiredValidator(),
           Validators.maxLength(30)
         ]
       ],
       givenAt: [
         this.maximumDateTime,
-        Validators.required
+        [
+          Validators.required,
+          validDateTimeValidator(),
+          notFutureDateTimeValidator()
+        ]
       ],
       notes: [
         '',
@@ -80,6 +91,31 @@ export class MedicinePage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.entriesSubscription?.unsubscribe();
+  }
+
+  fieldError(
+    field: 'name' | 'dose' | 'givenAt' | 'notes'
+  ): string {
+    const control = this.medicineForm.controls[field];
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) {
+      return field === 'name'
+        ? 'Enter the medicine name.'
+        : field === 'dose'
+          ? 'Enter the dose given.'
+          : 'Choose when the medicine was given.';
+    }
+    if (control.hasError('maxlength')) {
+      const limit = field === 'name' ? 60 : field === 'dose' ? 30 : 240;
+      return `Use ${limit} characters or fewer.`;
+    }
+    if (control.hasError('invalidDateTime')) {
+      return 'Enter a valid date and time.';
+    }
+    if (control.hasError('futureDateTime')) {
+      return 'The medicine time cannot be in the future.';
+    }
+    return 'Check this field.';
   }
 
   get isEditing(): boolean {

@@ -296,6 +296,54 @@
   --handle-background-checked: #67599b;
 }
 
+.custom-reminders {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #ece7dd;
+}
+
+.custom-reminders-label {
+  margin: 0 0 8px 2px;
+  color: #8a7751;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.custom-reminder-row {
+  margin-bottom: 9px;
+  padding-right: 7px;
+}
+
+.custom-reminder-delete {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  color: #b85c68;
+  background: #fff0f2;
+  font-size: 1.15rem;
+}
+
+.custom-reminder-toggle {
+  margin-top: 12px;
+  border-color: #d8cba9;
+  color: #74603b;
+  background: #fffaf0;
+}
+
+.custom-reminder-form {
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid #ece3d0;
+  border-radius: 16px;
+  background: #fff;
+}
+
 .test-reminder-button {
   width: 100%;
   margin-top: 12px;

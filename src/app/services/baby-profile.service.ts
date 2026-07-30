@@ -27,7 +27,9 @@ export const BABY_TRACKER_DATA_KEYS = [
   'baby_milestones',
   'nursing_sessions',
   'active_nursing_session',
-  'baby_activity_reminders'
+  'baby_activity_reminders',
+  'baby_custom_reminders',
+  'baby_vaccination_reminder'
 ] as const;
 
 @Injectable({ providedIn: 'root' })

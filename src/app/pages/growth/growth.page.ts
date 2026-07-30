@@ -442,10 +442,12 @@ export class GrowthPage
         return { weightPrecision: true };
       }
 
+      const roundedToTwoDecimals =
+        Math.round(numericValue * 100) / 100;
+
       return Math.abs(
-        numericValue * 100 -
-        Math.round(numericValue * 100)
-      ) > Number.EPSILON
+        numericValue - roundedToTwoDecimals
+      ) > 1e-9
         ? { weightPrecision: true }
         : null;
     };

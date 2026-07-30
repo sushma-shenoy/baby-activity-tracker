@@ -94,6 +94,14 @@
               formControlName="password">
             </ion-input>
           </ion-item>
+          <span
+            class="field-error"
+            *ngIf="
+              loginForm.get('password')?.touched &&
+              loginForm.get('password')?.hasError('required')
+            ">
+            Enter your password
+          </span>
         </div>
 
         <div

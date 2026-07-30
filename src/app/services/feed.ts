@@ -18,19 +18,28 @@ export class FeedService {
 
   // 📥 GET ALL FEEDS
   getFeeds(): Feed[] {
-    const feeds = JSON.parse(localStorage.getItem(this.key) || '[]') as
-      Array<Feed | (Omit<Feed, 'type'> & { type: 'breast' })>;
-    return feeds.map(feed => ({
-      ...feed,
-      type: feed.type === 'breast' ? 'expressed' : feed.type
-    }));
+    try {
+      const value = JSON.parse(localStorage.getItem(this.key) || '[]');
+      if (!Array.isArray(value)) return [];
+
+      return value
+        .map(feed => ({
+          ...feed,
+          type: feed?.type === 'breast' ? 'expressed' : feed?.type
+        }))
+        .filter(feed => this.isValidFeed(feed));
+    } catch {
+      return [];
+    }
   }
 
   // ➕ ADD FEED
-  addFeed(feed: Feed) {
+  addFeed(feed: Feed): boolean {
+    if (!this.isValidFeed(feed)) return false;
     const feeds = this.getFeeds();
-    feeds.unshift(feed);
+    feeds.unshift(this.normalize(feed));
     localStorage.setItem(this.key, JSON.stringify(feeds));
+    return true;
   }
 
   // ❌ DELETE FEED
@@ -43,7 +52,37 @@ export class FeedService {
   count(): number {
     return this.getFeeds().length;
   }
-  saveAll(feeds: Feed[]) {
-  localStorage.setItem(this.key, JSON.stringify(feeds));
-}
+  saveAll(feeds: Feed[]): void {
+    localStorage.setItem(
+      this.key,
+      JSON.stringify(
+        feeds
+          .filter(feed => this.isValidFeed(feed))
+          .map(feed => this.normalize(feed))
+      )
+    );
+  }
+
+  private isValidFeed(feed: unknown): feed is Feed {
+    if (!feed || typeof feed !== 'object') return false;
+    const candidate = feed as Partial<Feed>;
+    const quantity = Number(candidate.quantity);
+    return (
+      typeof candidate.id === 'string' &&
+      candidate.id.length > 0 &&
+      (candidate.type === 'formula' || candidate.type === 'expressed') &&
+      Number.isInteger(quantity) &&
+      quantity >= 5 &&
+      quantity <= 1000 &&
+      typeof candidate.time === 'string' &&
+      /^([01]\d|2[0-3]):[0-5]\d$/.test(candidate.time)
+    );
+  }
+
+  private normalize(feed: Feed): Feed {
+    return {
+      ...feed,
+      quantity: Number(feed.quantity)
+    };
+  }
 }

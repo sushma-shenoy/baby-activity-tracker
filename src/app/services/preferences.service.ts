@@ -142,14 +142,40 @@ export class PreferencesService {
       const parsed =
         JSON.parse(saved) as Partial<AppPreferences>;
 
+      const name =
+        typeof parsed.baby?.name === 'string'
+          ? parsed.baby.name.trim().slice(0, 30)
+          : '';
+      const birthDate =
+        typeof parsed.baby?.birthDate === 'string' &&
+        this.isValidBirthDate(parsed.baby.birthDate)
+          ? parsed.baby.birthDate
+          : '';
+      const mood =
+        typeof parsed.baby?.mood === 'string' &&
+        parsed.baby.mood.length <= 40
+          ? parsed.baby.mood
+          : DEFAULT_PREFERENCES.baby.mood;
+
       return {
         baby: {
-          ...DEFAULT_PREFERENCES.baby,
-          ...parsed.baby
+          name: name || DEFAULT_PREFERENCES.baby.name,
+          birthDate,
+          mood
         },
         goals: {
-          ...DEFAULT_PREFERENCES.goals,
-          ...parsed.goals
+          feeds: this.normalizeGoal(
+            Number(parsed.goals?.feeds),
+            DEFAULT_PREFERENCES.goals.feeds
+          ),
+          sleepSessions: this.normalizeGoal(
+            Number(parsed.goals?.sleepSessions),
+            DEFAULT_PREFERENCES.goals.sleepSessions
+          ),
+          diapers: this.normalizeGoal(
+            Number(parsed.goals?.diapers),
+            DEFAULT_PREFERENCES.goals.diapers
+          )
         }
       };
     } catch {
@@ -166,5 +192,20 @@ export class PreferencesService {
     return Number.isFinite(numericValue)
       ? Math.min(24, Math.max(1, Math.round(numericValue)))
       : fallback;
+  }
+
+  private isValidBirthDate(value: string): boolean {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return false;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day &&
+      date <= new Date()
+    );
   }
 }

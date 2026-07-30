@@ -82,7 +82,9 @@
         <div class="form-grid">
           <label>
             <span>Temperature ({{ unitSymbol }})</span>
-            <ion-item lines="none">
+            <ion-item
+              lines="none"
+              [class.field-invalid]="fieldError('celsius')">
               <ion-input
                 type="number"
                 [min]="inputMinimum"
@@ -93,22 +95,32 @@
                 formControlName="celsius">
               </ion-input>
             </ion-item>
+            <small class="field-error" *ngIf="fieldError('celsius')">
+              {{ fieldError('celsius') }}
+            </small>
           </label>
           <label>
             <span>Measured at</span>
-            <ion-item lines="none">
+            <ion-item
+              lines="none"
+              [class.field-invalid]="fieldError('measuredAt')">
               <ion-input
                 type="datetime-local"
                 [max]="maximumDateTime"
                 formControlName="measuredAt">
               </ion-input>
             </ion-item>
+            <small class="field-error" *ngIf="fieldError('measuredAt')">
+              {{ fieldError('measuredAt') }}
+            </small>
           </label>
         </div>
 
         <label class="full-field">
           <span>Measurement method</span>
-          <ion-item lines="none">
+          <ion-item
+            lines="none"
+            [class.field-invalid]="fieldError('method')">
             <ion-select formControlName="method" interface="popover">
               <ion-select-option value="axillary">Underarm</ion-select-option>
               <ion-select-option value="oral">Oral</ion-select-option>
@@ -117,6 +129,9 @@
               <ion-select-option value="forehead">Forehead</ion-select-option>
             </ion-select>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('method')">
+            {{ fieldError('method') }}
+          </small>
         </label>
 
         <label class="full-field">
@@ -129,6 +144,9 @@
               formControlName="notes">
             </ion-textarea>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('notes')">
+            {{ fieldError('notes') }}
+          </small>
         </label>
 
         <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>

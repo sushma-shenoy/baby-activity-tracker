@@ -5,18 +5,39 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalo
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 
-/* ✅ ADD THIS */
 import { addIcons } from 'ionicons';
 import {
+  addOutline,
   homeOutline,
   barChartOutline,
-  bulbOutline
+  bulbOutline,
+  chevronForwardOutline,
+  closeOutline,
+  createOutline,
+  ellipsisHorizontalOutline,
+  pauseOutline,
+  playOutline,
+  settingsOutline,
+  stopOutline,
+  timeOutline,
+  trashOutline
 } from 'ionicons/icons';
 
 addIcons({
+  addOutline,
   homeOutline,
   barChartOutline,
-  bulbOutline
+  bulbOutline,
+  chevronForwardOutline,
+  closeOutline,
+  createOutline,
+  ellipsisHorizontalOutline,
+  pauseOutline,
+  playOutline,
+  settingsOutline,
+  stopOutline,
+  timeOutline,
+  trashOutline
 });
 
 bootstrapApplication(AppComponent, {

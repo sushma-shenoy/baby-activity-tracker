@@ -54,12 +54,7 @@ export class TemperatureService {
     const celsius = Number(entry.celsius);
 
     if (
-      !Number.isFinite(celsius) ||
-      celsius < 30 ||
-      celsius > 45 ||
-      !Number.isFinite(entry.measuredAt) ||
-      entry.measuredAt > Date.now() + 60_000 ||
-      entry.notes.trim().length > 240
+      !this.isValidEntry({ ...entry, celsius })
     ) {
       return false;
     }
@@ -97,12 +92,36 @@ export class TemperatureService {
 
   private load(): TemperatureEntry[] {
     try {
-      return JSON.parse(
+      const value = JSON.parse(
         localStorage.getItem(this.key) || '[]'
-      ) as TemperatureEntry[];
+      );
+      return Array.isArray(value)
+        ? value
+            .filter(entry => this.isValidEntry(entry))
+            .sort((a, b) => b.measuredAt - a.measuredAt)
+        : [];
     } catch {
       return [];
     }
+  }
+
+  private isValidEntry(value: unknown): value is TemperatureEntry {
+    if (!value || typeof value !== 'object') return false;
+    const entry = value as Partial<TemperatureEntry>;
+    return (
+      typeof entry.id === 'string' &&
+      entry.id.length > 0 &&
+      Number.isFinite(entry.celsius) &&
+      Number(entry.celsius) >= 30 &&
+      Number(entry.celsius) <= 45 &&
+      Number.isFinite(entry.measuredAt) &&
+      Number(entry.measuredAt) <= Date.now() + 60_000 &&
+      ['axillary', 'oral', 'rectal', 'ear', 'forehead'].includes(
+        String(entry.method)
+      ) &&
+      typeof entry.notes === 'string' &&
+      entry.notes.trim().length <= 240
+    );
   }
 
   private loadUnit(): TemperatureUnit {

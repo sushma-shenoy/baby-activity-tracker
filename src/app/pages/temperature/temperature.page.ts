@@ -27,6 +27,10 @@ import {
   TemperatureService,
   TemperatureUnit
 } from '../../services/temperature.service';
+import {
+  notFutureDateTimeValidator,
+  validDateTimeValidator
+} from '../../shared/form-validators';
 
 Chart.register(...registerables);
 
@@ -60,7 +64,11 @@ export class TemperaturePage
     ],
     measuredAt: [
       this.maximumDateTime,
-      Validators.required
+      [
+        Validators.required,
+        validDateTimeValidator(),
+        notFutureDateTimeValidator()
+      ]
     ],
     method: [
       'axillary' as TemperatureMethod,
@@ -91,6 +99,27 @@ export class TemperaturePage
       this.unit = unit;
       if (this.viewReady) this.renderChart();
     });
+  }
+
+  fieldError(
+    field: 'celsius' | 'measuredAt' | 'method' | 'notes'
+  ): string {
+    const control = this.form.controls[field];
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) {
+      if (field === 'celsius') return 'Enter the temperature.';
+      if (field === 'measuredAt') return 'Choose when it was measured.';
+      return 'Choose a measurement method.';
+    }
+    if (control.hasError('min') || control.hasError('max')) {
+      return `Temperature must be between ${this.inputMinimum} and ${this.inputMaximum} ${this.unitSymbol}.`;
+    }
+    if (control.hasError('invalidDateTime')) return 'Enter a valid date and time.';
+    if (control.hasError('futureDateTime')) {
+      return 'The measurement time cannot be in the future.';
+    }
+    if (control.hasError('maxlength')) return 'Use 240 characters or fewer.';
+    return 'Check this field.';
   }
 
   ngAfterViewInit(): void {

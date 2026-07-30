@@ -50,6 +50,7 @@ export class SleepPage
   implements OnInit, OnDestroy {
 
   sleepActivities: Activity[] = [];
+  sleepEditError = '';
 
   isSleepEditOpen = false;
 
@@ -113,21 +114,17 @@ export class SleepPage
   }
 
   get isEditDurationValid(): boolean {
-    const hours = Math.max(
-      0,
-      Number(
-        this.editSleep.durationHours
-      ) || 0
+    const hours = Number(this.editSleep.durationHours);
+    const minutes = Number(this.editSleep.durationMinutes);
+    return (
+      Number.isInteger(hours) &&
+      Number.isInteger(minutes) &&
+      hours >= 0 &&
+      hours <= 24 &&
+      minutes >= 0 &&
+      minutes <= 59 &&
+      (hours > 0 || minutes > 0)
     );
-
-    const minutes = Math.max(
-      0,
-      Number(
-        this.editSleep.durationMinutes
-      ) || 0
-    );
-
-    return hours > 0 || minutes > 0;
   }
 
   start(): void {
@@ -153,6 +150,8 @@ export class SleepPage
       !stateBeforeStop.sessionActive ||
       totalMilliseconds <= 0
     ) {
+      this.sleepEditError =
+        'Enter a duration from 1 minute to 24 hours using whole numbers.';
       return;
     }
 
@@ -354,12 +353,17 @@ export class SleepPage
         this.editSleep.dateTime
       );
 
-    const createdAt =
-      Number.isNaN(
-        selectedDate.getTime()
-      )
-        ? Date.now()
-        : selectedDate.getTime();
+    if (
+      Number.isNaN(selectedDate.getTime()) ||
+      selectedDate.getTime() > Date.now() + 60_000
+    ) {
+      this.sleepEditError =
+        'Choose a valid completed time that is not in the future.';
+      return;
+    }
+    this.sleepEditError = '';
+
+    const createdAt = selectedDate.getTime();
 
     this.activityService.update(
       this.editSleep.id,
@@ -390,6 +394,7 @@ export class SleepPage
 
   closeSleepEdit(): void {
     this.isSleepEditOpen = false;
+    this.sleepEditError = '';
 
     this.editSleep = {
       id: '',

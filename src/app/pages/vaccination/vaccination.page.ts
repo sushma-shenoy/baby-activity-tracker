@@ -17,6 +17,14 @@ import {
   VaccinationEntry,
   VaccinationService
 } from '../../services/vaccination.service';
+import {
+  ActivityReminderService,
+  VaccinationReminderSettings
+} from '../../services/notification';
+import {
+  calendarDateValidator,
+  trimmedRequiredValidator
+} from '../../shared/form-validators';
 
 @Component({
   selector: 'app-vaccination',
@@ -42,18 +50,19 @@ export class VaccinationPage implements OnDestroy {
         '',
         [
           Validators.required,
+          trimmedRequiredValidator(),
           Validators.maxLength(80)
         ]
       ],
       administeredDate: [
         this.todayDate,
-        Validators.required
+        [Validators.required, calendarDateValidator()]
       ],
       provider: [
         '',
         Validators.maxLength(80)
       ],
-      nextDueDate: [''],
+      nextDueDate: ['', calendarDateValidator()],
       notes: [
         '',
         Validators.maxLength(240)
@@ -66,6 +75,7 @@ export class VaccinationPage implements OnDestroy {
     private readonly formBuilder: FormBuilder,
     private readonly vaccinationService:
       VaccinationService,
+    readonly reminderService: ActivityReminderService,
     private readonly alertController: AlertController
   ) {
     this.entriesSubscription =
@@ -84,6 +94,36 @@ export class VaccinationPage implements OnDestroy {
     return Boolean(this.editingId);
   }
 
+  fieldError(
+    field:
+      | 'vaccineName'
+      | 'administeredDate'
+      | 'nextDueDate'
+      | 'provider'
+      | 'notes'
+  ): string {
+    const control = this.vaccinationForm.controls[field];
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) {
+      return field === 'vaccineName'
+        ? 'Enter the vaccine name.'
+        : 'Choose the administered date.';
+    }
+    if (control.hasError('invalidDate')) return 'Enter a valid calendar date.';
+    if (control.hasError('futureDate')) {
+      return 'The administered date cannot be in the future.';
+    }
+    if (control.hasError('beforeAdministered')) {
+      return 'The next due date cannot be before the administered date.';
+    }
+    if (control.hasError('maxlength')) {
+      return field === 'notes'
+        ? 'Use 240 characters or fewer.'
+        : 'Use 80 characters or fewer.';
+    }
+    return 'Check this field.';
+  }
+
   get upcomingEntries(): VaccinationEntry[] {
     return this.entries
       .filter(entry =>
@@ -97,7 +137,7 @@ export class VaccinationPage implements OnDestroy {
       );
   }
 
-  saveVaccination(): void {
+  async saveVaccination(): Promise<void> {
     this.clearMessages();
 
     if (this.vaccinationForm.invalid) {
@@ -111,6 +151,10 @@ export class VaccinationPage implements OnDestroy {
       this.vaccinationForm.getRawValue();
 
     if (value.administeredDate > this.todayDate) {
+      this.vaccinationForm.controls.administeredDate.setErrors({
+        futureDate: true
+      });
+      this.vaccinationForm.controls.administeredDate.markAsTouched();
       this.errorMessage =
         'The administered date cannot be in the future.';
       return;
@@ -120,6 +164,10 @@ export class VaccinationPage implements OnDestroy {
       value.nextDueDate &&
       value.nextDueDate < value.administeredDate
     ) {
+      this.vaccinationForm.controls.nextDueDate.setErrors({
+        beforeAdministered: true
+      });
+      this.vaccinationForm.controls.nextDueDate.markAsTouched();
       this.errorMessage =
         'The next due date cannot be before the administered date.';
       return;
@@ -147,7 +195,28 @@ export class VaccinationPage implements OnDestroy {
       this.isEditing
         ? 'Vaccination record updated.'
         : 'Vaccination record saved.';
+    await this.reminderService.refreshSchedules();
     this.resetForm(false);
+  }
+
+  async updateVaccinationReminder(
+    changes: Partial<VaccinationReminderSettings>
+  ): Promise<void> {
+    this.clearMessages();
+    const result =
+      await this.reminderService.updateVaccinationReminder({
+        ...this.reminderService.vaccinationReminder,
+        ...changes
+      });
+
+    if (result.success) {
+      this.successMessage = changes.enabled === false
+        ? 'Vaccination reminders turned off.'
+        : 'Vaccination reminder updated.';
+    } else {
+      this.errorMessage =
+        result.message || 'The reminder could not be updated.';
+    }
   }
 
   editEntry(entry: VaccinationEntry): void {
@@ -184,8 +253,9 @@ export class VaccinationPage implements OnDestroy {
           {
             text: 'Delete',
             role: 'destructive',
-            handler: () => {
+            handler: async () => {
               this.vaccinationService.delete(entry.id);
+              await this.reminderService.refreshSchedules();
 
               if (this.editingId === entry.id) {
                 this.resetForm();

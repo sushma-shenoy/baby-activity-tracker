@@ -46,6 +46,7 @@ interface ParsedDiaperValue {
   ]
 })
 export class DiaperPage {
+  formError = '';
   selectedType: DiaperType = 'wet';
 
   notes = '';
@@ -98,6 +99,15 @@ export class DiaperPage {
       this.parseDateTime(
         this.diaperTime
       );
+    if (!this.isValidActivityDate(createdAt)) {
+      this.formError = 'Choose a valid date and time that is not in the future.';
+      return;
+    }
+    if (this.notes.trim().length > 250) {
+      this.formError = 'Notes must be 250 characters or fewer.';
+      return;
+    }
+    this.formError = '';
 
     const activity: Activity = {
       id: `diaper-${Date.now()}`,
@@ -255,6 +265,15 @@ export class DiaperPage {
       this.parseDateTime(
         this.editDiaper.dateTime
       );
+    if (!this.isValidActivityDate(createdAt)) {
+      this.formError = 'Choose a valid date and time that is not in the future.';
+      return;
+    }
+    if (this.editDiaper.notes.trim().length > 250) {
+      this.formError = 'Notes must be 250 characters or fewer.';
+      return;
+    }
+    this.formError = '';
 
     this.activityService.update(
       this.editDiaper.id,
@@ -438,11 +457,12 @@ export class DiaperPage {
     const selectedDate =
       new Date(dateTime);
 
-    return Number.isNaN(
-      selectedDate.getTime()
-    )
-      ? Date.now()
-      : selectedDate.getTime();
+    return selectedDate.getTime();
+  }
+
+  private isValidActivityDate(timestamp: number): boolean {
+    return Number.isFinite(timestamp) &&
+      timestamp <= Date.now() + 60_000;
   }
 
   private formatActivityTime(

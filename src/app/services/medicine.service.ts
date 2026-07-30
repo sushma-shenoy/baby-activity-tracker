@@ -32,13 +32,13 @@ export class MedicineService {
     const notes = entry.notes.trim();
 
     if (
-      !name ||
-      name.length > 60 ||
-      !dose ||
-      dose.length > 30 ||
-      !Number.isFinite(entry.givenAt) ||
-      entry.givenAt > Date.now() + 60_000 ||
-      notes.length > 240
+      !this.isValidEntry({
+        ...entry,
+        name,
+        dose,
+        notes,
+        createdAt: Date.now()
+      })
     ) {
       return false;
     }
@@ -90,7 +90,9 @@ export class MedicineService {
         localStorage.getItem(this.storageKey);
 
       return saved
-        ? (JSON.parse(saved) as MedicineEntry[]).sort(
+        ? (JSON.parse(saved) as unknown[])
+            .filter(entry => this.isValidEntry(entry))
+            .sort(
             (first, second) =>
               second.givenAt - first.givenAt
           )
@@ -98,5 +100,24 @@ export class MedicineService {
     } catch {
       return [];
     }
+  }
+
+  private isValidEntry(value: unknown): value is MedicineEntry {
+    if (!value || typeof value !== 'object') return false;
+    const entry = value as Partial<MedicineEntry>;
+    return (
+      typeof entry.id === 'string' &&
+      entry.id.length > 0 &&
+      typeof entry.name === 'string' &&
+      entry.name.trim().length > 0 &&
+      entry.name.trim().length <= 60 &&
+      typeof entry.dose === 'string' &&
+      entry.dose.trim().length > 0 &&
+      entry.dose.trim().length <= 30 &&
+      Number.isFinite(entry.givenAt) &&
+      Number(entry.givenAt) <= Date.now() + 60_000 &&
+      typeof entry.notes === 'string' &&
+      entry.notes.trim().length <= 240
+    );
   }
 }

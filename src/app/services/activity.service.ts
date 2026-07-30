@@ -21,7 +21,11 @@ export class ActivityService {
         return [];
       }
 
-      const activities = JSON.parse(savedActivities) as Activity[];
+      const value = JSON.parse(savedActivities);
+      if (!Array.isArray(value)) return [];
+      const activities = value.filter(
+        activity => this.isValidActivity(activity)
+      ) as Activity[];
 
       return this.sortActivities(activities);
     } catch (error) {
@@ -55,6 +59,9 @@ export class ActivityService {
   }
 
   add(activity: Activity): void {
+    if (!this.isValidActivity(activity)) {
+      throw new Error('The activity contains invalid or incomplete data.');
+    }
     const updated = [
       activity,
       ...this.getActivities()
@@ -77,7 +84,7 @@ export class ActivityService {
       : activity
   );
 
-  this.save(updated);
+  this.save(updated.filter(activity => this.isValidActivity(activity)));
 }
 
   upsertBySourceId(
@@ -132,5 +139,23 @@ export class ActivityService {
     return this.getTodayActivities().filter(
       activity => activity.type === type
     ).length;
+  }
+
+  private isValidActivity(value: unknown): value is Activity {
+    if (!value || typeof value !== 'object') return false;
+    const activity = value as Partial<Activity>;
+    return (
+      typeof activity.id === 'string' &&
+      activity.id.length > 0 &&
+      ['feeding', 'sleep', 'diaper', 'medicine'].includes(
+        String(activity.type)
+      ) &&
+      typeof activity.title === 'string' &&
+      activity.title.trim().length > 0 &&
+      typeof activity.value === 'string' &&
+      typeof activity.time === 'string' &&
+      Number.isFinite(activity.createdAt) &&
+      Number(activity.createdAt) <= Date.now() + 60_000
+    );
   }
 }

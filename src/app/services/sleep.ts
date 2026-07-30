@@ -12,7 +12,7 @@ export interface SleepState {
 @Injectable({ providedIn: 'root' })
 export class SleepService {
 
-  private initialState: SleepState = {
+  private readonly initialState: SleepState = {
     isRunning: false,
     startTime: null,
     elapsed: 0,
@@ -100,7 +100,38 @@ getTime(state: SleepState): number {
   }
 
   private loadState(): SleepState {
-    const data = localStorage.getItem(this.stateKey);
-    return data ? JSON.parse(data) : this.initialState;
+    try {
+      const data = localStorage.getItem(this.stateKey);
+      if (!data) return { ...this.initialState };
+      const value = JSON.parse(data) as Partial<SleepState>;
+      const elapsed = Number(value.elapsed);
+      const startTime =
+        value.startTime === null ? null : Number(value.startTime);
+      const validStartTime =
+        startTime === null ||
+        (
+          Number.isFinite(startTime) &&
+          startTime <= Date.now() + 60_000
+        );
+
+      if (
+        typeof value.isRunning !== 'boolean' ||
+        typeof value.sessionActive !== 'boolean' ||
+        !Number.isFinite(elapsed) ||
+        elapsed < 0 ||
+        !validStartTime
+      ) {
+        return { ...this.initialState };
+      }
+
+      return {
+        isRunning: value.isRunning && startTime !== null,
+        sessionActive: value.sessionActive,
+        elapsed,
+        startTime
+      };
+    } catch {
+      return { ...this.initialState };
+    }
   }
 }

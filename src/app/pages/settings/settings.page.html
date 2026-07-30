@@ -90,18 +90,26 @@
         (ngSubmit)="addProfile()">
         <div class="field-group">
           <label for="new-baby-name">Baby’s name</label>
-          <ion-item lines="none">
+          <ion-item
+            lines="none"
+            [class.field-invalid]="newProfileNameError">
             <ion-input
               id="new-baby-name"
               placeholder="Name"
+              maxlength="30"
               formControlName="name">
             </ion-input>
           </ion-item>
+          <p class="field-error" *ngIf="newProfileNameError">
+            {{ newProfileNameError }}
+          </p>
         </div>
 
         <div class="field-group">
           <label for="new-baby-birth-date">Date of birth</label>
-          <ion-item lines="none">
+          <ion-item
+            lines="none"
+            [class.field-invalid]="babyNameError">
             <ion-input
               id="new-baby-birth-date"
               type="date"
@@ -161,9 +169,13 @@
               id="baby-name"
               placeholder="Baby"
               autocomplete="off"
+              maxlength="30"
               formControlName="babyName">
             </ion-input>
           </ion-item>
+          <p class="field-error" *ngIf="babyNameError">
+            {{ babyNameError }}
+          </p>
         </div>
 
         <div class="field-group">
@@ -228,6 +240,9 @@
               inputmode="numeric"
               formControlName="feedsGoal">
             </ion-input>
+            <small class="field-error" *ngIf="goalError('feedsGoal')">
+              {{ goalError('feedsGoal') }}
+            </small>
           </label>
 
           <label class="goal-field">
@@ -239,6 +254,9 @@
               inputmode="numeric"
               formControlName="sleepGoal">
             </ion-input>
+            <small class="field-error" *ngIf="goalError('sleepGoal')">
+              {{ goalError('sleepGoal') }}
+            </small>
           </label>
 
           <label class="goal-field">
@@ -250,6 +268,9 @@
               inputmode="numeric"
               formControlName="diapersGoal">
             </ion-input>
+            <small class="field-error" *ngIf="goalError('diapersGoal')">
+              {{ goalError('diapersGoal') }}
+            </small>
           </label>
         </div>
       </section>
@@ -320,6 +341,87 @@
           </ion-toggle>
         </article>
       </div>
+
+      <div
+        class="custom-reminders"
+        *ngIf="reminderService.customReminders.length > 0">
+        <p class="custom-reminders-label">Custom</p>
+        <article
+          class="reminder-row custom-reminder-row"
+          *ngFor="let reminder of reminderService.customReminders">
+          <div class="reminder-icon" aria-hidden="true">⏰</div>
+          <div class="reminder-copy">
+            <strong>{{ reminder.label }}</strong>
+            <input
+              type="time"
+              [value]="reminder.time"
+              [disabled]="reminderSavingType === reminder.id"
+              (change)="
+                updateCustomReminder(
+                  reminder,
+                  reminder.enabled,
+                  $any($event.target).value
+                )
+              ">
+          </div>
+          <ion-toggle
+            [checked]="reminder.enabled"
+            [disabled]="reminderSavingType === reminder.id"
+            [attr.aria-label]="'Enable ' + reminder.label"
+            (ionChange)="
+              updateCustomReminder(reminder, $event.detail.checked)
+            ">
+          </ion-toggle>
+          <button
+            type="button"
+            class="custom-reminder-delete"
+            [attr.aria-label]="'Delete ' + reminder.label"
+            (click)="deleteCustomReminder(reminder)">
+            ×
+          </button>
+        </article>
+      </div>
+
+      <button
+        type="button"
+        class="add-profile-toggle custom-reminder-toggle"
+        (click)="isAddingCustomReminder = !isAddingCustomReminder">
+        {{ isAddingCustomReminder ? 'Cancel' : '+ Add custom reminder' }}
+      </button>
+
+      <form
+        class="custom-reminder-form"
+        *ngIf="isAddingCustomReminder"
+        [formGroup]="customReminderForm"
+        (ngSubmit)="addCustomReminder()">
+        <div class="field-group">
+          <label for="custom-reminder-name">Reminder name</label>
+          <ion-item lines="none">
+            <ion-input
+              id="custom-reminder-name"
+              placeholder="Example: Vitamin D"
+              maxlength="50"
+              formControlName="label">
+            </ion-input>
+          </ion-item>
+        </div>
+        <div class="field-group">
+          <label for="custom-reminder-time">Daily time</label>
+          <ion-item lines="none">
+            <ion-input
+              id="custom-reminder-time"
+              type="time"
+              formControlName="time">
+            </ion-input>
+          </ion-item>
+        </div>
+        <ion-button
+          class="create-profile-button"
+          expand="block"
+          type="submit">
+          Create reminder
+        </ion-button>
+      </form>
 
       <button
         type="button"

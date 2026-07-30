@@ -50,6 +50,7 @@ export class FeedingPage implements OnInit, OnDestroy {
   activeNursing: ActiveNursingSession | null = null;
   showManualNursing = false;
   nursingError = '';
+  feedError = '';
   editingNursingId = '';
   manualNursing = this.createManualNursing();
   private nursingClock?: ReturnType<typeof setInterval>;
@@ -170,10 +171,15 @@ export class FeedingPage implements OnInit, OnDestroy {
       !Number.isFinite(rightSeconds) ||
       leftSeconds < 0 ||
       rightSeconds < 0 ||
+      leftSeconds > 14_400 ||
+      rightSeconds > 14_400 ||
+      !Number.isInteger(leftSeconds / 60) ||
+      !Number.isInteger(rightSeconds / 60) ||
+      this.manualNursing.notes.trim().length > 240 ||
       leftSeconds + rightSeconds < 60
     ) {
       this.nursingError =
-        'Enter at least one minute and choose a time that is not in the future.';
+        'Enter whole minutes from 0 to 240, at least 1 minute total, a valid past time, and notes up to 240 characters.';
       return;
     }
 
@@ -286,6 +292,12 @@ export class FeedingPage implements OnInit, OnDestroy {
   }
 
   saveFeed(): void {
+    if (!this.isValidFeed(this.newFeed)) {
+      this.feedError =
+        'Choose a feeding type, quantity from 5 to 1000 mL, and a valid time.';
+      return;
+    }
+    this.feedError = '';
     const feedId =
       Date.now().toString();
 
@@ -324,6 +336,12 @@ export class FeedingPage implements OnInit, OnDestroy {
     if (!this.editFeed.id) {
       return;
     }
+    if (!this.isValidFeed(this.editFeed)) {
+      this.feedError =
+        'Choose a feeding type, quantity from 5 to 1000 mL, and a valid time.';
+      return;
+    }
+    this.feedError = '';
 
     const updatedFeed: Feed = {
       id: this.editFeed.id,
@@ -571,6 +589,18 @@ export class FeedingPage implements OnInit, OnDestroy {
       lastSide: 'left' as NursingSide,
       notes: ''
     };
+  }
+
+  private isValidFeed(feed: Feed): boolean {
+    const quantity = Number(feed.quantity);
+    return (
+      ['formula', 'expressed'].includes(feed.type) &&
+      Number.isFinite(quantity) &&
+      quantity >= 5 &&
+      quantity <= 1000 &&
+      Number.isInteger(quantity) &&
+      /^([01]\d|2[0-3]):[0-5]\d$/.test(feed.time)
+    );
   }
 
   private toLocalDateTime(timestamp: number): string {

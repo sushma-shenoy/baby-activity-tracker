@@ -37,13 +37,18 @@
       <form [formGroup]="form" (ngSubmit)="save()">
         <label class="full-field">
           <span>What happened?</span>
-          <ion-item lines="none">
+          <ion-item
+            lines="none"
+            [class.field-invalid]="fieldError('title')">
             <ion-input
               formControlName="title"
               maxlength="80"
               placeholder="Took their first steps">
             </ion-input>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('title')">
+            {{ fieldError('title') }}
+          </small>
         </label>
 
         <div class="category-grid" role="group" aria-label="Milestone category">
@@ -59,13 +64,18 @@
 
         <label class="full-field">
           <span>Date achieved</span>
-          <ion-item lines="none">
+          <ion-item
+            lines="none"
+            [class.field-invalid]="fieldError('achievedDate')">
             <ion-input
               type="date"
               formControlName="achievedDate"
               [max]="today">
             </ion-input>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('achievedDate')">
+            {{ fieldError('achievedDate') }}
+          </small>
         </label>
 
         <label class="full-field">
@@ -78,6 +88,9 @@
               placeholder="Where it happened, who was there…">
             </ion-textarea>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('notes')">
+            {{ fieldError('notes') }}
+          </small>
         </label>
 
         <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>

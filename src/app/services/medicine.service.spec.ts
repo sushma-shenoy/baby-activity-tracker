@@ -56,4 +56,16 @@ describe('MedicineService', () => {
     expect(wasSaved).toBeFalse();
     expect(service.entries).toEqual([]);
   });
+
+  it('ignores malformed stored medicine entries', () => {
+    localStorage.setItem(
+      'baby_medicine_entries',
+      JSON.stringify([{ id: 'bad', name: '', givenAt: 'never' }])
+    );
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(MedicineService);
+
+    expect(service.entries).toEqual([]);
+  });
 });

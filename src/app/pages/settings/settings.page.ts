@@ -26,6 +26,9 @@ import {
   IonTitle,
   IonToolbar
 } from '@ionic/angular/standalone';
+import {
+  trimmedRequiredValidator
+} from '../../shared/form-validators';
 import { AuthService } from '../../services/auth.service';
 import {
   AppPreferences,
@@ -39,7 +42,8 @@ import {
 } from '../../services/baby-profile.service';
 import {
   ActivityReminder,
-  ActivityReminderService
+  ActivityReminderService,
+  CustomReminder
 } from '../../services/notification';
 
 @Component({
@@ -88,17 +92,36 @@ export class SettingsPage {
   reminderMessage = '';
   reminderError = '';
   reminderSavingType = '';
+  isAddingCustomReminder = false;
 
   readonly newProfileForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.maxLength(30)]],
+    name: [
+      '',
+      [
+        Validators.required,
+        trimmedRequiredValidator(),
+        Validators.maxLength(30)
+      ]
+    ],
     birthDate: ['', [Validators.required, this.validBirthDateValidator()]],
     mood: ['Happy 😊']
+  });
+
+  readonly customReminderForm = this.fb.nonNullable.group({
+    label: ['', [Validators.required, Validators.maxLength(50)]],
+    time: ['12:00', [Validators.required, Validators.pattern(
+      /^([01]\d|2[0-3]):([0-5]\d)$/
+    )]]
   });
 
   readonly preferencesForm = this.fb.nonNullable.group({
     babyName: [
       this.preferencesService.preferences.baby.name,
-      [Validators.required, Validators.maxLength(30)]
+      [
+        Validators.required,
+        trimmedRequiredValidator(),
+        Validators.maxLength(30)
+      ]
     ],
     birthDate: [
       this.preferencesService.preferences.baby.birthDate,
@@ -112,15 +135,30 @@ export class SettingsPage {
     ],
     feedsGoal: [
       this.preferencesService.preferences.goals.feeds,
-      [Validators.required, Validators.min(1), Validators.max(24)]
+      [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(24),
+        Validators.pattern(/^\d+$/)
+      ]
     ],
     sleepGoal: [
       this.preferencesService.preferences.goals.sleepSessions,
-      [Validators.required, Validators.min(1), Validators.max(24)]
+      [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(24),
+        Validators.pattern(/^\d+$/)
+      ]
     ],
     diapersGoal: [
       this.preferencesService.preferences.goals.diapers,
-      [Validators.required, Validators.min(1), Validators.max(24)]
+      [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(24),
+        Validators.pattern(/^\d+$/)
+      ]
     ]
   });
 
@@ -164,6 +202,38 @@ export class SettingsPage {
       return 'Date of birth cannot be in the future.';
     }
     return '';
+  }
+
+  get newProfileNameError(): string {
+    const control = this.newProfileForm.controls.name;
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) return 'Enter the baby’s name.';
+    if (control.hasError('maxlength')) return 'Use 30 characters or fewer.';
+    return 'Check the baby’s name.';
+  }
+
+  get babyNameError(): string {
+    const control = this.preferencesForm.controls.babyName;
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) return 'Enter the baby’s name.';
+    if (control.hasError('maxlength')) return 'Use 30 characters or fewer.';
+    return 'Check the baby’s name.';
+  }
+
+  goalError(
+    field: 'feedsGoal' | 'sleepGoal' | 'diapersGoal'
+  ): string {
+    const control = this.preferencesForm.controls[field];
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) return 'Enter a daily goal.';
+    if (
+      control.hasError('min') ||
+      control.hasError('max') ||
+      control.hasError('pattern')
+    ) {
+      return 'Choose a whole number from 1 to 24.';
+    }
+    return 'Enter a valid daily goal.';
   }
 
   savePreferences(): void {
@@ -283,6 +353,60 @@ export class SettingsPage {
       this.reminderError =
         'Could not schedule a test notification on this device.';
     }
+  }
+
+  async addCustomReminder(): Promise<void> {
+    this.reminderMessage = '';
+    this.reminderError = '';
+    if (this.customReminderForm.invalid) {
+      this.customReminderForm.markAllAsTouched();
+      this.reminderError =
+        'Enter a reminder name and choose a valid time.';
+      return;
+    }
+
+    const value = this.customReminderForm.getRawValue();
+    const result = await this.reminderService.addCustomReminder(
+      value.label,
+      value.time
+    );
+    if (!result.success) {
+      this.reminderError = result.message || 'Could not add the reminder.';
+      return;
+    }
+
+    this.reminderMessage =
+      `${value.label.trim()} set for ${this.formatReminderTime(value.time)}.`;
+    this.customReminderForm.reset({ label: '', time: '12:00' });
+    this.isAddingCustomReminder = false;
+  }
+
+  async updateCustomReminder(
+    reminder: CustomReminder,
+    enabled: boolean,
+    time = reminder.time
+  ): Promise<void> {
+    this.reminderMessage = '';
+    this.reminderError = '';
+    this.reminderSavingType = reminder.id;
+    const result = await this.reminderService.updateCustomReminder(
+      reminder.id,
+      { enabled, time }
+    );
+    this.reminderSavingType = '';
+    if (!result.success) {
+      this.reminderError = result.message || 'Could not update the reminder.';
+      return;
+    }
+    this.reminderMessage = enabled
+      ? `${reminder.label} set for ${this.formatReminderTime(time)}.`
+      : `${reminder.label} turned off.`;
+  }
+
+  async deleteCustomReminder(reminder: CustomReminder): Promise<void> {
+    await this.reminderService.deleteCustomReminder(reminder.id);
+    this.reminderMessage = `${reminder.label} removed.`;
+    this.reminderError = '';
   }
 
   downloadBackup(): void {

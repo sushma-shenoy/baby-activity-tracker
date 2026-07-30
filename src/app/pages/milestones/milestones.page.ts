@@ -10,6 +10,10 @@ import {
   MilestoneService
 } from '../../services/milestone.service';
 import { PreferencesService } from '../../services/preferences.service';
+import {
+  calendarDateValidator,
+  trimmedRequiredValidator
+} from '../../shared/form-validators';
 
 @Component({
   selector: 'app-milestones',
@@ -38,12 +42,16 @@ export class MilestonesPage implements OnInit, OnDestroy {
   readonly form = new FormGroup({
     title: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.maxLength(80)]
+      validators: [
+        Validators.required,
+        trimmedRequiredValidator(),
+        Validators.maxLength(80)
+      ]
     }),
     category: new FormControl<MilestoneCategory>('firsts', { nonNullable: true }),
     achievedDate: new FormControl(this.today, {
       nonNullable: true,
-      validators: [Validators.required]
+      validators: [Validators.required, calendarDateValidator()]
     }),
     notes: new FormControl('', {
       nonNullable: true,
@@ -58,6 +66,25 @@ export class MilestonesPage implements OnInit, OnDestroy {
     private readonly preferencesService: PreferencesService,
     private readonly alertController: AlertController
   ) {}
+
+  fieldError(
+    field: 'title' | 'achievedDate' | 'notes'
+  ): string {
+    const control = this.form.controls[field];
+    if (!control.touched || !control.errors) return '';
+    if (control.hasError('required')) {
+      return field === 'title'
+        ? 'Enter what happened.'
+        : 'Choose the date achieved.';
+    }
+    if (control.hasError('invalidDate')) return 'Enter a valid calendar date.';
+    if (control.hasError('maxlength')) {
+      return field === 'title'
+        ? 'Use 80 characters or fewer.'
+        : 'Use 240 characters or fewer.';
+    }
+    return 'Check this field.';
+  }
 
   ngOnInit(): void {
     this.subscription = this.milestoneService.milestones$.subscribe(

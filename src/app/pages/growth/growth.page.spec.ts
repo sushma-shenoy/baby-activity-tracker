@@ -124,6 +124,18 @@ describe('GrowthPage', () => {
     ).toBeTrue();
   });
 
+  it('accepts a weight with one decimal place', () => {
+    component.weightForm.setValue({
+      date: component.todayDate,
+      weightKg: 8.7
+    });
+
+    expect(
+      component.weightForm.controls.weightKg
+        .hasError('weightPrecision')
+    ).toBeFalse();
+  });
+
   it('saves a valid daily weight', () => {
     component.weightForm.setValue({
       date: component.todayDate,

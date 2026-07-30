@@ -99,7 +99,8 @@ export class VaccinationService {
         localStorage.getItem(this.storageKey);
 
       return saved
-        ? (JSON.parse(saved) as VaccinationEntry[])
+        ? (JSON.parse(saved) as unknown[])
+            .filter(entry => this.isValidStoredEntry(entry))
             .sort(
               (first, second) =>
                 second.administeredDate.localeCompare(
@@ -110,6 +111,33 @@ export class VaccinationService {
     } catch {
       return [];
     }
+  }
+
+  private isValidStoredEntry(value: unknown): value is VaccinationEntry {
+    if (!value || typeof value !== 'object') return false;
+    const entry = value as Partial<VaccinationEntry>;
+    return (
+      typeof entry.id === 'string' &&
+      entry.id.length > 0 &&
+      typeof entry.vaccineName === 'string' &&
+      entry.vaccineName.trim().length > 0 &&
+      entry.vaccineName.trim().length <= 80 &&
+      typeof entry.administeredDate === 'string' &&
+      this.isValidDate(entry.administeredDate) &&
+      entry.administeredDate <= this.todayValue() &&
+      typeof entry.nextDueDate === 'string' &&
+      (
+        !entry.nextDueDate ||
+        (
+          this.isValidDate(entry.nextDueDate) &&
+          entry.nextDueDate >= entry.administeredDate
+        )
+      ) &&
+      typeof entry.provider === 'string' &&
+      entry.provider.trim().length <= 80 &&
+      typeof entry.notes === 'string' &&
+      entry.notes.trim().length <= 240
+    );
   }
 
   private isValidDate(value: string): boolean {

@@ -43,6 +43,9 @@ export class MilestoneService {
   }
 
   private validate(milestone: Milestone): Milestone {
+    if (!milestone || typeof milestone !== 'object') {
+      throw new Error('Invalid milestone record.');
+    }
     const title = milestone.title.trim();
     const notes = milestone.notes.trim();
     const achieved = new Date(`${milestone.achievedDate}T00:00:00`);
@@ -54,7 +57,24 @@ export class MilestoneService {
     }
 
     if (
+      typeof milestone.id !== 'string' ||
+      !milestone.id ||
+      ![
+        'motor',
+        'communication',
+        'social',
+        'cognitive',
+        'firsts',
+        'other'
+      ].includes(milestone.category) ||
+      !Number.isFinite(milestone.createdAt)
+    ) {
+      throw new Error('Invalid milestone record.');
+    }
+
+    if (
       !milestone.achievedDate ||
+      !this.isValidDate(milestone.achievedDate) ||
       Number.isNaN(achieved.getTime()) ||
       achieved > today
     ) {
@@ -66,6 +86,20 @@ export class MilestoneService {
     }
 
     return { ...milestone, title, notes };
+  }
+
+  private isValidDate(value: string): boolean {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return false;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    );
   }
 
   private persist(milestones: Milestone[]): void {
@@ -83,7 +117,21 @@ export class MilestoneService {
       const parsed = JSON.parse(
         localStorage.getItem(this.storageKey) || '[]'
       );
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      return (parsed as unknown[])
+        .reduce<Milestone[]>((valid, value) => {
+          try {
+            valid.push(this.validate(value as Milestone));
+          } catch {
+            // Ignore malformed imported or locally stored records.
+          }
+          return valid;
+        }, [])
+        .sort(
+          (a, b) =>
+            b.achievedDate.localeCompare(a.achievedDate) ||
+            b.createdAt - a.createdAt
+        );
     } catch {
       return [];
     }

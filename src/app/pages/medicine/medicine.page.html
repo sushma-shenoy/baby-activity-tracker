@@ -61,9 +61,13 @@
               <ion-input
                 placeholder="e.g. Vitamin D"
                 autocomplete="off"
+                maxlength="60"
                 formControlName="name">
               </ion-input>
             </ion-item>
+            <small class="field-error" *ngIf="fieldError('name')">
+              {{ fieldError('name') }}
+            </small>
           </label>
 
           <label>
@@ -77,21 +81,30 @@
               <ion-input
                 placeholder="e.g. 1 mL"
                 autocomplete="off"
+                maxlength="30"
                 formControlName="dose">
               </ion-input>
             </ion-item>
+            <small class="field-error" *ngIf="fieldError('dose')">
+              {{ fieldError('dose') }}
+            </small>
           </label>
         </div>
 
         <label class="full-field">
           <span>Date and time given</span>
-          <ion-item lines="none">
+          <ion-item
+            lines="none"
+            [class.field-invalid]="fieldError('givenAt')">
             <ion-input
               type="datetime-local"
               [max]="maximumDateTime"
               formControlName="givenAt">
             </ion-input>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('givenAt')">
+            {{ fieldError('givenAt') }}
+          </small>
         </label>
 
         <label class="full-field">
@@ -104,6 +117,9 @@
               formControlName="notes">
             </ion-textarea>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('notes')">
+            {{ fieldError('notes') }}
+          </small>
         </label>
 
         <p class="form-error" role="alert" *ngIf="errorMessage">

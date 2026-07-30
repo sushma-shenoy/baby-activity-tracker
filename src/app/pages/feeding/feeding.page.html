@@ -309,6 +309,9 @@
     </div>
 
     <!-- SAVE -->
+    <p class="field-error" role="alert" *ngIf="feedError">
+      {{ feedError }}
+    </p>
     <button
       type="button"
       class="add-btn"
@@ -535,6 +538,9 @@
         </div>
 
         <!-- ACTIONS -->
+        <p class="field-error" role="alert" *ngIf="feedError">
+          {{ feedError }}
+        </p>
         <div class="edit-feed-actions">
           <ion-button
             type="button"

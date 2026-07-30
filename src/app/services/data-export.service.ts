@@ -24,7 +24,9 @@ export class DataExportService {
     'baby_milestones',
     'nursing_sessions',
     'active_nursing_session',
-    'baby_activity_reminders'
+    'baby_activity_reminders',
+    'baby_custom_reminders',
+    'baby_vaccination_reminder'
   ] as const;
 
   createBackup(): BabyTrackerBackup {
@@ -156,7 +158,8 @@ export class DataExportService {
       'baby_temperature_entries',
       'baby_milestones',
       'nursing_sessions',
-      'baby_activity_reminders'
+      'baby_activity_reminders',
+      'baby_custom_reminders'
     ];
     if (arrayKeys.includes(key)) return Array.isArray(value);
     if (key === 'baby_profiles_v2') return Array.isArray(value);
@@ -165,6 +168,9 @@ export class DataExportService {
     }
     if (key === 'baby_temperature_unit') {
       return value === 'celsius' || value === 'fahrenheit';
+    }
+    if (key === 'baby_vaccination_reminder') {
+      return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     }
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   }

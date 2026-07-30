@@ -50,6 +50,60 @@
       </button>
     </section>
 
+    <section class="vaccination-form-card reminder-card">
+      <div class="section-heading reminder-heading">
+        <div>
+          <p class="eyebrow">Stay prepared</p>
+          <h2>Vaccination reminders</h2>
+        </div>
+        <ion-toggle
+          [checked]="reminderService.vaccinationReminder.enabled"
+          aria-label="Enable vaccination reminders"
+          (ionChange)="
+            updateVaccinationReminder({
+              enabled: $event.detail.checked
+            })
+          ">
+        </ion-toggle>
+      </div>
+
+      <p class="reminder-description">
+        Get an alert for every future next due date you add below.
+      </p>
+
+      <div
+        class="reminder-options"
+        *ngIf="reminderService.vaccinationReminder.enabled">
+        <label>
+          <span>Remind me</span>
+          <select
+            [value]="reminderService.vaccinationReminder.daysBefore"
+            (change)="
+              updateVaccinationReminder({
+                daysBefore: +$any($event.target).value
+              })
+            ">
+            <option value="0">On the due date</option>
+            <option value="1">1 day before</option>
+            <option value="3">3 days before</option>
+            <option value="7">1 week before</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Alert time</span>
+          <input
+            type="time"
+            [value]="reminderService.vaccinationReminder.time"
+            (change)="
+              updateVaccinationReminder({
+                time: $any($event.target).value
+              })
+            ">
+        </label>
+      </div>
+    </section>
+
     <section class="vaccination-form-card">
       <div class="section-heading">
         <div>
@@ -83,31 +137,45 @@
             <ion-input
               placeholder="Enter the recorded vaccine name"
               autocomplete="off"
+              maxlength="80"
               formControlName="vaccineName">
             </ion-input>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('vaccineName')">
+            {{ fieldError('vaccineName') }}
+          </small>
         </label>
 
         <div class="form-grid">
           <label>
             <span>Administered date</span>
-            <ion-item lines="none">
+            <ion-item
+              lines="none"
+              [class.field-invalid]="fieldError('administeredDate')">
               <ion-input
                 type="date"
                 [max]="todayDate"
                 formControlName="administeredDate">
               </ion-input>
             </ion-item>
+            <small class="field-error" *ngIf="fieldError('administeredDate')">
+              {{ fieldError('administeredDate') }}
+            </small>
           </label>
 
           <label>
             <span>Next due date <small>optional</small></span>
-            <ion-item lines="none">
+            <ion-item
+              lines="none"
+              [class.field-invalid]="fieldError('nextDueDate')">
               <ion-input
                 type="date"
                 formControlName="nextDueDate">
               </ion-input>
             </ion-item>
+            <small class="field-error" *ngIf="fieldError('nextDueDate')">
+              {{ fieldError('nextDueDate') }}
+            </small>
           </label>
         </div>
 
@@ -117,9 +185,13 @@
             <ion-input
               placeholder="Where it was administered"
               autocomplete="organization"
+              maxlength="80"
               formControlName="provider">
             </ion-input>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('provider')">
+            {{ fieldError('provider') }}
+          </small>
         </label>
 
         <label class="full-field">
@@ -132,6 +204,9 @@
               formControlName="notes">
             </ion-textarea>
           </ion-item>
+          <small class="field-error" *ngIf="fieldError('notes')">
+            {{ fieldError('notes') }}
+          </small>
         </label>
 
         <p class="form-error" role="alert" *ngIf="errorMessage">
