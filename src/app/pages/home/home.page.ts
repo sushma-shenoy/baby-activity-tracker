@@ -35,6 +35,9 @@ import {
 import {
   BabyProfileService
 } from '../../services/baby-profile.service';
+import {
+  PhotoStorageService
+} from '../../services/photo-storage.service';
 
 interface ProgressItem {
   label: string;
@@ -81,6 +84,7 @@ export class HomePage implements OnInit, OnDestroy {
     age: 'Age not set',
     mood: 'Happy 😊'
   };
+  babyPhotoUrl = '';
 
   private activitiesSubscription?: Subscription;
   private preferencesSubscription?: Subscription;
@@ -90,7 +94,8 @@ export class HomePage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly activityService: ActivityService,
     private readonly preferencesService: PreferencesService,
-    readonly babyProfileService: BabyProfileService
+    readonly babyProfileService: BabyProfileService,
+    private readonly photoStorageService: PhotoStorageService
   ) {}
 
   ngOnInit(): void {
@@ -124,6 +129,14 @@ export class HomePage implements OnInit, OnDestroy {
 
   ionViewWillEnter(): void {
     this.refreshHomeData();
+    void this.loadBabyPhoto();
+  }
+
+  private async loadBabyPhoto(): Promise<void> {
+    this.babyPhotoUrl =
+      await this.photoStorageService.getPhotoUrl(
+        this.babyProfileService.activeProfile?.photoId
+      );
   }
 
   ngOnDestroy(): void {
@@ -139,6 +152,9 @@ export class HomePage implements OnInit, OnDestroy {
     switch (type) {
       case 'feeding':
         return '🍼';
+
+      case 'solids':
+        return '🥣';
 
       case 'sleep':
         return '😴';
@@ -157,6 +173,9 @@ export class HomePage implements OnInit, OnDestroy {
     switch (type) {
       case 'feeding':
         return 'feeding-accent';
+
+      case 'solids':
+        return 'solids-accent';
 
       case 'sleep':
         return 'sleep-accent';
@@ -217,6 +236,7 @@ export class HomePage implements OnInit, OnDestroy {
       string
     > = {
       feeding: '/feeding',
+      solids: '/solids',
       sleep: '/sleep',
       diaper: '/diaper'
     };

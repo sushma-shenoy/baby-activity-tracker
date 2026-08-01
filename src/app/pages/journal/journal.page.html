@@ -1,0 +1,57 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/home"></ion-back-button></ion-buttons>
+    <ion-title>Daily Journal</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="journal-page">
+  <main>
+    <section class="journal-hero">
+      <p>Daily wellbeing</p>
+      <h1>How is baby doing?</h1>
+      <span>Record mood, symptoms, and anything worth remembering.</span>
+    </section>
+
+    <section class="entry-form">
+      <label>Mood</label>
+      <div class="mood-grid">
+        <button *ngFor="let item of moods" type="button" [class.active]="mood === item.value" (click)="mood = item.value">
+          <span>{{ item.icon }}</span><small>{{ item.label }}</small>
+        </button>
+      </div>
+
+      <label for="journal-time">Date and time</label>
+      <input id="journal-time" type="datetime-local" [(ngModel)]="recordedAt">
+
+      <label>Symptoms and observations</label>
+      <div class="symptom-grid">
+        <button *ngFor="let symptom of symptomOptions" type="button" [class.active]="symptoms.includes(symptom)" (click)="toggleSymptom(symptom)">{{ symptom }}</button>
+      </div>
+
+      <label for="journal-notes">Notes</label>
+      <textarea id="journal-notes" maxlength="500" rows="4" [(ngModel)]="notes" placeholder="Sleep, behavior, appetite, routines, or questions for the doctor"></textarea>
+      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <button class="save-button" type="button" (click)="save()">{{ editingId ? 'Update entry' : 'Save journal entry' }}</button>
+    </section>
+
+    <section class="history">
+      <h2>Journal history</h2>
+      <div class="empty" *ngIf="!entries.length">No journal entries yet.</div>
+      <article *ngFor="let entry of entries">
+        <div class="entry-icon">{{ moodInfo(entry.mood).icon }}</div>
+        <div class="entry-copy">
+          <small>{{ entry.recordedAt | date:'medium' }}</small>
+          <strong>{{ moodInfo(entry.mood).label }}</strong>
+          <span *ngIf="entry.symptoms.length">{{ entry.symptoms.join(' · ') }}</span>
+          <p *ngIf="entry.notes">{{ entry.notes }}</p>
+          <em *ngIf="entry.createdByName">Added by {{ entry.createdByName }}</em>
+        </div>
+        <div class="entry-actions">
+          <button type="button" (click)="edit(entry)">Edit</button>
+          <button type="button" class="delete" (click)="remove(entry)">Delete</button>
+        </div>
+      </article>
+    </section>
+  </main>
+</ion-content>

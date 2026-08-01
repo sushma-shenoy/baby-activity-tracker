@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { trackerStorage } from '../firebase/tracker-storage';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 export type NursingSide = 'left' | 'right';
 
@@ -10,6 +12,8 @@ export interface NursingSession {
   rightSeconds: number;
   lastSide: NursingSide;
   notes: string;
+  createdByUid?: string;
+  createdByName?: string;
 }
 
 export interface ActiveNursingSession {
@@ -28,7 +32,7 @@ export class NursingService {
 
   getSessions(): NursingSession[] {
     try {
-      const value = JSON.parse(localStorage.getItem(this.sessionsKey) || '[]');
+      const value = JSON.parse(trackerStorage.getItem(this.sessionsKey) || '[]');
       return Array.isArray(value)
         ? value.map(session => ({ notes: '', ...session }))
         : [];
@@ -39,7 +43,7 @@ export class NursingService {
 
   getActive(): ActiveNursingSession | null {
     try {
-      const value = localStorage.getItem(this.activeKey);
+      const value = trackerStorage.getItem(this.activeKey);
       return value ? JSON.parse(value) as ActiveNursingSession : null;
     } catch {
       return null;
@@ -84,10 +88,12 @@ export class NursingService {
       leftSeconds: current.leftSeconds,
       rightSeconds: current.rightSeconds,
       lastSide: current.lastSide,
-      notes: ''
+      notes: '',
+      createdByUid: firebaseAuth.currentUser?.uid,
+      createdByName: this.currentUserName()
     };
     this.saveSession(session);
-    localStorage.removeItem(this.activeKey);
+    trackerStorage.removeItem(this.activeKey);
     return session;
   }
 
@@ -103,24 +109,32 @@ export class NursingService {
       throw new Error('Check the nursing duration, date, and notes.');
     }
 
+    const existingSession = this.getSessions().find(item => item.id === session.id);
     const normalized = {
       ...session,
       leftSeconds: Math.round(session.leftSeconds),
       rightSeconds: Math.round(session.rightSeconds),
-      notes: session.notes.trim()
+      notes: session.notes.trim(),
+      createdByUid: existingSession?.createdByUid ?? session.createdByUid ?? firebaseAuth.currentUser?.uid,
+      createdByName: existingSession?.createdByName ?? session.createdByName ?? this.currentUserName()
     };
     const sessions = this.getSessions();
     const updated = sessions.some(item => item.id === session.id)
       ? sessions.map(item => item.id === session.id ? normalized : item)
       : [normalized, ...sessions];
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.sessionsKey,
       JSON.stringify(updated.sort((a, b) => b.endedAt - a.endedAt))
     );
   }
 
+  private currentUserName(): string | undefined {
+    const user = firebaseAuth.currentUser;
+    return user ? user.displayName || user.email || 'Caregiver' : undefined;
+  }
+
   delete(id: string): void {
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.sessionsKey,
       JSON.stringify(this.getSessions().filter(session => session.id !== id))
     );
@@ -141,6 +155,6 @@ export class NursingService {
   }
 
   private saveActive(session: ActiveNursingSession): void {
-    localStorage.setItem(this.activeKey, JSON.stringify(session));
+    trackerStorage.setItem(this.activeKey, JSON.stringify(session));
   }
 }

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { onTrackerDataChange, trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 export type TemperatureMethod =
   'axillary' | 'oral' | 'rectal' | 'ear' | 'forehead';
@@ -11,6 +13,8 @@ export interface TemperatureEntry {
   measuredAt: number;
   method: TemperatureMethod;
   notes: string;
+  createdByUid?: string;
+  createdByName?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -25,6 +29,11 @@ export class TemperatureService {
   readonly entries$ = this.subject.asObservable();
   readonly unit$ = this.unitSubject.asObservable();
 
+  constructor() {
+    onTrackerDataChange(this.key, () => this.subject.next(this.load()));
+    onTrackerDataChange(this.unitKey, () => this.unitSubject.next(this.loadUnit()));
+  }
+
   get entries(): TemperatureEntry[] {
     return this.subject.value;
   }
@@ -34,7 +43,7 @@ export class TemperatureService {
   }
 
   setUnit(unit: TemperatureUnit): void {
-    localStorage.setItem(this.unitKey, unit);
+    trackerStorage.setItem(this.unitKey, unit);
     this.unitSubject.next(unit);
   }
 
@@ -62,7 +71,9 @@ export class TemperatureService {
     const normalized = {
       ...entry,
       celsius: Math.round(celsius * 10) / 10,
-      notes: entry.notes.trim()
+      notes: entry.notes.trim(),
+      createdByUid: this.entries.find(item => item.id === entry.id)?.createdByUid ?? entry.createdByUid ?? firebaseAuth.currentUser?.uid,
+      createdByName: this.entries.find(item => item.id === entry.id)?.createdByName ?? entry.createdByName ?? this.currentUserName()
     };
     const existing =
       this.entries.some(item => item.id === entry.id);
@@ -76,6 +87,11 @@ export class TemperatureService {
     return true;
   }
 
+  private currentUserName(): string | undefined {
+    const user = firebaseAuth.currentUser;
+    return user ? user.displayName || user.email || 'Caregiver' : undefined;
+  }
+
   delete(id: string): void {
     this.persist(
       this.entries.filter(entry => entry.id !== id)
@@ -86,14 +102,14 @@ export class TemperatureService {
     const sorted = [...entries].sort(
       (a, b) => b.measuredAt - a.measuredAt
     );
-    localStorage.setItem(this.key, JSON.stringify(sorted));
+    trackerStorage.setItem(this.key, JSON.stringify(sorted));
     this.subject.next(sorted);
   }
 
   private load(): TemperatureEntry[] {
     try {
       const value = JSON.parse(
-        localStorage.getItem(this.key) || '[]'
+        trackerStorage.getItem(this.key) || '[]'
       );
       return Array.isArray(value)
         ? value
@@ -125,7 +141,7 @@ export class TemperatureService {
   }
 
   private loadUnit(): TemperatureUnit {
-    return localStorage.getItem(this.unitKey) === 'fahrenheit'
+    return trackerStorage.getItem(this.unitKey) === 'fahrenheit'
       ? 'fahrenheit'
       : 'celsius';
   }

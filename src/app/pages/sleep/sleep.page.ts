@@ -35,6 +35,10 @@ import {
   Activity
 } from '../../shared/models/activity-model';
 
+import {
+  formatTime24
+} from '../../shared/date-time.utils';
+
 @Component({
   selector: 'app-sleep',
   templateUrl: './sleep.page.html',
@@ -64,6 +68,7 @@ export class SleepPage
   };
 
   private timerSubscription?: Subscription;
+  private activitySubscription?: Subscription;
 
   constructor(
     public readonly sleepService:
@@ -86,6 +91,9 @@ export class SleepPage
       interval(1000).subscribe(() => {
         this.updateTimerDisplay();
       });
+    this.activitySubscription = this.activityService.activities$.subscribe(
+      () => this.loadSleepActivities()
+    );
   }
 
   ionViewWillEnter(): void {
@@ -170,16 +178,9 @@ export class SleepPage
         this.formatDurationValue(
           totalMilliseconds
         ),
-      time:
-        new Date(
-          completedAt
-        ).toLocaleTimeString(
-          [],
-          {
-            hour: '2-digit',
-            minute: '2-digit'
-          }
-        ),
+      time: formatTime24(
+        new Date(completedAt)
+      ),
       createdAt: completedAt
     };
 
@@ -373,16 +374,9 @@ export class SleepPage
             totalMinutes
           ),
 
-        time:
-          new Date(
-            createdAt
-          ).toLocaleTimeString(
-            [],
-            {
-              hour: '2-digit',
-              minute: '2-digit'
-            }
-          ),
+        time: formatTime24(
+          new Date(createdAt)
+        ),
 
         createdAt
       }
@@ -569,5 +563,6 @@ export class SleepPage
   ngOnDestroy(): void {
     this.timerSubscription
       ?.unsubscribe();
+    this.activitySubscription?.unsubscribe();
   }
 }

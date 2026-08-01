@@ -1,0 +1,146 @@
+.solids-page {
+  --background: linear-gradient(180deg, #fffaf2, #f8fafc);
+}
+
+main { padding: 16px; }
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px;
+  border-radius: 28px;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.hero p, .hero h1, .hero span { margin: 0; }
+.hero p { font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.hero h1 { margin: 4px 0; font-size: 28px; font-weight: 900; }
+.hero span { font-size: 12px; opacity: .9; }
+.hero-icon { display: grid; width: 62px; height: 62px; place-items: center; border-radius: 20px; background: #ffffff35; font-size: 32px; }
+
+.form-card, .history {
+  margin-top: 16px;
+  padding: 19px;
+  border-radius: 25px;
+  background: #fff;
+  box-shadow: 0 10px 28px #5b463514;
+}
+
+.section-heading p, .history-heading p { margin: 0; color: #d97706; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+.section-heading h2, .history-heading h2 { margin: 3px 0 17px; color: #292524; font-size: 20px; }
+.field { display: block; margin-top: 16px; }
+.field > span { display: block; margin-bottom: 7px; color: #57534e; font-size: 12px; font-weight: 800; }
+.field input, .field textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e7e5e4;
+  border-radius: 13px;
+  color: #292524;
+  background: #fffcf7;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.food-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #f1e4d5;
+  border-radius: 15px;
+}
+
+.food-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fffcf7;
+}
+
+.food-table th,
+.food-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f3e9dc;
+  vertical-align: top;
+}
+
+.food-table tr:last-child th,
+.food-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.food-table th {
+  width: 92px;
+  color: #92400e;
+  font-size: 11px;
+  text-align: left;
+}
+
+.food-table th b {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 17px;
+}
+
+.food-table td {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.food-table button {
+  min-height: 31px;
+  padding: 5px 9px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  color: #78716c;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.food-table button.selected {
+  border-color: #f97316;
+  color: #9a3412;
+  background: #ffedd5;
+  box-shadow: inset 0 0 0 1px #f97316;
+}
+
+.selected-summary {
+  margin: 9px 0 0;
+  color: #9a3412;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.choice-grid { display: grid; gap: 7px; }
+.amount-grid { grid-template-columns: repeat(4, 1fr); }
+.reaction-grid { grid-template-columns: repeat(2, 1fr); }
+.choice-grid button {
+  min-height: 43px;
+  border: 1px solid #fde7bd;
+  border-radius: 12px;
+  color: #78716c;
+  background: #fffaf0;
+  font-weight: 750;
+}
+.choice-grid button.active { border-color: #f59e0b; color: #9a3412; background: #ffedd5; }
+.reaction-grid b { margin-right: 4px; }
+
+.form-actions { display: flex; gap: 9px; margin-top: 18px; }
+.form-actions button { min-height: 48px; border: 0; border-radius: 14px; font-weight: 850; }
+.save { flex: 1; color: #fff; background: linear-gradient(135deg, #f59e0b, #f97316); }
+.cancel { padding: 0 18px; color: #78716c; background: #f5f5f4; }
+.error { color: #b91c1c; font-size: 12px; }
+
+.history-heading { display: flex; justify-content: space-between; }
+.history-heading strong { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 11px; color: #b45309; background: #ffedd5; }
+.history article { display: flex; gap: 11px; padding: 13px 0; border-top: 1px solid #f5f5f4; }
+.meal-icon { display: grid; width: 43px; height: 43px; flex: 0 0 43px; place-items: center; border-radius: 14px; background: #fff7ed; }
+.meal-copy { min-width: 0; flex: 1; }
+.meal-copy h3, .meal-copy p { margin: 0; }
+.meal-copy h3 { color: #292524; font-size: 14px; }
+.meal-copy p, .meal-copy small, .meal-copy span { display: block; margin-top: 4px; color: #78716c; font-size: 11px; }
+.delete { align-self: center; border: 0; color: #a8a29e; background: transparent; font-size: 18px; }
+.empty { padding: 28px 8px; color: #a8a29e; text-align: center; }
+.empty span { font-size: 34px; }
+.empty h3 { margin: 8px 0 3px; color: #57534e; }
+.empty p { margin: 0; font-size: 12px; }

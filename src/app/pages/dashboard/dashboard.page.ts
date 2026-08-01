@@ -71,6 +71,7 @@ export class DashboardPage
 
   stats = {
     feeding: 0,
+    solids: 0,
     sleep: '0 min',
     diaper: 0,
     lastFeedAgo: 'No feed yet'
@@ -249,6 +250,9 @@ export class DashboardPage
       case 'feeding':
         return '🍼';
 
+      case 'solids':
+        return '🥣';
+
       case 'sleep':
         return '😴';
 
@@ -373,6 +377,12 @@ export class DashboardPage
       todayActivities.filter(
         activity =>
           activity.type === 'feeding'
+      ).length;
+
+    this.stats.solids =
+      todayActivities.filter(
+        activity =>
+          activity.type === 'solids'
       ).length;
 
     this.stats.diaper =

@@ -25,6 +25,7 @@ import {
 import {
   firebaseAuth
 } from '../firebase/firebase.config';
+import { trackerStorage } from '../firebase/tracker-storage';
 
 import {
   AuthResult
@@ -114,6 +115,7 @@ export class AuthService {
             displayName.trim()
         }
       );
+      await trackerStorage.useUser(userCredential.user.uid);
 
       /*
        * Firebase does not always immediately emit profile changes
@@ -152,6 +154,7 @@ export class AuthService {
             password
           )
         );
+      await trackerStorage.useUser(userCredential.user.uid);
 
       // Route guards should not have to wait for the auth listener to
       // publish a user that this request has already authenticated.
@@ -175,6 +178,7 @@ export class AuthService {
   async logout(): Promise<AuthResult> {
     try {
       await signOut(firebaseAuth);
+      trackerStorage.clearUser();
 
       return {
         success: true
@@ -216,6 +220,9 @@ export class AuthService {
     onAuthStateChanged(
       firebaseAuth,
       (user: User | null) => {
+        if (!user) {
+          trackerStorage.clearUser();
+        }
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
       },

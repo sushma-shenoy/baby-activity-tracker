@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
 import {
   AppPreferences,
-  BabyProfile
+  BabyProfile,
+  PreferencesService
 } from './preferences.service';
 
 export interface ManagedBabyProfile extends BabyProfile {
@@ -18,6 +20,7 @@ export const BABY_TRACKER_DATA_KEYS = [
   'baby_preferences',
   'baby_activities',
   'feeds',
+  'baby_solid_food_entries',
   'sleep_state',
   'baby_weight_entries',
   'baby_medicine_entries',
@@ -34,6 +37,9 @@ export const BABY_TRACKER_DATA_KEYS = [
 
 @Injectable({ providedIn: 'root' })
 export class BabyProfileService {
+  private readonly preferencesService =
+    inject(PreferencesService);
+
   private readonly profilesSubject =
     new BehaviorSubject<ManagedBabyProfile[]>(
       this.loadOrMigrateProfiles()
@@ -46,7 +52,7 @@ export class BabyProfileService {
   }
 
   get activeProfileId(): string {
-    return localStorage.getItem(ACTIVE_PROFILE_KEY) ??
+    return trackerStorage.getItem(ACTIVE_PROFILE_KEY) ??
       this.profiles[0]?.id ??
       '';
   }
@@ -74,11 +80,11 @@ export class BabyProfileService {
     const profiles = [...this.profiles, profile];
     this.persistProfiles(profiles);
     this.clearActiveData();
-    localStorage.setItem(
+    trackerStorage.setItem(
       'baby_preferences',
       JSON.stringify({ baby, goals })
     );
-    localStorage.setItem(ACTIVE_PROFILE_KEY, profile.id);
+    trackerStorage.setItem(ACTIVE_PROFILE_KEY, profile.id);
     this.snapshotProfile(profile.id);
 
     return profile;
@@ -95,7 +101,7 @@ export class BabyProfileService {
     this.snapshotActiveProfile();
     this.clearActiveData();
     this.restoreProfile(profileId);
-    localStorage.setItem(ACTIVE_PROFILE_KEY, profileId);
+    trackerStorage.setItem(ACTIVE_PROFILE_KEY, profileId);
     return true;
   }
 
@@ -108,6 +114,34 @@ export class BabyProfileService {
 
     this.persistProfiles(profiles);
     this.snapshotActiveProfile();
+  }
+
+  setProfilePhoto(
+    profileId: string,
+    photoId?: string
+  ): void {
+    const profiles = this.profiles.map(profile =>
+      profile.id === profileId
+        ? { ...profile, photoId }
+        : profile
+    );
+
+    this.persistProfiles(profiles);
+
+    if (profileId === this.activeProfileId) {
+      const preferences =
+        this.preferencesService.preferences;
+
+      this.preferencesService.save({
+        ...preferences,
+        baby: {
+          ...preferences.baby,
+          photoId
+        }
+      });
+
+      this.snapshotActiveProfile();
+    }
   }
 
   deleteProfile(profileId: string): boolean {
@@ -123,7 +157,7 @@ export class BabyProfileService {
     );
 
     for (const key of BABY_TRACKER_DATA_KEYS) {
-      localStorage.removeItem(this.profileDataKey(profileId, key));
+      trackerStorage.removeItem(this.profileDataKey(profileId, key));
     }
 
     this.persistProfiles(profiles);
@@ -132,16 +166,16 @@ export class BabyProfileService {
 
   private loadOrMigrateProfiles(): ManagedBabyProfile[] {
     try {
-      const stored = localStorage.getItem(PROFILE_LIST_KEY);
+      const stored = trackerStorage.getItem(PROFILE_LIST_KEY);
       if (stored) {
         const profiles = JSON.parse(stored) as ManagedBabyProfile[];
         if (Array.isArray(profiles) && profiles.length > 0) {
           if (
             !profiles.some(
-              profile => profile.id === localStorage.getItem(ACTIVE_PROFILE_KEY)
+              profile => profile.id === trackerStorage.getItem(ACTIVE_PROFILE_KEY)
             )
           ) {
-            localStorage.setItem(ACTIVE_PROFILE_KEY, profiles[0].id);
+            trackerStorage.setItem(ACTIVE_PROFILE_KEY, profiles[0].id);
           }
           return profiles;
         }
@@ -157,8 +191,8 @@ export class BabyProfileService {
       createdAt: Date.now()
     };
 
-    localStorage.setItem(PROFILE_LIST_KEY, JSON.stringify([profile]));
-    localStorage.setItem(ACTIVE_PROFILE_KEY, profile.id);
+    trackerStorage.setItem(PROFILE_LIST_KEY, JSON.stringify([profile]));
+    trackerStorage.setItem(ACTIVE_PROFILE_KEY, profile.id);
     this.snapshotProfile(profile.id);
     return [profile];
   }
@@ -166,7 +200,7 @@ export class BabyProfileService {
   private loadLegacyBaby(): BabyProfile {
     try {
       const preferences = JSON.parse(
-        localStorage.getItem('baby_preferences') || '{}'
+        trackerStorage.getItem('baby_preferences') || '{}'
       ) as Partial<AppPreferences>;
 
       return {
@@ -191,37 +225,37 @@ export class BabyProfileService {
 
   private snapshotProfile(profileId: string): void {
     for (const key of BABY_TRACKER_DATA_KEYS) {
-      const value = localStorage.getItem(key);
+      const value = trackerStorage.getItem(key);
       const scopedKey = this.profileDataKey(profileId, key);
 
       if (value === null) {
-        localStorage.removeItem(scopedKey);
+        trackerStorage.removeItem(scopedKey);
       } else {
-        localStorage.setItem(scopedKey, value);
+        trackerStorage.setItem(scopedKey, value);
       }
     }
   }
 
   private restoreProfile(profileId: string): void {
     for (const key of BABY_TRACKER_DATA_KEYS) {
-      const value = localStorage.getItem(
+      const value = trackerStorage.getItem(
         this.profileDataKey(profileId, key)
       );
 
       if (value !== null) {
-        localStorage.setItem(key, value);
+        trackerStorage.setItem(key, value);
       }
     }
   }
 
   private clearActiveData(): void {
     for (const key of BABY_TRACKER_DATA_KEYS) {
-      localStorage.removeItem(key);
+      trackerStorage.removeItem(key);
     }
   }
 
   private persistProfiles(profiles: ManagedBabyProfile[]): void {
-    localStorage.setItem(PROFILE_LIST_KEY, JSON.stringify(profiles));
+    trackerStorage.setItem(PROFILE_LIST_KEY, JSON.stringify(profiles));
     this.profilesSubject.next(profiles);
   }
 

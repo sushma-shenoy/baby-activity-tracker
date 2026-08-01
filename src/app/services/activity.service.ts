@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
 import { Activity } from '../shared/models/activity-model';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 @Injectable({
   providedIn: 'root'
@@ -13,9 +15,18 @@ export class ActivityService {
 
   readonly activities$ = this.activitiesSubject.asObservable();
 
+  constructor() {
+    window.addEventListener('baby-tracker:data-changed', event => {
+      const keys = (event as CustomEvent<{ keys?: string[] }>).detail?.keys;
+      if (keys?.includes(this.key)) {
+        this.activitiesSubject.next(this.load());
+      }
+    });
+  }
+
   private load(): Activity[] {
     try {
-      const savedActivities = localStorage.getItem(this.key);
+      const savedActivities = trackerStorage.getItem(this.key);
 
       if (!savedActivities) {
         return [];
@@ -37,7 +48,7 @@ export class ActivityService {
   private save(activities: Activity[]): void {
     const sortedActivities = this.sortActivities(activities);
 
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.key,
       JSON.stringify(sortedActivities)
     );
@@ -59,11 +70,12 @@ export class ActivityService {
   }
 
   add(activity: Activity): void {
-    if (!this.isValidActivity(activity)) {
+    const attributedActivity = this.withCreator(activity);
+    if (!this.isValidActivity(attributedActivity)) {
       throw new Error('The activity contains invalid or incomplete data.');
     }
     const updated = [
-      activity,
+      attributedActivity,
       ...this.getActivities()
     ];
 
@@ -147,15 +159,44 @@ export class ActivityService {
     return (
       typeof activity.id === 'string' &&
       activity.id.length > 0 &&
-      ['feeding', 'sleep', 'diaper', 'medicine'].includes(
+      ['feeding', 'solids', 'sleep', 'diaper', 'medicine'].includes(
         String(activity.type)
       ) &&
       typeof activity.title === 'string' &&
       activity.title.trim().length > 0 &&
       typeof activity.value === 'string' &&
       typeof activity.time === 'string' &&
+      (
+        activity.photoId === undefined ||
+        typeof activity.photoId === 'string'
+      ) &&
+      (
+        activity.photoDataUrl === undefined ||
+        (
+          typeof activity.photoDataUrl === 'string' &&
+          activity.photoDataUrl.startsWith('data:image/')
+        )
+      ) &&
+      (
+        activity.createdByUid === undefined ||
+        typeof activity.createdByUid === 'string'
+      ) &&
+      (
+        activity.createdByName === undefined ||
+        typeof activity.createdByName === 'string'
+      ) &&
       Number.isFinite(activity.createdAt) &&
       Number(activity.createdAt) <= Date.now() + 60_000
     );
+  }
+
+  private withCreator(activity: Activity): Activity {
+    const user = firebaseAuth.currentUser;
+    if (!user || activity.createdByUid) return activity;
+    return {
+      ...activity,
+      createdByUid: user.uid,
+      createdByName: user.displayName || user.email || 'Caregiver'
+    };
   }
 }

@@ -14,13 +14,18 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/dashboard/dashboard.page').then( m => m.DashboardPage)
+    redirectTo: 'insights',
+    pathMatch: 'full'
   },
   {
     path: 'feeding',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/feeding/feeding.page').then( m => m.FeedingPage)
+  },
+  {
+    path: 'solids',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/solids/solids.page').then(m => m.SolidsPage)
   },
   {
     path: 'sleep',
@@ -65,7 +70,17 @@ export const routes: Routes = [
   {
     path: 'insights',
     canActivate: [authGuard],
-    loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)
+      loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)
+  },
+  {
+    path: 'calendar',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/calendar/calendar.page').then(m => m.CalendarPage)
+  },
+  {
+    path: 'journal',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/journal/journal.page').then(m => m.JournalPage)
   },
   {
     path: 'signup',
@@ -77,4 +92,8 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/login/login.page').then( m => m.LoginPage)
   },
+  {
+    path: '**',
+    redirectTo: 'home'
+  }
 ];

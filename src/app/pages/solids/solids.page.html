@@ -1,0 +1,177 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home">
+      </ion-back-button>
+    </ion-buttons>
+    <ion-title>Solid foods</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="solids-page">
+  <main>
+    <section class="hero">
+      <div>
+        <p>Food journey</p>
+        <h1>Solid foods</h1>
+        <span>Track foods, amounts and reactions</span>
+      </div>
+      <div class="hero-icon">🥣</div>
+    </section>
+
+    <section class="form-card">
+      <div class="section-heading">
+        <div>
+          <p>{{ editingId ? 'Update meal' : 'New meal' }}</p>
+          <h2>{{ editingId ? 'Edit solids' : 'Log solids' }}</h2>
+        </div>
+      </div>
+
+      <div class="field">
+        <span>Choose foods</span>
+
+        <div class="food-table-wrap">
+          <table class="food-table">
+            <tbody>
+              <tr *ngFor="let category of foodCategories">
+                <th scope="row">
+                  <b>{{ category.icon }}</b>
+                  {{ category.name }}
+                </th>
+                <td>
+                  <button
+                    type="button"
+                    *ngFor="let food of category.foods"
+                    [class.selected]="isFoodSelected(food)"
+                    [attr.aria-pressed]="isFoodSelected(food)"
+                    (click)="toggleFood(food)">
+                    {{ food }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Other foods</span>
+        <input
+          type="text"
+          maxlength="120"
+          placeholder="Add other foods, separated by commas"
+          [(ngModel)]="foods">
+      </label>
+
+      <p
+        class="selected-summary"
+        *ngIf="combinedFoods">
+        Selected: {{ combinedFoods }}
+      </p>
+
+      <div class="field">
+        <span>Amount eaten</span>
+        <div class="choice-grid amount-grid">
+          <button
+            type="button"
+            *ngFor="let option of amounts"
+            [class.active]="amount === option.value"
+            (click)="amount = option.value">
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span>Baby’s response</span>
+        <div class="choice-grid reaction-grid">
+          <button
+            type="button"
+            *ngFor="let option of reactions"
+            [class.active]="reaction === option.value"
+            (click)="reaction = option.value">
+            <b>{{ option.icon }}</b>
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Time</span>
+        <input
+          type="datetime-local"
+          [(ngModel)]="dateTime">
+      </label>
+
+      <label class="field">
+        <span>Notes (optional)</span>
+        <textarea
+          rows="3"
+          maxlength="240"
+          placeholder="Texture, preparation, or observations"
+          [(ngModel)]="notes">
+        </textarea>
+      </label>
+
+      <p class="error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </p>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="cancel"
+          *ngIf="editingId"
+          (click)="cancelEdit()">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="save"
+          (click)="save()">
+          {{ editingId ? 'Save changes' : 'Add solid meal' }}
+        </button>
+      </div>
+    </section>
+
+    <section class="history">
+      <div class="history-heading">
+        <div>
+          <p>Recent activity</p>
+          <h2>Solid food history</h2>
+        </div>
+        <strong>{{ entries.length }}</strong>
+      </div>
+
+      <div class="empty" *ngIf="entries.length === 0">
+        <span>🥄</span>
+        <h3>No solid foods logged</h3>
+        <p>Baby’s first foods will appear here.</p>
+      </div>
+
+      <article
+        *ngFor="let entry of entries; trackBy: trackById"
+        (click)="edit(entry)">
+        <div class="meal-icon">🥣</div>
+        <div class="meal-copy">
+          <h3>{{ entry.foods }}</h3>
+          <p>
+            {{ amountLabel(entry.amount) }} ·
+            {{ reactionLabel(entry.reaction) }}
+          </p>
+          <small>
+            {{ entry.eatenAt | date:'MMM d, h:mm a' }}
+          </small>
+          <span *ngIf="entry.notes">{{ entry.notes }}</span>
+        </div>
+        <button
+          type="button"
+          class="delete"
+          aria-label="Delete solid food entry"
+          (click)="$event.stopPropagation(); delete(entry)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+      </article>
+    </section>
+  </main>
+</ion-content>

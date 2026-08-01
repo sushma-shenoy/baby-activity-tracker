@@ -1,0 +1,97 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Calendar</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToToday()">Today</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="calendar-page">
+  <main class="calendar-content">
+    <section class="calendar-hero">
+      <p>Activity history</p>
+      <h1>See every day at a glance</h1>
+      <span>Choose one or more filters to focus the calendar.</span>
+    </section>
+
+    <section class="filter-section" aria-label="Calendar filters">
+      <div class="filter-heading">
+        <strong>Filter activities</strong>
+        <button *ngIf="hasFilters" type="button" (click)="clearFilters()">Clear</button>
+      </div>
+      <div class="filter-row">
+        <button
+          type="button"
+          *ngFor="let filter of filters"
+          [class.active]="selectedTypes.has(filter.type)"
+          [attr.aria-pressed]="selectedTypes.has(filter.type)"
+          (click)="toggleFilter(filter.type)">
+          <span>{{ filter.icon }}</span>{{ filter.label }}
+        </button>
+      </div>
+    </section>
+
+    <section class="month-card">
+      <div class="month-heading">
+        <button type="button" aria-label="Previous month" (click)="previousMonth()">‹</button>
+        <h2>{{ monthLabel }}</h2>
+        <button type="button" aria-label="Next month" (click)="nextMonth()">›</button>
+      </div>
+
+      <div class="weekday-grid">
+        <span *ngFor="let weekday of weekdays">{{ weekday }}</span>
+      </div>
+      <div class="day-grid">
+        <button
+          type="button"
+          *ngFor="let day of days; trackBy: trackDay"
+          [class.outside]="!day.inMonth"
+          [class.today]="day.isToday"
+          [class.selected]="day.dateKey === selectedDateKey"
+          [attr.aria-label]="day.date.toLocaleDateString() + ', ' + day.eventCount + ' activities'"
+          (click)="selectDay(day)">
+          <span>{{ day.dayNumber }}</span>
+          <div class="day-dots" *ngIf="day.eventCount">
+            <i *ngFor="let type of day.eventTypes">{{ filterIcon(type) }}</i>
+          </div>
+          <small *ngIf="day.eventCount > 3">+{{ day.eventCount - 3 }}</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="day-timeline">
+      <div class="timeline-heading">
+        <div>
+          <p>Selected day</p>
+          <h2>{{ selectedDateLabel }}</h2>
+        </div>
+        <span>{{ selectedEvents.length }} records</span>
+      </div>
+
+      <div class="empty-day" *ngIf="!selectedEvents.length">
+        <span>🗓️</span>
+        <strong>No matching activities</strong>
+        <p>Try another day or clear the activity filters.</p>
+      </div>
+
+      <button
+        type="button"
+        class="event-card"
+        *ngFor="let event of selectedEvents; trackBy: trackEvent"
+        (click)="openEvent(event)">
+        <span class="event-icon">{{ filterIcon(event.type) }}</span>
+        <span class="event-copy">
+          <small>{{ eventTime(event.timestamp) }}</small>
+          <strong>{{ event.title }}</strong>
+          <span>{{ event.detail }}</span>
+          <em *ngIf="event.createdByName">Added by {{ event.createdByName }}</em>
+        </span>
+        <span class="event-arrow">›</span>
+      </button>
+    </section>
+  </main>
+</ion-content>

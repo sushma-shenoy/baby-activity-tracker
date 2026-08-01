@@ -47,7 +47,11 @@
     </div>
 
     <div class="baby-bubble">
-      👶
+      <img
+        *ngIf="babyPhotoUrl; else babyEmoji"
+        [src]="babyPhotoUrl"
+        alt="Baby profile photo">
+      <ng-template #babyEmoji>👶</ng-template>
     </div>
   </section>
 
@@ -101,6 +105,15 @@
 
         <div class="quick-icon">🍼</div>
         <span>Feed</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card solids"
+        routerLink="/solids">
+
+        <div class="quick-icon">🥣</div>
+        <span>Solids</span>
       </button>
 
       <button
@@ -164,6 +177,14 @@
 
         <div class="quick-icon">🌟</div>
         <span>Milestones</span>
+      </button>
+
+      <button
+        type="button"
+        class="quick-card journal"
+        routerLink="/journal">
+        <div class="quick-icon">📔</div>
+        <span>Journal</span>
       </button>
     </div>
   </section>
@@ -237,9 +258,9 @@
       <ion-button
         fill="clear"
         size="small"
-        routerLink="/dashboard">
+        routerLink="/calendar">
 
-        View all
+        Open calendar
       </ion-button>
     </div>
 
@@ -292,6 +313,9 @@
         <p>{{ activity.value }}</p>
 
         <small>{{ activity.time }}</small>
+        <small *ngIf="activity.createdByName" class="activity-author">
+          Added by {{ activity.createdByName }}
+        </small>
       </div>
 
       <ion-icon

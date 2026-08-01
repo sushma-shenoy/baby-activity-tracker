@@ -173,6 +173,17 @@
           </span>
         </button>
 
+        <button type="button" class="quick-action solids-action" (click)="add('solids')">
+
+          <span class="quick-action-icon">
+            🥣
+          </span>
+
+          <span class="quick-action-label">
+            Solids
+          </span>
+        </button>
+
         <button type="button" class="quick-action sleep-action" (click)="add('sleep')">
 
           <span class="quick-action-icon">
@@ -231,6 +242,21 @@
             ? 'Feed'
             : 'Feeds'
             }}
+          </span>
+        </button>
+
+        <button type="button" class="stat-card solids-stat" (click)="goTo('solids')">
+
+          <div class="stat-icon">
+            🥣
+          </div>
+
+          <strong>
+            {{ stats.solids }}
+          </strong>
+
+          <span>
+            Solid meals
           </span>
         </button>
 
@@ -295,7 +321,7 @@
         <h3>No activity recorded</h3>
 
         <p>
-          Feeding, sleep and diaper entries will appear here.
+          Feeding, solids, sleep and diaper entries will appear here.
         </p>
       </div>
 
@@ -310,6 +336,8 @@
               activity.type === 'feeding'
             " [class.sleep-icon]="
               activity.type === 'sleep'
+            " [class.solids-icon]="
+              activity.type === 'solids'
             " [class.diaper-icon]="
               activity.type === 'diaper'
             ">

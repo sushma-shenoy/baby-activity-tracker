@@ -159,12 +159,86 @@
   background: linear-gradient(145deg, #8f80c8, #6e5fa5);
   font-size: 1rem;
   font-weight: 800;
+  overflow: hidden;
+}
+
+.baby-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .baby-profile-copy {
   display: grid;
   min-width: 0;
   gap: 3px;
+}
+
+.profile-photo-editor {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 17px;
+  background: #f8f6ff;
+}
+
+.profile-photo-preview {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #ebe7fb;
+  font-size: 2rem;
+}
+
+.profile-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.profile-photo-upload,
+.profile-photo-remove {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 11px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.profile-photo-upload {
+  color: #fff;
+  background: #7566a8;
+}
+
+.profile-photo-upload input {
+  display: none;
+}
+
+.profile-photo-upload.disabled {
+  opacity: 0.6;
+}
+
+.profile-photo-remove {
+  color: #b42318;
+  background: #fee4e2;
+}
+
+.photo-help {
+  display: block;
+  margin-top: 7px;
+  color: #8a8598;
+  font-size: 0.7rem;
 }
 
 .baby-profile-copy strong {
@@ -473,6 +547,150 @@
 .data-section {
   border-color: #dce9e6;
   background: linear-gradient(145deg, #fff, #f4fbf9);
+}
+
+.caregiver-section {
+  border-color: #e5ddf5;
+  background: linear-gradient(145deg, #fff, #faf7ff);
+}
+
+.family-primary-button,
+.join-family-box button {
+  min-height: 45px;
+  border: 0;
+  border-radius: 13px;
+  color: #fff;
+  background: #7357a6;
+  font-weight: 800;
+}
+
+.family-primary-button {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.invite-code {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f3effa;
+}
+
+.invite-code code {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+  color: #594279;
+  font-size: 0.75rem;
+}
+
+.invite-code button,
+.caregiver-list button,
+.shared-family-banner button {
+  border: 0;
+  color: #6d4c9b;
+  background: transparent;
+  font-weight: 800;
+}
+
+.caregiver-list { margin-top: 16px; }
+.caregiver-list > p,
+.join-family-box label {
+  color: #746681;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.caregiver-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee8f5;
+}
+.caregiver-list article div { display: grid; gap: 3px; }
+.caregiver-list article strong { color: #44384e; font-size: 0.8rem; }
+.caregiver-list article span { color: #91859a; font-size: 0.66rem; }
+.caregiver-identity { min-width: 0; }
+.caregiver-identity span { overflow: hidden; text-overflow: ellipsis; }
+.caregiver-controls { justify-items: end; }
+.caregiver-controls select {
+  padding: 6px 24px 6px 8px;
+  border: 1px solid #ddd3e9;
+  border-radius: 9px;
+  color: #594b64;
+  background: #fff;
+  font-size: .68rem;
+  font-weight: 800;
+}
+
+.join-family-box { margin-top: 18px; }
+.join-family-box > div { display: flex; gap: 8px; margin-top: 7px; }
+.join-family-box input {
+  min-width: 0;
+  flex: 1;
+  padding: 11px;
+  border: 1px solid #ddd3e9;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+.join-family-box button { padding: 0 18px; }
+.shared-family-banner {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f3effa;
+}
+.shared-family-banner p { color: #796b84; font-size: 0.72rem; }
+
+.shared-family-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.shared-family-actions button {
+  min-height: 40px;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.shared-family-actions .leave-family {
+  color: #a04455;
+}
+
+.family-switcher {
+  margin-top: 17px;
+}
+
+.family-switcher > p {
+  color: #746681;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.family-option {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 7px;
+  padding: 9px 11px;
+  border: 1px solid #e4dced;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #574a61;
+  background: #fff;
+  text-align: left;
+}
+
+.family-option > span { font-size: 22px; }
+.family-option div { display: grid; gap: 2px; }
+.family-option strong { font-size: 0.78rem; }
+.family-option small { color: #95899e; font-size: 0.64rem; }
+.family-option.active {
+  border-color: #9778bd;
+  background: #f6f1fb;
 }
 
 .export-button {

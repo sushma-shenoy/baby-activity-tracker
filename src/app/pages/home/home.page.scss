@@ -131,6 +131,13 @@ ion-title {
   backdrop-filter: blur(12px);
 }
 
+.baby-bubble img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
 /* LAST ACTIVITY */
 
 .status-grid {
@@ -303,6 +310,10 @@ ion-title {
 
 .feed .quick-icon {
   background: #ffe4e6;
+}
+
+.solids .quick-icon {
+  background: #ffedd5;
 }
 
 .sleep .quick-icon {
@@ -547,6 +558,10 @@ ion-title {
   background: #fb7185;
 }
 
+.journey-card.solids-accent::before {
+  background: #f59e0b;
+}
+
 .journey-card.sleep-accent::before {
   background: #818cf8;
 }
@@ -573,6 +588,10 @@ ion-title {
 
 .feeding-accent .journey-icon {
   background: #ffe4e6;
+}
+
+.solids-accent .journey-icon {
+  background: #ffedd5;
 }
 
 .sleep-accent .journey-icon {

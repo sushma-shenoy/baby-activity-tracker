@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
 
 export interface SleepState {
@@ -50,7 +51,7 @@ getTime(state: SleepState): number {
     sessionActive: false
   };
 
-  localStorage.removeItem('sleep_state'); // IMPORTANT
+  trackerStorage.removeItem('sleep_state'); // IMPORTANT
   this.sleepSubject.next(resetState);
 }
 
@@ -95,13 +96,13 @@ getTime(state: SleepState): number {
   }
 
   private save(state: SleepState) : void{
-    localStorage.setItem(this.stateKey, JSON.stringify(state));
+    trackerStorage.setItem(this.stateKey, JSON.stringify(state));
     this.sleepSubject.next(state);
   }
 
   private loadState(): SleepState {
     try {
-      const data = localStorage.getItem(this.stateKey);
+      const data = trackerStorage.getItem(this.stateKey);
       if (!data) return { ...this.initialState };
       const value = JSON.parse(data) as Partial<SleepState>;
       const elapsed = Number(value.elapsed);

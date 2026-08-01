@@ -193,49 +193,35 @@ ion-title {
 /* SEGMENT */
 
 .activity-segment {
+  width: 100%;
   margin-bottom: 20px;
   padding: 5px;
   border-radius: 18px;
+
+  display: flex;
 
   --background: #ecfdf5;
 
   background: #ecfdf5;
 }
 
-.activity-segment ion-segment-button {
+.activity-segment button {
+  width: 33.333%;
+  min-width: 0;
   min-height: 46px;
+  padding: 0 10px;
+  border: 0;
+  flex: 1 1 0;
   border-radius: 14px;
-
-  --color: #52606d;
-  --color-hover: #065f46;
-  --color-checked: #ffffff;
-
-  --background: transparent;
-
-  --background-hover:
-    rgba(16, 185, 129, 0.09);
-
-  --background-checked:
-    linear-gradient(
-      135deg,
-      #34d399,
-      #14b8a6
-    );
-
-  --indicator-color: transparent;
-  --indicator-box-shadow: none;
-
+  color: #52606d;
+  background: transparent;
   font-size: 13px;
   font-weight: 850;
   text-transform: none;
 }
 
-.activity-segment
-ion-segment-button::part(
-  indicator-background
-) {
-  border-radius: 14px;
-
+.activity-segment button.selected {
+  color: #ffffff;
   background:
     linear-gradient(
       135deg,
@@ -246,23 +232,6 @@ ion-segment-button::part(
   box-shadow:
     0 7px 16px
     rgba(20, 184, 166, 0.25);
-}
-
-.activity-segment
-ion-segment-button::part(native) {
-  color: #52606d;
-}
-
-.activity-segment
-ion-segment-button
-.segment-button-checked::part(native) {
-  color: #ffffff;
-}
-
-.activity-segment ion-label {
-  color: inherit !important;
-  font-weight: 850;
-  opacity: 1;
 }
 
 /* FIELDS */
@@ -299,6 +268,21 @@ ion-segment-button
   gap: 14px;
 
   background: #f4fbf8;
+}
+
+.date-time-input {
+  width: auto;
+  min-width: 170px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  flex: 0 1 195px;
+  color: #0f766e;
+  background: #dff7ef;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .date-time-title,
@@ -347,6 +331,91 @@ ion-segment-button
 
   font-size: 13px;
   font-weight: 650;
+}
+
+.photo-input {
+  display: none;
+}
+
+.photo-picker {
+  width: 100%;
+  min-height: 76px;
+  padding: 14px;
+  border: 1px dashed #86d8c5;
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  color: #0f766e;
+  background: #f4fbf8;
+  text-align: left;
+}
+
+.photo-picker ion-icon {
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  border-radius: 14px;
+
+  color: #0f766e;
+  background: #d1fae5;
+  font-size: 22px;
+}
+
+.photo-picker span,
+.photo-picker strong,
+.photo-picker small {
+  display: block;
+}
+
+.photo-picker strong {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.photo-picker small {
+  margin-top: 3px;
+  color: #718096;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.photo-preview {
+  overflow: hidden;
+  border: 1px solid #d7eee8;
+  border-radius: 18px;
+  background: #f4fbf8;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 190px;
+  display: block;
+  object-fit: cover;
+}
+
+.photo-preview-actions {
+  padding: 10px 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.photo-preview-actions button {
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 10px;
+  color: #0f766e;
+  background: #d1fae5;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.photo-preview-actions .remove-photo-button {
+  color: #b42318;
+  background: #fee4e2;
 }
 
 /* ADD BUTTON */
@@ -399,6 +468,180 @@ ion-segment-button
   color: #ffffff !important;
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* STATISTICS */
+
+.statistics-section {
+  margin-top: 28px;
+}
+
+.statistics-period {
+  padding: 7px 10px;
+  border-radius: 11px;
+  color: #0f766e;
+  background: #d1fae5;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.statistic-card {
+  min-height: 126px;
+  padding: 16px;
+  border: 1px solid rgba(15, 118, 110, 0.08);
+  border-radius: 21px;
+  background: #ffffff;
+  box-shadow: 0 9px 24px rgba(31, 41, 55, 0.06);
+}
+
+.statistic-icon {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  margin-bottom: 11px;
+  place-items: center;
+  border-radius: 12px;
+  background: #ecfdf5;
+  font-size: 18px;
+}
+
+.statistic-card strong {
+  display: block;
+  overflow: hidden;
+  color: #1f2937;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statistic-card .statistic-type {
+  font-size: 14px;
+  line-height: 26px;
+}
+
+.statistic-card p {
+  margin: 5px 0 0;
+  color: #8b91a1;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.today-statistic .statistic-icon {
+  background: #fff7db;
+}
+
+.weekly-statistic .statistic-icon {
+  background: #e9eeff;
+}
+
+.average-statistic .statistic-icon {
+  background: #e8f9f5;
+}
+
+.common-statistic .statistic-icon {
+  background: #f3eafd;
+}
+
+/* REMINDER */
+
+.diaper-reminder-card {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #dcece7;
+  border-radius: 23px;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f2fbf8
+    );
+  box-shadow: 0 9px 24px rgba(31, 41, 55, 0.06);
+}
+
+.reminder-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reminder-heading > div:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.reminder-icon {
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #d1fae5;
+  font-size: 20px;
+}
+
+.reminder-heading h2 {
+  margin: 2px 0 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.reminder-heading p:last-child {
+  margin: 4px 0 0;
+  color: #8b91a1;
+  font-size: 11px;
+}
+
+.reminder-time-field {
+  margin-top: 15px;
+  padding: 12px 13px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.reminder-time-field span {
+  color: #52606d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reminder-time-field input {
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 10px;
+  color: #0f766e;
+  background: #ecfdf5;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reminder-feedback {
+  margin: 11px 2px 0;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.reminder-success {
+  color: #08775f;
+}
+
+.reminder-error {
+  color: #b42318;
 }
 
 /* HISTORY */
@@ -591,6 +834,14 @@ ion-item-sliding {
 
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.history-photo {
+  width: 52px;
+  height: 52px;
+  margin-right: 5px;
+  border-radius: 14px;
+  object-fit: cover;
 }
 
 /* MORE BUTTON */

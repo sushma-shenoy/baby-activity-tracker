@@ -192,6 +192,18 @@ getVolumeBarHeight(
     );
 }
 
+getSolidsBarHeight(
+  value: number
+): number {
+  return this.insightService
+    .getBarHeight(
+      value,
+      this.weeklyAnalytics
+        .maximums
+        .solidsCount
+    );
+}
+
 getSleepBarHeight(
   value: number
 ): number {
@@ -305,6 +317,7 @@ private createEmptyWeeklyAnalytics():
     averages: {
       feedingCount: 0,
       feedingVolumeMl: 0,
+      solidsCount: 0,
       sleepMinutes: 0,
       diaperCount: 0,
       totalActivities: 0
@@ -313,6 +326,7 @@ private createEmptyWeeklyAnalytics():
     totals: {
       feedingCount: 0,
       feedingVolumeMl: 0,
+      solidsCount: 0,
       sleepMinutes: 0,
       diaperCount: 0,
       totalActivities: 0
@@ -321,6 +335,7 @@ private createEmptyWeeklyAnalytics():
     maximums: {
       feedingCount: 1,
       feedingVolumeMl: 1,
+      solidsCount: 1,
       sleepMinutes: 1,
       diaperCount: 1
     },
@@ -330,6 +345,7 @@ private createEmptyWeeklyAnalytics():
     trends: {
       feeding: 'insufficient',
       feedingVolume: 'insufficient',
+      solids: 'insufficient',
       sleep: 'insufficient',
       diaper: 'insufficient'
     }
@@ -385,6 +401,13 @@ formatChartDuration(
   ): void {
     const today =
       new Date();
+
+    this.weeklyAnalytics =
+      this.insightService
+        .calculateWeeklyAnalytics(
+          activities,
+          today
+        );
 
     const yesterday =
       new Date();
@@ -481,6 +504,14 @@ formatChartDuration(
         averageAmountMl: 0,
         averageIntervalMinutes: 0,
         lastFeedAt: null
+      },
+
+      solids: {
+        count: 0,
+        foods: [],
+        likedCount: 0,
+        dislikedCount: 0,
+        possibleReactionCount: 0
       },
 
       sleep: {

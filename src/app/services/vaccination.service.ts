@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { onTrackerDataChange, trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 export interface VaccinationEntry {
   id: string;
@@ -9,6 +11,8 @@ export interface VaccinationEntry {
   nextDueDate: string;
   notes: string;
   createdAt: number;
+  createdByUid?: string;
+  createdByName?: string;
 }
 
 @Injectable({
@@ -24,6 +28,10 @@ export class VaccinationService {
 
   get entries(): VaccinationEntry[] {
     return this.entriesSubject.value;
+  }
+
+  constructor() {
+    onTrackerDataChange(this.storageKey, () => this.entriesSubject.next(this.load()));
   }
 
   save(
@@ -60,7 +68,9 @@ export class VaccinationService {
       vaccineName,
       provider,
       notes,
-      createdAt: existing?.createdAt ?? Date.now()
+      createdAt: existing?.createdAt ?? Date.now(),
+      createdByUid: existing?.createdByUid ?? firebaseAuth.currentUser?.uid,
+      createdByName: existing?.createdByName ?? this.currentUserName()
     };
     const updated = existing
       ? this.entries.map(item =>
@@ -70,6 +80,11 @@ export class VaccinationService {
 
     this.persist(updated);
     return true;
+  }
+
+  private currentUserName(): string | undefined {
+    const user = firebaseAuth.currentUser;
+    return user ? user.displayName || user.email || 'Caregiver' : undefined;
   }
 
   delete(id: string): void {
@@ -86,7 +101,7 @@ export class VaccinationService {
         )
     );
 
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.storageKey,
       JSON.stringify(sorted)
     );
@@ -96,7 +111,7 @@ export class VaccinationService {
   private load(): VaccinationEntry[] {
     try {
       const saved =
-        localStorage.getItem(this.storageKey);
+        trackerStorage.getItem(this.storageKey);
 
       return saved
         ? (JSON.parse(saved) as unknown[])

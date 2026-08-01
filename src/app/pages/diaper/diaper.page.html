@@ -1,7 +1,7 @@
 <ion-header translucent="true" class="app-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard">
+      <ion-back-button defaultHref="/home">
       </ion-back-button>
     </ion-buttons>
 
@@ -9,7 +9,9 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="diaper-page">
+<ion-content
+  [fullscreen]="true"
+  class="diaper-page">
 
   <main class="diaper-page-content">
 
@@ -46,22 +48,32 @@
         </span>
       </div>
 
-      <ion-segment
+      <div
         class="activity-segment"
-        [(ngModel)]="selectedType">
-
-        <ion-segment-button value="wet">
-          <ion-label>Wet</ion-label>
-        </ion-segment-button>
-
-        <ion-segment-button value="dirty">
-          <ion-label>Dirty</ion-label>
-        </ion-segment-button>
-
-        <ion-segment-button value="both">
-          <ion-label>Both</ion-label>
-        </ion-segment-button>
-      </ion-segment>
+        role="group"
+        aria-label="Diaper type">
+        <button
+          type="button"
+          [class.selected]="selectedType === 'wet'"
+          [attr.aria-pressed]="selectedType === 'wet'"
+          (click)="selectedType = 'wet'">
+          Wet
+        </button>
+        <button
+          type="button"
+          [class.selected]="selectedType === 'dirty'"
+          [attr.aria-pressed]="selectedType === 'dirty'"
+          (click)="selectedType = 'dirty'">
+          Dirty
+        </button>
+        <button
+          type="button"
+          [class.selected]="selectedType === 'both'"
+          [attr.aria-pressed]="selectedType === 'both'"
+          (click)="selectedType = 'both'">
+          Both
+        </button>
+      </div>
 
       <!-- DATE AND TIME -->
       <div class="field-section">
@@ -80,24 +92,12 @@
             </span>
           </div>
 
-          <ion-datetime-button
-            datetime="diaper-datetime">
-          </ion-datetime-button>
+          <input
+            class="date-time-input"
+            type="datetime-local"
+            aria-label="Diaper date and time"
+            [(ngModel)]="diaperTime">
         </div>
-
-        <ion-modal
-          [keepContentsMounted]="true"
-          cssClass="diaper-date-modal">
-
-          <ng-template>
-            <ion-datetime
-              id="diaper-datetime"
-              presentation="date-time"
-              [preferWheel]="true"
-              [(ngModel)]="diaperTime">
-            </ion-datetime>
-          </ng-template>
-        </ion-modal>
       </div>
 
       <!-- NOTES -->
@@ -121,6 +121,58 @@
         </ion-item>
       </div>
 
+      <div class="field-section">
+        <p class="field-label">
+          Photo
+          <span>Optional · automatically compressed</span>
+        </p>
+
+        <input
+          #photoInput
+          type="file"
+          class="photo-input"
+          accept="image/*"
+          (change)="selectPhoto($event)">
+
+        <button
+          *ngIf="!photoDataUrl"
+          type="button"
+          class="photo-picker"
+          (click)="photoInput.click()">
+
+          <ion-icon name="camera-outline"></ion-icon>
+
+          <span>
+            <strong>Attach a photo</strong>
+            <small>Choose from your device</small>
+          </span>
+        </button>
+
+        <div
+          *ngIf="photoDataUrl"
+          class="photo-preview">
+
+          <img
+            [src]="photoDataUrl"
+            alt="Selected diaper attachment">
+
+          <div class="photo-preview-actions">
+            <button
+              type="button"
+              (click)="photoInput.click()">
+              Replace
+            </button>
+
+            <button
+              type="button"
+              class="remove-photo-button"
+              (click)="removePhoto()">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
       <p class="field-error" role="alert" *ngIf="formError">
         {{ formError }}
       </p>
@@ -140,6 +192,100 @@
           Add diaper
         </span>
       </ion-button>
+    </section>
+
+    <!-- STATISTICS -->
+    <section class="statistics-section">
+      <div class="section-title">
+        <div>
+          <p class="section-eyebrow">
+            At a glance
+          </p>
+
+          <h2>Diaper statistics</h2>
+        </div>
+
+        <span class="statistics-period">
+          Last 7 days
+        </span>
+      </div>
+
+      <div class="statistics-grid">
+        <article class="statistic-card today-statistic">
+          <span class="statistic-icon">☀️</span>
+          <strong>{{ diaperStatistics.today }}</strong>
+          <p>Today</p>
+        </article>
+
+        <article class="statistic-card weekly-statistic">
+          <span class="statistic-icon">📅</span>
+          <strong>{{ diaperStatistics.lastSevenDays }}</strong>
+          <p>Last 7 days</p>
+        </article>
+
+        <article class="statistic-card average-statistic">
+          <span class="statistic-icon">📊</span>
+          <strong>{{ diaperStatistics.dailyAverage }}</strong>
+          <p>Daily average</p>
+        </article>
+
+        <article class="statistic-card common-statistic">
+          <span class="statistic-icon">🧷</span>
+          <strong class="statistic-type">
+            {{ diaperStatistics.mostCommonType }}
+          </strong>
+          <p>Most common</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- REMINDER -->
+    <section class="diaper-reminder-card">
+      <div class="reminder-heading">
+        <div class="reminder-icon">🔔</div>
+
+        <div>
+          <p class="section-eyebrow">Gentle nudge</p>
+          <h2>Daily diaper check</h2>
+          <p>Get a notification at your chosen time.</p>
+        </div>
+
+        <ion-toggle
+          [checked]="diaperReminder.enabled"
+          [disabled]="isSavingReminder"
+          aria-label="Enable daily diaper reminder"
+          (ionChange)="
+            updateDiaperReminder($event.detail.checked)
+          ">
+        </ion-toggle>
+      </div>
+
+      <label class="reminder-time-field">
+        <span>Reminder time</span>
+        <input
+          type="time"
+          [value]="diaperReminder.time"
+          [disabled]="isSavingReminder"
+          (change)="
+            updateDiaperReminder(
+              diaperReminder.enabled,
+              $any($event.target).value
+            )
+          ">
+      </label>
+
+      <p
+        class="reminder-feedback reminder-success"
+        *ngIf="reminderMessage">
+        ✓ {{ reminderMessage }}
+      </p>
+
+      <p
+        class="reminder-feedback reminder-error"
+        role="alert"
+        *ngIf="reminderError">
+        {{ reminderError }}
+      </p>
     </section>
 
     <!-- HISTORY -->
@@ -233,6 +379,13 @@
               </p>
             </ion-label>
 
+            <img
+              *ngIf="getActivityPhoto(activity)"
+              slot="end"
+              class="history-photo"
+              [src]="getActivityPhoto(activity)"
+              alt="Diaper attachment">
+
             <ion-button
               type="button"
               slot="end"
@@ -325,22 +478,32 @@
                 Diaper type
               </p>
 
-              <ion-segment
+              <div
                 class="activity-segment"
-                [(ngModel)]="editDiaper.type">
-
-                <ion-segment-button value="wet">
-                  <ion-label>Wet</ion-label>
-                </ion-segment-button>
-
-                <ion-segment-button value="dirty">
-                  <ion-label>Dirty</ion-label>
-                </ion-segment-button>
-
-                <ion-segment-button value="both">
-                  <ion-label>Both</ion-label>
-                </ion-segment-button>
-              </ion-segment>
+                role="group"
+                aria-label="Edit diaper type">
+                <button
+                  type="button"
+                  [class.selected]="editDiaper.type === 'wet'"
+                  [attr.aria-pressed]="editDiaper.type === 'wet'"
+                  (click)="editDiaper.type = 'wet'">
+                  Wet
+                </button>
+                <button
+                  type="button"
+                  [class.selected]="editDiaper.type === 'dirty'"
+                  [attr.aria-pressed]="editDiaper.type === 'dirty'"
+                  (click)="editDiaper.type = 'dirty'">
+                  Dirty
+                </button>
+                <button
+                  type="button"
+                  [class.selected]="editDiaper.type === 'both'"
+                  [attr.aria-pressed]="editDiaper.type === 'both'"
+                  (click)="editDiaper.type = 'both'">
+                  Both
+                </button>
+              </div>
             </div>
 
             <div class="field-section">
@@ -359,24 +522,12 @@
                   </span>
                 </div>
 
-                <ion-datetime-button
-                  datetime="edit-diaper-datetime">
-                </ion-datetime-button>
+                <input
+                  class="date-time-input"
+                  type="datetime-local"
+                  aria-label="Edit diaper date and time"
+                  [(ngModel)]="editDiaper.dateTime">
               </div>
-
-              <ion-modal
-                [keepContentsMounted]="true"
-                cssClass="diaper-date-modal">
-
-                <ng-template>
-                  <ion-datetime
-                    id="edit-diaper-datetime"
-                    presentation="date-time"
-                    [preferWheel]="true"
-                    [(ngModel)]="editDiaper.dateTime">
-                  </ion-datetime>
-                </ng-template>
-              </ion-modal>
             </div>
 
             <div class="field-section">
@@ -397,6 +548,58 @@
                   [(ngModel)]="editDiaper.notes">
                 </ion-textarea>
               </ion-item>
+            </div>
+
+            <div class="field-section">
+              <p class="field-label">
+                Photo
+                <span>Optional · automatically compressed</span>
+              </p>
+
+              <input
+                #editPhotoInput
+                type="file"
+                class="photo-input"
+                accept="image/*"
+                (change)="selectPhoto($event, true)">
+
+              <button
+                *ngIf="!editDiaper.photoDataUrl"
+                type="button"
+                class="photo-picker"
+                (click)="editPhotoInput.click()">
+
+                <ion-icon name="camera-outline"></ion-icon>
+
+                <span>
+                  <strong>Attach a photo</strong>
+                  <small>Choose from your device</small>
+                </span>
+              </button>
+
+              <div
+                *ngIf="editDiaper.photoDataUrl"
+                class="photo-preview">
+
+                <img
+                  [src]="editDiaper.photoDataUrl"
+                  alt="Diaper attachment">
+
+                <div class="photo-preview-actions">
+                  <button
+                    type="button"
+                    (click)="editPhotoInput.click()">
+                    Replace
+                  </button>
+
+                  <button
+                    type="button"
+                    class="remove-photo-button"
+                    (click)="removePhoto(true)">
+                    Remove
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div class="edit-diaper-actions">

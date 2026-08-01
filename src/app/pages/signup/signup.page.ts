@@ -5,7 +5,7 @@ import {
   Validators,
   ReactiveFormsModule
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import {
   IonContent,
@@ -39,7 +39,6 @@ import {
 export class SignupPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
   signupForm: FormGroup = this.fb.group({
     name: ['', [
@@ -136,11 +135,11 @@ export class SignupPage {
       return;
     }
 
-    await this.router.navigateByUrl(
-      '/home',
-      {
-        replaceUrl: true
-      }
-    );
+    // Reload so the new account starts with its Firestore-backed data store.
+    this.reloadApp('/home');
+  }
+
+  reloadApp(destination = '/home'): void {
+    window.location.replace(destination);
   }
 }

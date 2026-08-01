@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { onTrackerDataChange, trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 export interface MedicineEntry {
   id: string;
@@ -8,6 +10,8 @@ export interface MedicineEntry {
   givenAt: number;
   notes: string;
   createdAt: number;
+  createdByUid?: string;
+  createdByName?: string;
 }
 
 @Injectable({
@@ -22,6 +26,10 @@ export class MedicineService {
 
   get entries(): MedicineEntry[] {
     return this.entriesSubject.value;
+  }
+
+  constructor() {
+    onTrackerDataChange(this.storageKey, () => this.entriesSubject.next(this.load()));
   }
 
   save(
@@ -52,7 +60,9 @@ export class MedicineService {
       name,
       dose,
       notes,
-      createdAt: existing?.createdAt ?? Date.now()
+      createdAt: existing?.createdAt ?? Date.now(),
+      createdByUid: existing?.createdByUid ?? firebaseAuth.currentUser?.uid,
+      createdByName: existing?.createdByName ?? this.currentUserName()
     };
 
     const updated = existing
@@ -63,6 +73,11 @@ export class MedicineService {
 
     this.persist(updated);
     return true;
+  }
+
+  private currentUserName(): string | undefined {
+    const user = firebaseAuth.currentUser;
+    return user ? user.displayName || user.email || 'Caregiver' : undefined;
   }
 
   delete(id: string): void {
@@ -77,7 +92,7 @@ export class MedicineService {
         second.givenAt - first.givenAt
     );
 
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.storageKey,
       JSON.stringify(sorted)
     );
@@ -87,7 +102,7 @@ export class MedicineService {
   private load(): MedicineEntry[] {
     try {
       const saved =
-        localStorage.getItem(this.storageKey);
+        trackerStorage.getItem(this.storageKey);
 
       return saved
         ? (JSON.parse(saved) as unknown[])

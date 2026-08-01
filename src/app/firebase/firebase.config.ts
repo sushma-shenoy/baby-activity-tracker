@@ -11,7 +11,7 @@ import {
   initializeAuth
 } from 'firebase/auth';
 
-const firebaseApp =
+export const firebaseApp =
   getApps().length > 0
     ? getApp()
     : initializeApp(

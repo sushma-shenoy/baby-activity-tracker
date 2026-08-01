@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { onTrackerDataChange, trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 export type MilestoneCategory =
   | 'motor'
@@ -16,6 +18,8 @@ export interface Milestone {
   achievedDate: string;
   notes: string;
   createdAt: number;
+  createdByUid?: string;
+  createdByName?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,8 +34,19 @@ export class MilestoneService {
     return this.milestonesSubject.value;
   }
 
+  constructor() {
+    onTrackerDataChange(this.storageKey, () => this.milestonesSubject.next(this.load()));
+  }
+
   save(milestone: Milestone): void {
-    const normalized = this.validate(milestone);
+    const existing = this.milestones.find(item => item.id === milestone.id);
+    const user = firebaseAuth.currentUser;
+    const normalized = this.validate({
+      ...milestone,
+      createdByUid: existing?.createdByUid ?? milestone.createdByUid ?? user?.uid,
+      createdByName: existing?.createdByName ?? milestone.createdByName ??
+        (user ? user.displayName || user.email || 'Caregiver' : undefined)
+    });
     const remaining = this.milestones.filter(
       item => item.id !== normalized.id
     );
@@ -108,14 +123,14 @@ export class MilestoneService {
         b.achievedDate.localeCompare(a.achievedDate) ||
         b.createdAt - a.createdAt
     );
-    localStorage.setItem(this.storageKey, JSON.stringify(sorted));
+    trackerStorage.setItem(this.storageKey, JSON.stringify(sorted));
     this.milestonesSubject.next(sorted);
   }
 
   private load(): Milestone[] {
     try {
       const parsed = JSON.parse(
-        localStorage.getItem(this.storageKey) || '[]'
+        trackerStorage.getItem(this.storageKey) || '[]'
       );
       if (!Array.isArray(parsed)) return [];
       return (parsed as unknown[])

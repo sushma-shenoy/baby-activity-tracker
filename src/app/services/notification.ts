@@ -1,4 +1,8 @@
 import { Injectable } from '@angular/core';
+import {
+  isValidTime24
+} from '../shared/date-time.utils';
+import { trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
 import {
   LocalNotifications,
@@ -153,7 +157,7 @@ export class ActivityReminderService {
         : reminder
     );
 
-    localStorage.setItem(this.storageKey, JSON.stringify(reminders));
+    trackerStorage.setItem(this.storageKey, JSON.stringify(reminders));
     this.remindersSubject.next(reminders);
     await this.reconcileNativeSchedule(false);
     return { success: true };
@@ -174,6 +178,7 @@ export class ActivityReminderService {
           id: 4199,
           title: 'Little moments',
           body: 'Activity reminders are working.',
+          sound: 'default',
           schedule: {
             at: new Date(Date.now() + 3000)
           }
@@ -290,7 +295,7 @@ export class ActivityReminderService {
       }
     }
 
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.vaccinationStorageKey,
       JSON.stringify(changes)
     );
@@ -343,6 +348,7 @@ export class ActivityReminderService {
         id: this.notificationId(reminder.type),
         title: `${reminder.icon} ${reminder.label}`,
         body: `Time for ${babyName}’s ${this.bodyLabel(reminder.type)}.`,
+        sound: 'default',
         schedule: {
           on: { hour, minute },
           repeats: true,
@@ -359,6 +365,7 @@ export class ActivityReminderService {
         id: this.customNotificationId(reminder.id),
         title: `🔔 ${reminder.label}`,
         body: `${babyName}: ${reminder.label}`,
+        sound: 'default',
         schedule: {
           on: { hour, minute },
           repeats: true,
@@ -391,7 +398,7 @@ export class ActivityReminderService {
   private load(): ActivityReminder[] {
     try {
       const saved = JSON.parse(
-        localStorage.getItem(this.storageKey) || '[]'
+        trackerStorage.getItem(this.storageKey) || '[]'
       ) as Partial<ActivityReminder>[];
 
       return DEFAULT_REMINDERS.map(defaultReminder => {
@@ -417,7 +424,7 @@ export class ActivityReminderService {
   private loadCustomReminders(): CustomReminder[] {
     try {
       const reminders = JSON.parse(
-        localStorage.getItem(this.customStorageKey) || '[]'
+        trackerStorage.getItem(this.customStorageKey) || '[]'
       ) as CustomReminder[];
 
       return Array.isArray(reminders)
@@ -436,7 +443,7 @@ export class ActivityReminderService {
   }
 
   private persistCustomReminders(reminders: CustomReminder[]): void {
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.customStorageKey,
       JSON.stringify(reminders)
     );
@@ -446,7 +453,7 @@ export class ActivityReminderService {
   private loadVaccinationReminder(): VaccinationReminderSettings {
     try {
       const saved = JSON.parse(
-        localStorage.getItem(this.vaccinationStorageKey) || '{}'
+        trackerStorage.getItem(this.vaccinationStorageKey) || '{}'
       ) as Partial<VaccinationReminderSettings>;
 
       return {
@@ -507,6 +514,7 @@ export class ActivityReminderService {
             : `${babyName}’s vaccination is due in ${settings.daysBefore} ${
                 settings.daysBefore === 1 ? 'day' : 'days'
               }.`,
+        sound: 'default',
         schedule: {
           at: new Date(
             notificationDate.getFullYear(),
@@ -526,7 +534,7 @@ export class ActivityReminderService {
   private loadScheduledIds(): number[] {
     try {
       const ids = JSON.parse(
-        localStorage.getItem(this.scheduledIdsKey) || '[]'
+        trackerStorage.getItem(this.scheduledIdsKey) || '[]'
       ) as number[];
       return Array.isArray(ids)
         ? ids.filter(id => Number.isSafeInteger(id))
@@ -537,11 +545,11 @@ export class ActivityReminderService {
   }
 
   private persistScheduledIds(ids: number[]): void {
-    localStorage.setItem(this.scheduledIdsKey, JSON.stringify(ids));
+    trackerStorage.setItem(this.scheduledIdsKey, JSON.stringify(ids));
   }
 
   private isValidTime(value: string): boolean {
-    return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+    return isValidTime24(value);
   }
 
   private notificationId(type: ReminderType): number {

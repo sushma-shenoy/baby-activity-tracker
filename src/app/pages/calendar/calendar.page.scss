@@ -1,0 +1,81 @@
+ion-toolbar {
+  --background: rgba(250, 247, 255, 0.92);
+  --border-color: transparent;
+}
+
+.calendar-page {
+  --background: linear-gradient(180deg, #faf7ff 0%, #f7fbff 48%, #fff 100%);
+}
+
+.calendar-content {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 16px 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+.calendar-hero {
+  padding: 22px;
+  border-radius: 28px;
+  color: #fff;
+  background: linear-gradient(135deg, #8b72bd, #789bd3);
+  box-shadow: 0 16px 34px rgba(91, 78, 143, 0.2);
+}
+.calendar-hero p, .calendar-hero h1 { margin: 0; }
+.calendar-hero p { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; opacity: .85; }
+.calendar-hero h1 { margin: 5px 0 7px; font-size: 1.55rem; }
+.calendar-hero span { font-size: .8rem; opacity: .9; }
+
+.filter-section, .month-card, .day-timeline {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #ece7f3;
+  border-radius: 23px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 10px 25px rgba(56, 48, 75, .06);
+}
+.filter-heading, .month-heading, .timeline-heading { display: flex; align-items: center; justify-content: space-between; }
+.filter-heading strong { color: #3f3851; font-size: .85rem; }
+.filter-heading button { border: 0; color: #755ca3; background: transparent; font-weight: 800; }
+.filter-row { display: flex; gap: 8px; margin-top: 12px; padding-bottom: 3px; overflow-x: auto; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row button { flex: 0 0 auto; padding: 8px 11px; border: 1px solid #e5dfed; border-radius: 999px; color: #6f6678; background: #fff; font-size: .7rem; font-weight: 800; }
+.filter-row button span { margin-right: 5px; }
+.filter-row button.active { border-color: #8b72bd; color: #5e447f; background: #f0e9fa; }
+
+.month-heading button { width: 38px; height: 38px; border: 0; border-radius: 12px; color: #625475; background: #f5f1fa; font-size: 1.6rem; }
+.month-heading h2 { margin: 0; color: #332c42; font-size: 1.05rem; }
+.weekday-grid, .day-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.weekday-grid { margin-top: 17px; }
+.weekday-grid span { padding: 5px 0; color: #9990a2; font-size: .6rem; font-weight: 800; text-align: center; }
+.day-grid { gap: 3px; }
+.day-grid button { position: relative; min-width: 0; height: 54px; padding: 5px 2px; border: 0; border-radius: 13px; display: flex; flex-direction: column; align-items: center; color: #4e4658; background: transparent; }
+.day-grid button.outside { opacity: .35; }
+.day-grid button.today > span { width: 23px; height: 23px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: #8870b5; font-weight: 800; }
+.day-grid button.selected { outline: 2px solid #aa95ca; background: #f5f0fb; }
+.day-dots { width: 100%; display: flex; justify-content: center; gap: 1px; overflow: hidden; }
+.day-dots i { font-size: .57rem; font-style: normal; }
+.day-grid small { position: absolute; right: 3px; bottom: 2px; color: #776889; font-size: .48rem; }
+
+.timeline-heading p, .timeline-heading h2 { margin: 0; }
+.timeline-heading p { color: #9a91a3; font-size: .62rem; font-weight: 800; text-transform: uppercase; }
+.timeline-heading h2 { margin-top: 3px; color: #372f43; font-size: 1rem; }
+.timeline-heading > span { color: #7c6c8a; font-size: .67rem; font-weight: 800; }
+.empty-day { padding: 28px 10px 14px; display: grid; justify-items: center; color: #958c9d; text-align: center; }
+.empty-day > span { font-size: 2rem; }
+.empty-day strong { margin-top: 7px; color: #5e5568; }
+.empty-day p { margin: 5px 0 0; font-size: .72rem; }
+.event-card { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 16px; display: flex; align-items: center; gap: 11px; color: #4e4558; background: #faf8fd; text-align: left; }
+.event-icon { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 14px; display: grid; place-items: center; background: #eee8f7; font-size: 1.2rem; }
+.event-copy { min-width: 0; flex: 1; display: grid; gap: 2px; }
+.event-copy small { color: #968b9f; font-size: .6rem; }
+.event-copy strong, .event-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-copy strong { font-size: .78rem; }
+.event-copy span { color: #817687; font-size: .67rem; }
+.event-copy em { color: #9a8da3; font-size: .58rem; font-style: normal; }
+.event-arrow { color: #9b8cab; font-size: 1.4rem; }
+
+@media (max-width: 370px) {
+  .calendar-content { padding-inline: 10px; }
+  .month-card { padding-inline: 9px; }
+  .day-grid button { height: 49px; }
+}

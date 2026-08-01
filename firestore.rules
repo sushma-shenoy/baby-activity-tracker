@@ -2,8 +2,165 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // The app currently stores activity data locally. Keep Firestore closed
-    // until a server-backed data model and per-user authorization are added.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owns(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function caregiverPath(userId) {
+      return /databases/$(database)/documents/users/$(userId)/caregivers/$(request.auth.uid);
+    }
+
+    function isCaregiver(userId) {
+      return signedIn() && exists(caregiverPath(userId));
+    }
+
+    function canEditFamily(userId) {
+      return owns(userId) || (
+        isCaregiver(userId) &&
+        get(caregiverPath(userId)).data.role == 'editor'
+      );
+    }
+
+    match /users/{userId}/trackerData/{dataKey} {
+      allow read: if owns(userId) || isCaregiver(userId);
+      allow delete: if canEditFamily(userId);
+
+      allow create, update: if canEditFamily(userId)
+        && request.resource.data.keys().hasOnly([
+          'key',
+          'value',
+          'updatedAt'
+        ])
+        && request.resource.data.key is string
+        && request.resource.data.key.size() <= 300
+        && request.resource.data.value is string
+        && request.resource.data.value.size() <= 900000;
+    }
+
+    match /users/{userId}/photos/{photoId} {
+      allow read: if owns(userId) || isCaregiver(userId);
+      allow delete: if canEditFamily(userId);
+
+      allow create, update: if canEditFamily(userId)
+        && request.resource.data.keys().hasOnly([
+          'imageBytes',
+          'contentType',
+          'category',
+          'updatedAt'
+        ])
+        && request.resource.data.imageBytes is bytes
+        && request.resource.data.imageBytes.size() <= 307200
+        && request.resource.data.contentType == 'image/webp'
+        && request.resource.data.category in ['diaper', 'profile'];
+    }
+
+    match /caregiverInvites/{inviteCode} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerName is string
+        && request.resource.data.createdAt is number
+        && request.resource.data.expiresAt is number
+        && request.resource.data.expiresAt > request.time.toMillis()
+        && request.resource.data.keys().hasOnly([
+          'ownerId',
+          'ownerName',
+          'createdAt',
+          'expiresAt'
+        ]);
+      allow update: if false;
+      allow delete: if signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        (
+          resource.data.ownerId != request.auth.uid &&
+          getAfter(
+            /databases/$(database)/documents/users/$(resource.data.ownerId)/caregivers/$(request.auth.uid)
+          ).data.inviteCode == inviteCode
+        )
+      );
+    }
+
+    match /users/{ownerId}/caregivers/{caregiverId} {
+      allow read: if owns(ownerId) || (
+        signedIn() && request.auth.uid == caregiverId
+      );
+
+      allow create: if signedIn()
+        && request.auth.uid == caregiverId
+        && request.resource.data.inviteCode is string
+        && exists(
+          /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
+        )
+        && get(
+          /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
+        ).data.ownerId == ownerId
+        && get(
+          /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
+        ).data.expiresAt > request.time.toMillis()
+        && request.resource.data.role == 'editor'
+        && request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && request.resource.data.joinedAt is number
+        && request.resource.data.keys().hasOnly([
+          'inviteCode',
+          'displayName',
+          'email',
+          'role',
+          'joinedAt'
+        ]);
+
+      allow update: if owns(ownerId)
+        && request.resource.data.role in ['editor', 'viewer']
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['role']);
+      allow delete: if owns(ownerId) || (
+        signedIn() && request.auth.uid == caregiverId
+      );
+    }
+
+    match /userFamilyLinks/{userId}/families/{ownerId} {
+      allow read: if signedIn()
+        && request.auth.uid == userId;
+      allow delete: if signedIn() && (
+        request.auth.uid == userId ||
+        request.auth.uid == ownerId
+      );
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.inviteCode is string
+        && request.resource.data.ownerId == ownerId
+        && request.resource.data.ownerName is string
+        && request.resource.data.joinedAt is number
+        && (
+          (
+            exists(
+              /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
+            )
+            && get(
+              /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
+            ).data.ownerId == ownerId
+            && get(
+              /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
+            ).data.expiresAt > request.time.toMillis()
+          )
+          || exists(
+            /databases/$(database)/documents/users/$(ownerId)/caregivers/$(userId)
+          )
+        )
+        && request.resource.data.keys().hasOnly([
+          'inviteCode',
+          'ownerId',
+          'ownerName',
+          'joinedAt'
+        ]);
+      allow update: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -26,12 +26,19 @@ import {
 import {
   ActivityService
 } from '../../services/activity.service';
+
+import {
+  dateForTimeToday,
+  formatTime24,
+  isValidTime24
+} from '../../shared/date-time.utils';
 import {
   ActiveNursingSession,
   NursingService,
   NursingSession,
   NursingSide
 } from '../../services/nursing.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-feeding',
@@ -54,6 +61,7 @@ export class FeedingPage implements OnInit, OnDestroy {
   editingNursingId = '';
   manualNursing = this.createManualNursing();
   private nursingClock?: ReturnType<typeof setInterval>;
+  private activitySubscription?: Subscription;
 
   isEditOpen = false;
 
@@ -95,10 +103,17 @@ export class FeedingPage implements OnInit, OnDestroy {
     this.nursingClock = setInterval(() => {
       this.activeNursing = this.nursingService.snapshot();
     }, 1000);
+    this.activitySubscription = this.activityService.activities$.subscribe(
+      () => {
+        this.loadFeeds();
+        this.loadNursing();
+      }
+    );
   }
 
   ngOnDestroy(): void {
     if (this.nursingClock) clearInterval(this.nursingClock);
+    this.activitySubscription?.unsubscribe();
   }
 
   ionViewWillEnter(): void {
@@ -128,10 +143,9 @@ export class FeedingPage implements OnInit, OnDestroy {
       value:
         `Left ${this.formatDuration(session.leftSeconds)} · ` +
         `Right ${this.formatDuration(session.rightSeconds)}`,
-      time: new Date(session.endedAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      time: formatTime24(
+        new Date(session.endedAt)
+      ),
       createdAt: session.endedAt
     });
     this.loadNursing();
@@ -204,10 +218,9 @@ export class FeedingPage implements OnInit, OnDestroy {
         value:
           `Left ${this.formatDuration(leftSeconds)} · ` +
           `Right ${this.formatDuration(rightSeconds)}`,
-        time: new Date(startedAt).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        time: formatTime24(
+          new Date(startedAt)
+        ),
         createdAt: startedAt
       });
       this.loadNursing();
@@ -599,7 +612,7 @@ export class FeedingPage implements OnInit, OnDestroy {
       quantity >= 5 &&
       quantity <= 1000 &&
       Number.isInteger(quantity) &&
-      /^([01]\d|2[0-3]):[0-5]\d$/.test(feed.time)
+      isValidTime24(feed.time)
     );
   }
 
@@ -612,14 +625,9 @@ export class FeedingPage implements OnInit, OnDestroy {
   }
 
   private getCurrentTime(): string {
-    return new Date()
-      .toLocaleTimeString(
-        [],
-        {
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      );
+    return formatTime24(
+      new Date()
+    );
   }
 
   private formatSelectedTime(
@@ -636,14 +644,9 @@ export class FeedingPage implements OnInit, OnDestroy {
       return this.getCurrentTime();
     }
 
-    return selectedDate
-      .toLocaleTimeString(
-        [],
-        {
-          hour: '2-digit',
-          minute: '2-digit'
-        }
-      );
+    return formatTime24(
+      selectedDate
+    );
   }
 
   private createDateFromTime(
@@ -653,16 +656,12 @@ export class FeedingPage implements OnInit, OnDestroy {
       new Date();
 
     const parsedDate =
-      new Date(
-        `${currentDate.toDateString()} ` +
-        time
+      dateForTimeToday(
+        time,
+        currentDate
       );
 
-    if (
-      Number.isNaN(
-        parsedDate.getTime()
-      )
-    ) {
+    if (!parsedDate) {
       return currentDate.toISOString();
     }
 
@@ -699,16 +698,12 @@ export class FeedingPage implements OnInit, OnDestroy {
       new Date();
 
     const parsedDate =
-      new Date(
-        `${currentDate.toDateString()} ` +
-        time
+      dateForTimeToday(
+        time,
+        currentDate
       );
 
-    if (
-      Number.isNaN(
-        parsedDate.getTime()
-      )
-    ) {
+    if (!parsedDate) {
       return Date.now();
     }
 

@@ -6,7 +6,10 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import {
+  ActivatedRoute,
+  RouterLink
+} from '@angular/router';
 import {
   IonButton,
   IonContent,
@@ -35,7 +38,6 @@ import { AuthService } from '../../services/auth.service';
 export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
   readonly loginForm: FormGroup = this.fb.group({
@@ -70,10 +72,15 @@ export class LoginPage {
       return;
     }
 
-    const returnUrl =
-      this.route.snapshot.queryParamMap.get('returnUrl') ?? '/home';
+    // Reload so every synchronous tracker service is created from the
+    // Firestore data that was hydrated during sign-in.
+    this.reloadApp(
+      this.getPostLoginDestination()
+    );
+  }
 
-    await this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+  reloadApp(destination = '/home'): void {
+    window.location.replace(destination);
   }
 
   async resetPassword(): Promise<void> {
@@ -102,5 +109,21 @@ export class LoginPage {
   private clearMessages(): void {
     this.errorMessage = '';
     this.successMessage = '';
+  }
+
+  private getPostLoginDestination(): string {
+    const returnUrl =
+      this.route.snapshot.queryParamMap.get(
+        'returnUrl'
+      );
+
+    return (
+      returnUrl?.startsWith('/') &&
+      !returnUrl.startsWith('//') &&
+      returnUrl !== '/login' &&
+      returnUrl !== '/signup'
+    )
+      ? returnUrl
+      : '/home';
   }
 }

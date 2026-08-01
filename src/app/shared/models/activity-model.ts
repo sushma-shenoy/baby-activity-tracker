@@ -1,4 +1,8 @@
-export type ActivityType = 'feeding' | 'sleep' | 'diaper';
+export type ActivityType =
+  | 'feeding'
+  | 'solids'
+  | 'sleep'
+  | 'diaper';
 
 export interface Activity {
   id: string;
@@ -7,4 +11,9 @@ export interface Activity {
   value: string;
   time: string;
   createdAt: number;
+  createdByUid?: string;
+  createdByName?: string;
+  photoId?: string;
+  /** Legacy inline attachment retained for existing records. */
+  photoDataUrl?: string;
 }

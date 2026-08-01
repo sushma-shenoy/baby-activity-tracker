@@ -15,6 +15,36 @@ describe('FeedingPage', () => {
     expect(component).toBeTruthy();
   });
 
+  it('uses a valid 24-hour time for a new formula feed', () => {
+    expect(component.newFeed.type).toBe('formula');
+    expect(component.newFeed.time).toMatch(
+      /^([01]\d|2[0-3]):[0-5]\d$/
+    );
+  });
+
+  it('adds a formula feed with the selected time', () => {
+    const initialFeedCount = component.feeds.length;
+
+    component.newFeed = {
+      id: '',
+      quantity: 120,
+      type: 'formula',
+      time: '14:35'
+    };
+
+    component.saveFeed();
+
+    expect(component.feedError).toBe('');
+    expect(component.feeds.length).toBe(initialFeedCount + 1);
+    expect(component.feeds[0]).toEqual(
+      jasmine.objectContaining({
+        quantity: 120,
+        type: 'formula',
+        time: '14:35'
+      })
+    );
+  });
+
   it('summarizes left and right nursing time from the last 24 hours', () => {
     component.nursingSessions = [
       {

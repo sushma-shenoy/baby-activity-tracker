@@ -1,11 +1,11 @@
 <ion-header translucent="true" class="app-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/dashboard">
+      <ion-back-button defaultHref="/home">
       </ion-back-button>
     </ion-buttons>
 
-    <ion-title>Insights</ion-title>
+    <ion-title>Analytics</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -59,6 +59,18 @@
           </strong>
 
           <span>Feeds</span>
+        </article>
+
+        <article class="summary-card solids-card">
+          <div class="summary-icon">
+            🥣
+          </div>
+
+          <strong>
+            {{ todayAnalytics.solids.count }}
+          </strong>
+
+          <span>Solid meals</span>
         </article>
 
         <article class="summary-card sleep-card">
@@ -513,6 +525,68 @@
     </p>
   </article>
 
+  <!-- SOLID FOODS CHART -->
+  <article class="chart-card solids-chart">
+    <div class="chart-heading">
+      <div>
+        <span>Solid foods</span>
+        <h3>Solid meals per day</h3>
+      </div>
+
+      <div
+        class="trend-badge"
+        [ngClass]="
+          getTrendClass(
+            weeklyAnalytics.trends.solids
+          )
+        ">
+        <span>
+          {{
+            getTrendIcon(
+              weeklyAnalytics.trends.solids
+            )
+          }}
+        </span>
+        {{
+          getTrendLabel(
+            weeklyAnalytics.trends.solids
+          )
+        }}
+      </div>
+    </div>
+
+    <div class="bar-chart">
+      <div
+        class="bar-column"
+        *ngFor="
+          let day of weeklyAnalytics.days;
+          trackBy: trackByDay
+        ">
+        <span class="bar-value">
+          {{ day.solidsCount }}
+        </span>
+
+        <div class="bar-track">
+          <div
+            class="chart-bar"
+            [class.today-bar]="day.isToday"
+            [style.height.%]="
+              getSolidsBarHeight(
+                day.solidsCount
+              )
+            ">
+          </div>
+        </div>
+
+        <span
+          class="bar-label"
+          [class.today-label]="day.isToday">
+          {{ day.dayLabel }}
+        </span>
+      </div>
+    </div>
+  </article>
+
   <!-- SLEEP CHART -->
   <article class="chart-card sleep-chart">
     <div class="chart-heading">
@@ -718,6 +792,9 @@
           "
           [class.feeding-insight]="
             insight.type === 'feeding'
+          "
+          [class.solids-insight]="
+            insight.type === 'solids'
           "
           [class.sleep-insight]="
             insight.type === 'sleep'

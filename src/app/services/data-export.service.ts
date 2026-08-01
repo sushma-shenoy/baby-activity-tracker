@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { trackerStorage } from '../firebase/tracker-storage';
 
 export interface BabyTrackerBackup {
   app: 'baby-activity-tracker';
@@ -15,6 +16,7 @@ export class DataExportService {
     'baby_preferences',
     'baby_activities',
     'feeds',
+    'baby_solid_food_entries',
     'sleep_state',
     'baby_weight_entries',
     'baby_medicine_entries',
@@ -33,7 +35,7 @@ export class DataExportService {
     const data: Record<string, unknown> = {};
 
     for (const key of this.allowedKeys) {
-      const rawValue = localStorage.getItem(key);
+      const rawValue = trackerStorage.getItem(key);
       if (rawValue === null) continue;
 
       try {
@@ -43,11 +45,11 @@ export class DataExportService {
       }
     }
 
-    for (let index = 0; index < localStorage.length; index += 1) {
-      const key = localStorage.key(index);
+    for (let index = 0; index < trackerStorage.length; index += 1) {
+      const key = trackerStorage.key(index);
       if (!key?.startsWith('baby_profile_data:')) continue;
 
-      const rawValue = localStorage.getItem(key);
+      const rawValue = trackerStorage.getItem(key);
       if (rawValue === null) continue;
 
       try {
@@ -115,19 +117,19 @@ export class DataExportService {
     );
 
     for (const key of this.allowedKeys) {
-      localStorage.removeItem(key);
+      trackerStorage.removeItem(key);
     }
     const scopedKeys = Array.from(
-      { length: localStorage.length },
-      (_, index) => localStorage.key(index)
+      { length: trackerStorage.length },
+      (_, index) => trackerStorage.key(index)
     ).filter(
       (key): key is string => Boolean(key?.startsWith('baby_profile_data:'))
     );
     for (const key of scopedKeys) {
-      localStorage.removeItem(key);
+      trackerStorage.removeItem(key);
     }
     for (const [key, value] of safeEntries) {
-      localStorage.setItem(
+      trackerStorage.setItem(
         key,
         typeof value === 'string' ? value : JSON.stringify(value)
       );
@@ -152,6 +154,7 @@ export class DataExportService {
     const arrayKeys = [
       'baby_activities',
       'feeds',
+      'baby_solid_food_entries',
       'baby_weight_entries',
       'baby_medicine_entries',
       'baby_vaccination_entries',

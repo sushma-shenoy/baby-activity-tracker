@@ -1,11 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
-import {
-  ActivatedRoute,
-  Router,
-  convertToParamMap,
-  provideRouter
-} from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginPage } from './login.page';
 
@@ -13,7 +8,6 @@ describe('LoginPage', () => {
   let component: LoginPage;
   let fixture: ComponentFixture<LoginPage>;
   let authService: jasmine.SpyObj<AuthService>;
-  let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
     authService = jasmine.createSpyObj<AuthService>(
@@ -25,22 +19,12 @@ describe('LoginPage', () => {
       providers: [
         provideRouter([]),
         FormBuilder,
-        { provide: AuthService, useValue: authService },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              queryParamMap: convertToParamMap({})
-            }
-          }
-        }
+        { provide: AuthService, useValue: authService }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);
     component = fixture.componentInstance;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    spyOn(router, 'navigateByUrl').and.resolveTo(true);
     fixture.detectChanges();
   });
 
@@ -62,12 +46,12 @@ describe('LoginPage', () => {
       password: 'secret'
     });
 
+    const reloadSpy = spyOn(component, 'reloadApp');
     await component.login();
 
     expect(authService.login)
       .toHaveBeenCalledWith('parent@example.com', 'secret');
-    expect(router.navigateByUrl)
-      .toHaveBeenCalledWith('/home', { replaceUrl: true });
+    expect(reloadSpy).toHaveBeenCalledWith('/home');
   });
 
   it('sends a password reset email', async () => {

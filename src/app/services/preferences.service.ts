@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
+import { onTrackerDataChange, trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
 
 export interface BabyProfile {
   name: string;
   birthDate: string;
   mood: string;
+  photoId?: string;
 }
 
 export interface DailyGoals {
@@ -46,6 +48,10 @@ export class PreferencesService {
     return this.preferencesSubject.value;
   }
 
+  constructor() {
+    onTrackerDataChange(this.storageKey, () => this.preferencesSubject.next(this.load()));
+  }
+
   save(preferences: AppPreferences): void {
     const normalized: AppPreferences = {
       baby: {
@@ -56,7 +62,15 @@ export class PreferencesService {
           preferences.baby.birthDate || '',
         mood:
           preferences.baby.mood ||
-          DEFAULT_PREFERENCES.baby.mood
+          DEFAULT_PREFERENCES.baby.mood,
+        ...(
+          preferences.baby.photoId
+            ? {
+                photoId:
+                  preferences.baby.photoId
+              }
+            : {}
+        )
       },
       goals: {
         feeds: this.normalizeGoal(
@@ -74,7 +88,7 @@ export class PreferencesService {
       }
     };
 
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.storageKey,
       JSON.stringify(normalized)
     );
@@ -133,7 +147,7 @@ export class PreferencesService {
 
   private load(): AppPreferences {
     try {
-      const saved = localStorage.getItem(this.storageKey);
+      const saved = trackerStorage.getItem(this.storageKey);
 
       if (!saved) {
         return structuredClone(DEFAULT_PREFERENCES);

@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
+import { onTrackerDataChange, trackerStorage } from '../firebase/tracker-storage';
 import { BehaviorSubject } from 'rxjs';
+import { firebaseAuth } from '../firebase/firebase.config';
 
 export interface WeightEntry {
   id: string;
   date: string;
   weightKg: number;
   createdAt: number;
+  createdByUid?: string;
+  createdByName?: string;
 }
 
 @Injectable({
@@ -20,6 +24,10 @@ export class GrowthService {
 
   get entries(): WeightEntry[] {
     return this.entriesSubject.value;
+  }
+
+  constructor() {
+    onTrackerDataChange(this.storageKey, () => this.entriesSubject.next(this.load()));
   }
 
   saveDailyWeight(
@@ -43,7 +51,9 @@ export class GrowthService {
       date,
       weightKg:
         Math.round(Number(weightKg) * 100) / 100,
-      createdAt: existing?.createdAt ?? Date.now()
+      createdAt: existing?.createdAt ?? Date.now(),
+      createdByUid: existing?.createdByUid ?? firebaseAuth.currentUser?.uid,
+      createdByName: existing?.createdByName ?? this.currentUserName()
     };
 
     const updated = existing
@@ -54,6 +64,11 @@ export class GrowthService {
 
     this.persist(updated);
     return true;
+  }
+
+  private currentUserName(): string | undefined {
+    const user = firebaseAuth.currentUser;
+    return user ? user.displayName || user.email || 'Caregiver' : undefined;
   }
 
   delete(id: string): void {
@@ -68,7 +83,7 @@ export class GrowthService {
         first.date.localeCompare(second.date)
     );
 
-    localStorage.setItem(
+    trackerStorage.setItem(
       this.storageKey,
       JSON.stringify(sorted)
     );
@@ -78,7 +93,7 @@ export class GrowthService {
   private load(): WeightEntry[] {
     try {
       const saved =
-        localStorage.getItem(this.storageKey);
+        trackerStorage.getItem(this.storageKey);
 
       return saved
         ? (JSON.parse(saved) as WeightEntry[])

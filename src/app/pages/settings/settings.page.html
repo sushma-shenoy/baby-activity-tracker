@@ -49,7 +49,13 @@
             [disabled]="profile.id === activeProfileId"
             (click)="switchProfile(profile.id)">
             <span class="baby-avatar">
-              {{ profile.name.charAt(0).toUpperCase() }}
+              <img
+                *ngIf="getProfilePhoto(profile); else profileInitial"
+                [src]="getProfilePhoto(profile)"
+                [alt]="profile.name + ' profile photo'">
+              <ng-template #profileInitial>
+                {{ profile.name.charAt(0).toUpperCase() }}
+              </ng-template>
             </span>
             <span class="baby-profile-copy">
               <strong>{{ profile.name }}</strong>
@@ -160,6 +166,51 @@
             <h2>Personal details</h2>
           </div>
           <span class="section-icon">👶</span>
+        </div>
+
+        <div class="field-group">
+          <label>Profile photo</label>
+
+          <div class="profile-photo-editor">
+            <div class="profile-photo-preview">
+              <img
+                *ngIf="activeProfilePhoto; else babyPhotoPlaceholder"
+                [src]="activeProfilePhoto"
+                alt="Baby profile photo">
+              <ng-template #babyPhotoPlaceholder>👶</ng-template>
+            </div>
+
+            <div class="profile-photo-actions">
+              <label
+                class="profile-photo-upload"
+                [class.disabled]="isSavingProfilePhoto">
+                {{
+                  isSavingProfilePhoto
+                    ? 'Saving…'
+                    : activeProfilePhoto
+                      ? 'Replace photo'
+                      : 'Add photo'
+                }}
+                <input
+                  type="file"
+                  accept="image/*"
+                  [disabled]="isSavingProfilePhoto"
+                  (change)="selectProfilePhoto($event)">
+              </label>
+
+              <button
+                *ngIf="activeProfilePhoto"
+                type="button"
+                class="profile-photo-remove"
+                [disabled]="isSavingProfilePhoto"
+                (click)="removeProfilePhoto()">
+                Remove
+              </button>
+            </div>
+          </div>
+          <small class="photo-help">
+            Images are compressed before being stored securely.
+          </small>
         </div>
 
         <div class="field-group">
@@ -438,6 +489,144 @@
       </p>
     </section>
 
+    <section class="settings-section caregiver-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Family access</p>
+          <h2>Caregiver sharing</h2>
+        </div>
+        <span class="section-icon">👨‍👩‍👧</span>
+      </div>
+
+      <p class="section-description">
+        Each caregiver uses their own login. Shared entries update the same
+        baby records without sharing your password.
+      </p>
+
+      <ng-container *ngIf="!caregiverSharingService.isSharingAnotherFamily; else joinedFamily">
+        <button
+          type="button"
+          class="family-primary-button"
+          [disabled]="isCaregiverBusy"
+          (click)="createCaregiverInvite()">
+          Generate caregiver invite
+        </button>
+
+        <div class="invite-code" *ngIf="caregiverInviteCode">
+          <code>{{ caregiverInviteCode }}</code>
+          <button type="button" (click)="copyCaregiverInvite()">Copy</button>
+        </div>
+
+        <div class="caregiver-list" *ngIf="caregivers.length">
+          <p>People with access</p>
+          <article *ngFor="let caregiver of caregivers">
+            <div class="caregiver-identity">
+              <strong>{{ caregiver.displayName }}</strong>
+              <span>{{ caregiver.email }}</span>
+            </div>
+            <div class="caregiver-controls">
+              <select
+                aria-label="Caregiver permission"
+                [value]="caregiver.role"
+                [disabled]="isCaregiverBusy"
+                (change)="changeCaregiverRole(caregiver, $any($event.target).value)">
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+              <button type="button" (click)="removeCaregiver(caregiver)">Remove</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="family-switcher" *ngIf="sharedFamilies.length">
+          <p>Your profiles</p>
+          <button type="button" class="family-option active">
+            <span>👤</span>
+            <div>
+              <strong>My private profile</strong>
+              <small>Currently selected</small>
+            </div>
+          </button>
+          <button
+            type="button"
+            class="family-option"
+            *ngFor="let family of sharedFamilies"
+            (click)="switchToSharedFamily(family)">
+            <span>👨‍👩‍👧</span>
+            <div>
+              <strong>{{ family.ownerName }}</strong>
+              <small>Shared family</small>
+            </div>
+          </button>
+        </div>
+
+        <div class="join-family-box">
+          <label for="caregiver-code">Have an invite code?</label>
+          <div>
+            <input
+              id="caregiver-code"
+              type="text"
+              maxlength="24"
+              placeholder="Enter 24-character code"
+              [value]="caregiverJoinCode"
+              (input)="updateCaregiverJoinCode($event)">
+            <button
+              type="button"
+              [disabled]="isCaregiverBusy"
+              (click)="joinCaregiverFamily()">
+              Join
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #joinedFamily>
+        <div class="shared-family-banner">
+          <strong>{{ activeSharedFamilyName }}</strong>
+          <p *ngIf="caregiverSharingService.canEditCurrentFamily">
+            You have Editor access and can update this family.
+          </p>
+          <p *ngIf="!caregiverSharingService.canEditCurrentFamily">
+            You have Viewer access. Records are read-only.
+          </p>
+          <div class="shared-family-actions">
+            <button type="button" (click)="switchToPrivateProfile()">
+              Switch to my private profile
+            </button>
+            <button type="button" class="leave-family" (click)="leaveSharedFamily()">
+              Leave family permanently
+            </button>
+          </div>
+        </div>
+
+        <div class="family-switcher" *ngIf="sharedFamilies.length > 1">
+          <p>Other shared families</p>
+          <button
+            type="button"
+            class="family-option"
+            *ngFor="let family of sharedFamilies"
+            [class.active]="family.ownerId === caregiverSharingService.familyOwnerId"
+            [disabled]="family.ownerId === caregiverSharingService.familyOwnerId"
+            (click)="switchToSharedFamily(family)">
+            <span>👨‍👩‍👧</span>
+            <div>
+              <strong>{{ family.ownerName }}</strong>
+              <small>
+                {{ family.ownerId === caregiverSharingService.familyOwnerId ? 'Currently selected' : 'Shared family' }}
+              </small>
+            </div>
+          </button>
+        </div>
+      </ng-template>
+
+      <p class="reminder-success" *ngIf="caregiverMessage">
+        ✓ {{ caregiverMessage }}
+      </p>
+      <p class="reminder-error" role="alert" *ngIf="caregiverError">
+        {{ caregiverError }}
+      </p>
+    </section>
+
     <section class="settings-section data-section">
       <div class="section-heading">
         <div>
@@ -448,7 +637,7 @@
       </div>
 
       <p class="section-description">
-        Create a JSON backup of tracker records stored on this device.
+        Create a JSON backup of the tracker records stored in your account.
         Sign-in tokens and unrelated browser data are never included.
       </p>
 
@@ -470,7 +659,7 @@
       </label>
 
       <p class="restore-note">
-        Restoring replaces tracker data on this device. You’ll be asked to
+        Restoring replaces tracker data in your account. You’ll be asked to
         confirm before anything changes.
       </p>
 

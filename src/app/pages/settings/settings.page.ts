@@ -45,6 +45,14 @@ import {
   ActivityReminderService,
   CustomReminder
 } from '../../services/notification';
+import {
+  PhotoStorageService
+} from '../../services/photo-storage.service';
+import {
+  CaregiverMember,
+  CaregiverSharingService,
+  SharedFamily
+} from '../../services/caregiver-sharing.service';
 
 @Component({
   selector: 'app-settings',
@@ -80,6 +88,9 @@ export class SettingsPage {
   private readonly dataExportService = inject(DataExportService);
   private readonly alertController = inject(AlertController);
   private readonly babyProfileService = inject(BabyProfileService);
+  private readonly photoStorageService = inject(PhotoStorageService);
+  readonly caregiverSharingService =
+    inject(CaregiverSharingService);
   readonly reminderService = inject(ActivityReminderService);
 
   isLoggingOut = false;
@@ -93,6 +104,149 @@ export class SettingsPage {
   reminderError = '';
   reminderSavingType = '';
   isAddingCustomReminder = false;
+  readonly profilePhotoUrls:
+    Record<string, string> = {};
+  isSavingProfilePhoto = false;
+  caregiverInviteCode = '';
+  caregiverJoinCode = '';
+  caregiverMessage = '';
+  caregiverError = '';
+  isCaregiverBusy = false;
+  caregivers: CaregiverMember[] = [];
+  sharedFamilies: SharedFamily[] = [];
+
+  constructor() {
+    void this.loadCaregivers();
+  }
+
+  async createCaregiverInvite(): Promise<void> {
+    this.isCaregiverBusy = true;
+    this.caregiverError = '';
+    this.caregiverMessage = '';
+    try {
+      this.caregiverInviteCode =
+        await this.caregiverSharingService.createInvite();
+      this.caregiverMessage =
+        'Invite created. It expires in 24 hours.';
+    } catch (error) {
+      this.caregiverError = this.caregiverErrorText(error);
+    } finally {
+      this.isCaregiverBusy = false;
+    }
+  }
+
+  async copyCaregiverInvite(): Promise<void> {
+    if (!this.caregiverInviteCode) return;
+    await navigator.clipboard.writeText(
+      this.caregiverInviteCode
+    );
+    this.caregiverMessage = 'Invite code copied.';
+  }
+
+  updateCaregiverJoinCode(event: Event): void {
+    this.caregiverJoinCode =
+      (event.target as HTMLInputElement).value;
+  }
+
+  async joinCaregiverFamily(): Promise<void> {
+    this.isCaregiverBusy = true;
+    this.caregiverError = '';
+    try {
+      const familyName =
+        await this.caregiverSharingService.joinWithCode(
+          this.caregiverJoinCode
+        );
+      window.location.reload();
+      this.caregiverMessage = `Joined ${familyName}.`;
+    } catch (error) {
+      this.caregiverError = this.caregiverErrorText(error);
+    } finally {
+      this.isCaregiverBusy = false;
+    }
+  }
+
+  async removeCaregiver(member: CaregiverMember): Promise<void> {
+    await this.caregiverSharingService.removeCaregiver(member.id);
+    await this.loadCaregivers();
+    this.caregiverMessage = `${member.displayName} was removed.`;
+  }
+
+  async changeCaregiverRole(
+    member: CaregiverMember,
+    role: CaregiverMember['role']
+  ): Promise<void> {
+    if (member.role === role) return;
+    this.isCaregiverBusy = true;
+    this.caregiverError = '';
+    try {
+      await this.caregiverSharingService.setCaregiverRole(member.id, role);
+      member.role = role;
+      this.caregiverMessage = `${member.displayName} is now a${role === 'editor' ? 'n editor' : ' viewer'}.`;
+    } catch (error) {
+      this.caregiverError = this.caregiverErrorText(error);
+    } finally {
+      this.isCaregiverBusy = false;
+    }
+  }
+
+  async leaveSharedFamily(): Promise<void> {
+    this.isCaregiverBusy = true;
+    try {
+      await this.caregiverSharingService.leaveSharedFamily();
+      window.location.reload();
+    } catch (error) {
+      this.caregiverError = this.caregiverErrorText(error);
+      this.isCaregiverBusy = false;
+    }
+  }
+
+  async switchToPrivateProfile(): Promise<void> {
+    this.isCaregiverBusy = true;
+    try {
+      await this.caregiverSharingService.switchToPrivateProfile();
+      window.location.reload();
+    } catch (error) {
+      this.caregiverError = this.caregiverErrorText(error);
+      this.isCaregiverBusy = false;
+    }
+  }
+
+  async switchToSharedFamily(family: SharedFamily): Promise<void> {
+    this.isCaregiverBusy = true;
+    try {
+      await this.caregiverSharingService.switchFamily(family.ownerId);
+      window.location.reload();
+    } catch (error) {
+      this.caregiverError = this.caregiverErrorText(error);
+      this.isCaregiverBusy = false;
+    }
+  }
+
+  get activeSharedFamilyName(): string {
+    return this.sharedFamilies.find(
+      family =>
+        family.ownerId ===
+        this.caregiverSharingService.familyOwnerId
+    )?.ownerName ?? 'Shared family';
+  }
+
+  private async loadCaregivers(): Promise<void> {
+    try {
+      this.caregivers =
+        await this.caregiverSharingService.listCaregivers();
+      this.sharedFamilies =
+        await this.caregiverSharingService.listSharedFamilies();
+    } catch {
+      this.caregivers = [];
+      this.sharedFamilies = [];
+    }
+  }
+
+  private caregiverErrorText(error: unknown): string {
+    return error instanceof Error
+      ? error.message
+      : 'Unable to update family sharing.';
+  }
 
   readonly newProfileForm = this.fb.nonNullable.group({
     name: [
@@ -178,6 +332,85 @@ export class SettingsPage {
     return this.babyProfileService.activeProfileId;
   }
 
+  ionViewWillEnter(): void {
+    void this.loadProfilePhotos();
+    void this.loadCaregivers();
+  }
+
+  getProfilePhoto(profile: ManagedBabyProfile): string {
+    return profile.photoId
+      ? this.profilePhotoUrls[profile.photoId] || ''
+      : '';
+  }
+
+  get activeProfilePhoto(): string {
+    const profile =
+      this.babyProfileService.activeProfile;
+    return profile
+      ? this.getProfilePhoto(profile)
+      : '';
+  }
+
+  async selectProfilePhoto(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (
+      !file.type.startsWith('image/') ||
+      file.size > 10 * 1024 * 1024
+    ) {
+      this.errorMessage =
+        'Choose an image smaller than 10 MB.';
+      return;
+    }
+
+    const photoId = `profile_${this.activeProfileId}`;
+    this.isSavingProfilePhoto = true;
+    this.errorMessage = '';
+
+    try {
+      await this.photoStorageService.savePhoto(
+        photoId,
+        file,
+        'profile'
+      );
+      this.babyProfileService.setProfilePhoto(
+        this.activeProfileId,
+        photoId
+      );
+      this.profilePhotoUrls[photoId] =
+        await this.photoStorageService.getPhotoUrl(photoId);
+    } catch {
+      this.errorMessage =
+        'Unable to save the profile photo. Try another image.';
+    } finally {
+      this.isSavingProfilePhoto = false;
+    }
+  }
+
+  async removeProfilePhoto(): Promise<void> {
+    const profile =
+      this.babyProfileService.activeProfile;
+
+    if (!profile?.photoId) {
+      return;
+    }
+
+    this.isSavingProfilePhoto = true;
+    try {
+      await this.photoStorageService.deletePhoto(profile.photoId);
+      delete this.profilePhotoUrls[profile.photoId];
+      this.babyProfileService.setProfilePhoto(profile.id);
+    } finally {
+      this.isSavingProfilePhoto = false;
+    }
+  }
+
   get birthDateError(): string {
     const control = this.preferencesForm.controls.birthDate;
     if (!control.touched || !control.errors) return '';
@@ -251,7 +484,9 @@ export class SettingsPage {
       baby: {
         name: formValue.babyName,
         birthDate: formValue.birthDate,
-        mood: formValue.mood
+        mood: formValue.mood,
+        photoId:
+          this.babyProfileService.activeProfile?.photoId
       },
       goals: {
         feeds: formValue.feedsGoal,
@@ -296,14 +531,17 @@ export class SettingsPage {
     const alert = await this.alertController.create({
       header: `Remove ${profile.name}?`,
       message:
-        'This removes this baby profile and its tracker records from this device.',
+        'This removes this baby profile and its tracker records from your account.',
       cssClass: 'activity-delete-alert',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Remove profile',
           role: 'destructive',
-          handler: () => {
+          handler: async () => {
+            await this.photoStorageService.deletePhoto(
+              profile.photoId
+            );
             this.babyProfileService.deleteProfile(profile.id);
           }
         }
@@ -311,6 +549,19 @@ export class SettingsPage {
     });
 
     await alert.present();
+  }
+
+  private async loadProfilePhotos(): Promise<void> {
+    await Promise.all(
+      this.profiles.map(async profile => {
+        if (profile.photoId) {
+          this.profilePhotoUrls[profile.photoId] =
+            await this.photoStorageService.getPhotoUrl(
+              profile.photoId
+            );
+        }
+      })
+    );
   }
 
   async updateReminder(
@@ -443,7 +694,7 @@ export class SettingsPage {
         message:
           `This backup contains ${recordGroups} data groups from ` +
           `${new Date(backup.exportedAt).toLocaleString()}. ` +
-          'Current tracker data on this device will be replaced.',
+          'Current tracker data in your account will be replaced.',
         cssClass: 'activity-delete-alert',
         buttons: [
           { text: 'Cancel', role: 'cancel' },

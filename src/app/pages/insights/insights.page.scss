@@ -444,6 +444,10 @@ ion-title {
   background: #fce7f3;
 }
 
+.solids-insight .insight-icon {
+  background: #ffedd5;
+}
+
 .sleep-insight .insight-icon {
   background: #eef2ff;
 }
@@ -755,6 +759,15 @@ ion-title {
       180deg,
       #fbcfe8,
       #db2777
+    );
+}
+
+.solids-chart .chart-bar {
+  background:
+    linear-gradient(
+      180deg,
+      #fbbf24,
+      #f97316
     );
 }
 

@@ -20,6 +20,14 @@ export interface DailyAnalytics {
     lastFeedAt: number | null;
   };
 
+  solids: {
+    count: number;
+    foods: string[];
+    likedCount: number;
+    dislikedCount: number;
+    possibleReactionCount: number;
+  };
+
   sleep: {
     count: number;
     totalMinutes: number;
@@ -44,7 +52,12 @@ export interface InsightMessage {
   icon: string;
   title: string;
   message: string;
-  type: 'feeding' | 'sleep' | 'diaper' | 'general';
+  type:
+    | 'feeding'
+    | 'solids'
+    | 'sleep'
+    | 'diaper'
+    | 'general';
 }
 
 @Injectable({
@@ -71,6 +84,12 @@ export class InsightService {
       dailyActivities.filter(
         activity =>
           activity.type === 'feeding'
+      );
+
+    const solidActivities =
+      dailyActivities.filter(
+        activity =>
+          activity.type === 'solids'
       );
 
     const sleepActivities =
@@ -154,6 +173,42 @@ export class InsightService {
                 feedingActivities.length - 1
               ].createdAt
             : null
+      },
+
+      solids: {
+        count: solidActivities.length,
+        foods: [
+          ...new Set(
+            solidActivities
+              .map(activity =>
+                activity.value
+                  .split('·')[0]
+                  .trim()
+              )
+              .filter(Boolean)
+          )
+        ],
+        likedCount:
+          solidActivities.filter(
+            activity =>
+              /\bliked\b/i.test(
+                activity.value
+              )
+          ).length,
+        dislikedCount:
+          solidActivities.filter(
+            activity =>
+              /\bdisliked\b/i.test(
+                activity.value
+              )
+          ).length,
+        possibleReactionCount:
+          solidActivities.filter(
+            activity =>
+              /\breaction\b/i.test(
+                activity.value
+              )
+          ).length
       },
 
       sleep: {
@@ -258,6 +313,9 @@ export class InsightService {
       feedingCount:
         analytics.feeding.count,
 
+      solidsCount:
+        analytics.solids.count,
+
       feedingVolumeMl:
         analytics.feeding.totalAmountMl,
 
@@ -284,6 +342,13 @@ export class InsightService {
       this.sum(
         days.map(day =>
           day.feedingVolumeMl
+        )
+      ),
+
+    solidsCount:
+      this.sum(
+        days.map(day =>
+          day.solidsCount
         )
       ),
 
@@ -322,6 +387,12 @@ export class InsightService {
         days.length
       ),
 
+    solidsCount:
+      this.roundToOneDecimal(
+        totals.solidsCount /
+        days.length
+      ),
+
     sleepMinutes:
       Math.round(
         totals.sleepMinutes /
@@ -355,6 +426,14 @@ export class InsightService {
         1,
         ...days.map(day =>
           day.feedingVolumeMl
+        )
+      ),
+
+    solidsCount:
+      Math.max(
+        1,
+        ...days.map(day =>
+          day.solidsCount
         )
       ),
 
@@ -410,6 +489,13 @@ export class InsightService {
         this.calculateTrend(
           days.map(day =>
             day.feedingVolumeMl
+          )
+        ),
+
+      solids:
+        this.calculateTrend(
+          days.map(day =>
+            day.solidsCount
           )
         ),
 
@@ -585,6 +671,10 @@ private roundToOneDecimal(
         today,
         comparison
       )
+    );
+
+    messages.push(
+      this.createSolidsInsight(today)
     );
 
     messages.push(
@@ -821,6 +911,63 @@ private roundToOneDecimal(
     };
   }
 
+  private createSolidsInsight(
+    today: DailyAnalytics
+  ): InsightMessage {
+    const solids = today.solids;
+
+    if (solids.count === 0) {
+      return {
+        icon: '🥣',
+        title: 'Solid foods',
+        message:
+          'No solid meals have been recorded today.',
+        type: 'solids'
+      };
+    }
+
+    const foodText =
+      solids.foods.length > 0
+        ? ` Foods offered: ${solids.foods.join(', ')}.`
+        : '';
+    const responseParts: string[] = [];
+
+    if (solids.likedCount > 0) {
+      responseParts.push(
+        `${solids.likedCount} liked`
+      );
+    }
+    if (solids.dislikedCount > 0) {
+      responseParts.push(
+        `${solids.dislikedCount} disliked`
+      );
+    }
+
+    const responseText =
+      responseParts.length > 0
+        ? ` Responses: ${responseParts.join(', ')}.`
+        : '';
+    const reactionText =
+      solids.possibleReactionCount > 0
+        ? ` ⚠️ ${solids.possibleReactionCount} possible ` +
+          `${solids.possibleReactionCount === 1
+            ? 'reaction was'
+            : 'reactions were'} recorded; review the meal notes.`
+        : ' No possible reactions were recorded.';
+
+    return {
+      icon: '🥣',
+      title: 'Solid foods',
+      message:
+        `${solids.count} solid ` +
+        `${solids.count === 1 ? 'meal' : 'meals'} recorded today.` +
+        foodText +
+        responseText +
+        reactionText,
+      type: 'solids'
+    };
+  }
+
   private createSleepInsight(
     today: DailyAnalytics,
     comparison: AnalyticsComparison
@@ -1002,6 +1149,7 @@ export interface WeeklyDayAnalytics {
 
   feedingCount: number;
   feedingVolumeMl: number;
+  solidsCount: number;
   sleepMinutes: number;
   diaperCount: number;
   totalActivities: number;
@@ -1013,6 +1161,7 @@ export interface WeeklyAnalytics {
   averages: {
     feedingCount: number;
     feedingVolumeMl: number;
+    solidsCount: number;
     sleepMinutes: number;
     diaperCount: number;
     totalActivities: number;
@@ -1021,6 +1170,7 @@ export interface WeeklyAnalytics {
   totals: {
     feedingCount: number;
     feedingVolumeMl: number;
+    solidsCount: number;
     sleepMinutes: number;
     diaperCount: number;
     totalActivities: number;
@@ -1029,6 +1179,7 @@ export interface WeeklyAnalytics {
   maximums: {
     feedingCount: number;
     feedingVolumeMl: number;
+    solidsCount: number;
     sleepMinutes: number;
     diaperCount: number;
   };
@@ -1038,6 +1189,7 @@ export interface WeeklyAnalytics {
   trends: {
     feeding: TrendDirection;
     feedingVolume: TrendDirection;
+    solids: TrendDirection;
     sleep: TrendDirection;
     diaper: TrendDirection;
   };

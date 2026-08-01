@@ -545,6 +545,10 @@ ion-title {
       #e0e7ff);
 }
 
+.solids-action {
+  background: #fff7ed;
+}
+
 .diaper-action {
   color: #0f766e;
 
@@ -622,6 +626,11 @@ ion-title {
 
 .sleep-stat .stat-icon {
   background: #eef2ff;
+}
+
+.solids-stat .stat-icon,
+.solids-icon {
+  background: #ffedd5;
 }
 
 .diaper-stat .stat-icon {

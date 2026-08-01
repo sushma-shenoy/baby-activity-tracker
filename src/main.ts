@@ -4,6 +4,9 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalo
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
+import {
+  initializeTrackerStorage
+} from './app/firebase/tracker-storage';
 
 import { addIcons } from 'ionicons';
 import {
@@ -11,6 +14,7 @@ import {
   homeOutline,
   barChartOutline,
   bulbOutline,
+  cameraOutline,
   chevronForwardOutline,
   closeOutline,
   createOutline,
@@ -28,6 +32,7 @@ addIcons({
   homeOutline,
   barChartOutline,
   bulbOutline,
+  cameraOutline,
   chevronForwardOutline,
   closeOutline,
   createOutline,
@@ -40,10 +45,23 @@ addIcons({
   trashOutline
 });
 
-bootstrapApplication(AppComponent, {
-  providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular(),
-    provideRouter(routes, withPreloading(PreloadAllModules)),
-  ],
-});
+async function startApplication(): Promise<void> {
+  try {
+    await initializeTrackerStorage();
+  } catch (error) {
+    console.error(
+      'Unable to initialize Firestore tracker storage. Starting with an empty offline state.',
+      error
+    );
+  }
+
+  await bootstrapApplication(AppComponent, {
+    providers: [
+      { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+      provideIonicAngular(),
+      provideRouter(routes, withPreloading(PreloadAllModules)),
+    ],
+  });
+}
+
+void startApplication();
