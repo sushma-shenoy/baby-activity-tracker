@@ -83,6 +83,7 @@
       </div>
 
       <button
+        *ngIf="!caregiverSharingService.isSharingAnotherFamily"
         type="button"
         class="add-profile-toggle"
         (click)="isAddingProfile = !isAddingProfile">
@@ -91,7 +92,7 @@
 
       <form
         class="new-profile-form"
-        *ngIf="isAddingProfile"
+        *ngIf="isAddingProfile && !caregiverSharingService.isSharingAnotherFamily"
         [formGroup]="newProfileForm"
         (ngSubmit)="addProfile()">
         <div class="field-group">

@@ -19,6 +19,25 @@
     <div>
       <p>Track feeding</p>
       <h1>Feeding 🍼</h1>
+      <div class="feeding-baby-context">
+        <span>Recording for</span>
+        <strong>{{ babyProfileService.activeProfile?.name || 'Baby' }}</strong>
+      </div>
+      <label
+        *ngIf="babyProfileService.profiles.length > 1"
+        class="feeding-baby-switcher">
+        <span>Switch baby</span>
+        <select
+          aria-label="Switch baby profile"
+          [value]="babyProfileService.activeProfileId"
+          (change)="switchBaby($any($event.target).value)">
+          <option
+            *ngFor="let profile of babyProfileService.profiles"
+            [value]="profile.id">
+            {{ profile.name }}
+          </option>
+        </select>
+      </label>
     </div>
 
     <div class="hero-icon">
@@ -26,7 +45,46 @@
     </div>
   </section>
 
-  <section class="nursing-card">
+  <section class="feeding-form-card entry-card">
+    <div class="section-heading">
+      <div>
+        <p class="section-eyebrow">New activity</p>
+        <h2>Enter feeding info</h2>
+      </div>
+      <button
+        *ngIf="entryMode"
+        type="button"
+        class="change-entry-button"
+        (click)="resetEntryChoice()">
+        Change
+      </button>
+    </div>
+
+    <div class="entry-choice" *ngIf="!entryMode">
+      <button type="button" (click)="selectEntryMode('nursing')">
+        <span>🤱</span>
+        <strong>Nursing</strong>
+        <small>Breastfeeding session</small>
+      </button>
+      <button type="button" (click)="selectEntryMode('bottle')">
+        <span>🍼</span>
+        <strong>Bottle feeding</strong>
+        <small>Formula or expressed milk</small>
+      </button>
+    </div>
+
+    <div class="nursing-method-choice" *ngIf="entryMode === 'nursing' && !nursingEntryMode">
+      <p class="field-label">How would you like to record nursing?</p>
+      <button type="button" (click)="selectNursingEntryMode('live')">
+        <span>⏱️</span><span><strong>Nurse now</strong><small>Start the live left and right timer</small></span><b>›</b>
+      </button>
+      <button type="button" (click)="selectNursingEntryMode('manual')">
+        <span>✏️</span><span><strong>Manual entry</strong><small>Add a session that already happened</small></span><b>›</b>
+      </button>
+    </div>
+  </section>
+
+  <section class="nursing-card" *ngIf="entryMode === 'nursing' && nursingEntryMode === 'live'">
     <div class="section-heading">
       <div>
         <p class="section-eyebrow">Live timer</p>
@@ -37,10 +95,9 @@
       </span>
     </div>
 
-    <div class="last-side-reminder">
+    <div class="last-side-reminder" *ngIf="!activeNursing?.activeSide">
       <span>Last side</span>
       <strong>{{ lastNursingSide }}</strong>
-      <button type="button" (click)="openManualNursing()">＋ Manual entry</button>
     </div>
 
     <div class="nursing-summary">
@@ -113,80 +170,39 @@
       Finish nursing session
     </button>
 
-    <form
-      class="manual-nursing-form"
-      *ngIf="showManualNursing"
-      (ngSubmit)="saveManualNursing()">
+  </section>
+
+  <section class="nursing-card" *ngIf="entryMode === 'nursing' && nursingEntryMode === 'manual'">
+    <form class="manual-nursing-form visible-form" (ngSubmit)="saveManualNursing()">
       <div class="manual-heading">
         <strong>{{ editingNursingId ? 'Edit nursing session' : 'Manual nursing entry' }}</strong>
-        <button type="button" (click)="closeManualNursing()">Close</button>
+        <button type="button" *ngIf="!editingNursingId" (click)="resetEntryChoice()">Cancel</button>
       </div>
-
       <div class="manual-duration-grid">
-        <label>
-          <span>Left minutes</span>
-          <input type="number" min="0" max="240" [(ngModel)]="manualNursing.leftMinutes" name="leftMinutes">
-        </label>
-        <label>
-          <span>Right minutes</span>
-          <input type="number" min="0" max="240" [(ngModel)]="manualNursing.rightMinutes" name="rightMinutes">
-        </label>
+        <label><span>Left minutes</span><input type="number" min="0" max="240" [(ngModel)]="manualNursing.leftMinutes" name="leftMinutes"></label>
+        <label><span>Right minutes</span><input type="number" min="0" max="240" [(ngModel)]="manualNursing.rightMinutes" name="rightMinutes"></label>
       </div>
-
-      <label>
-        <span>Started at</span>
-        <input type="datetime-local" [(ngModel)]="manualNursing.dateTime" name="dateTime">
-      </label>
-
+      <label><span>Started at</span><input type="datetime-local" [(ngModel)]="manualNursing.dateTime" name="dateTime"></label>
       <div class="manual-side-toggle">
         <span>Last side used</span>
         <button type="button" [class.active]="manualNursing.lastSide === 'left'" (click)="manualNursing.lastSide = 'left'">Left</button>
         <button type="button" [class.active]="manualNursing.lastSide === 'right'" (click)="manualNursing.lastSide = 'right'">Right</button>
       </div>
-
-      <label>
-        <span>Notes <small>optional</small></span>
-        <textarea maxlength="240" rows="2" [(ngModel)]="manualNursing.notes" name="nursingNotes"></textarea>
-      </label>
-
+      <label><span>Notes <small>optional</small></span><textarea maxlength="240" rows="2" [(ngModel)]="manualNursing.notes" name="nursingNotes"></textarea></label>
       <p class="nursing-error" *ngIf="nursingError">{{ nursingError }}</p>
-      <button type="submit" class="save-manual-nursing">
-        {{ editingNursingId ? 'Save changes' : 'Save nursing session' }}
-      </button>
+      <button type="submit" class="save-manual-nursing">{{ editingNursingId ? 'Save changes' : 'Save nursing session' }}</button>
     </form>
-
-    <div class="nursing-history" *ngIf="nursingSessions.length">
-      <p class="field-label">Recent nursing</p>
-      <article *ngFor="let session of nursingSessions | slice:0:3">
-        <span>🤱</span>
-        <div>
-          <strong>{{ formatDuration(session.leftSeconds + session.rightSeconds) }}</strong>
-          <small>
-            L {{ formatDuration(session.leftSeconds) }} ·
-            R {{ formatDuration(session.rightSeconds) }} ·
-            {{ session.endedAt | date:'shortTime' }}
-          </small>
-          <small *ngIf="session.notes">{{ session.notes }}</small>
-        </div>
-        <ion-button fill="clear" color="medium" aria-label="Edit nursing session" (click)="openManualNursing(session)">
-          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-        </ion-button>
-        <ion-button fill="clear" color="medium" aria-label="Delete nursing session" (click)="deleteNursing(session)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
-      </article>
-    </div>
   </section>
 
   <!-- ADD FEEDING FORM -->
-  <section class="feeding-form-card">
+  <section class="feeding-form-card" *ngIf="entryMode === 'bottle'">
     <div class="section-heading">
       <div>
         <p class="section-eyebrow">
           New activity
         </p>
 
-        <h2>Add Feeding</h2>
+        <h2>Add bottle feeding</h2>
       </div>
     </div>
 
@@ -321,35 +337,42 @@
     </button>
   </section>
 
-  <!-- HISTORY -->
+  <!-- COMBINED HISTORY -->
   <section class="history-section">
     <div class="history-header">
       <div>
-        <p class="section-eyebrow">
-          Recent activity
-        </p>
-
+        <p class="section-eyebrow">All records</p>
         <h2>Feeding history</h2>
       </div>
 
       <span class="history-count">
-        {{ feeds.length }}
+        {{ historyCount }}
       </span>
+    </div>
+
+    <div class="history-filter" aria-label="Filter feeding history">
+      <button
+        type="button"
+        *ngFor="let filter of historyFilters"
+        [class.active]="historyFilter === filter.type"
+        [attr.aria-pressed]="historyFilter === filter.type"
+        (click)="setHistoryFilter(filter.type)">
+        <span>{{ filter.icon }}</span>{{ filter.label }}
+      </button>
     </div>
 
     <div
       class="empty-state"
-      *ngIf="feeds.length === 0">
+      *ngIf="filteredHistory.length === 0">
 
       <div class="empty-icon">
         🍼
       </div>
 
-      <h3>No feeding recorded</h3>
+      <h3>No matching feeding records</h3>
 
       <p>
-        Add the first feeding activity
-        using the form above.
+        Add a feeding above or choose a different filter.
       </p>
     </div>
 
@@ -358,27 +381,27 @@
       role="button"
       tabindex="0"
       *ngFor="
-        let feed of feeds;
-        trackBy: trackByFeedId
+        let item of filteredHistory;
+        trackBy: trackByHistoryId
       "
-      (click)="edit(feed)"
-      (keyup.enter)="edit(feed)">
+      (click)="item.feed ? edit(item.feed) : openManualNursing(item.nursing!)"
+      (keyup.enter)="item.feed ? edit(item.feed) : openManualNursing(item.nursing!)">
 
       <div class="feed-card-left">
         <div class="feed-icon">
-          🍼
+          {{ item.kind === 'nursing' ? '🤱' : (item.kind === 'formula' ? '🍼' : '🥛') }}
         </div>
 
         <div class="feed-content">
           <div class="feed-title">
-            {{ feed.quantity }} ml
+            {{ item.nursing ? formatDuration(item.nursing.leftSeconds + item.nursing.rightSeconds) : item.feed?.quantity + ' ml' }}
           </div>
 
           <div class="feed-type">
             {{
-              feed.type === 'formula'
-                ? 'Formula feeding'
-                : 'Expressed milk'
+              item.kind === 'nursing'
+                ? 'Nursing · L ' + formatDuration(item.nursing!.leftSeconds) + ' · R ' + formatDuration(item.nursing!.rightSeconds)
+                : (item.kind === 'formula' ? 'Formula feeding' : 'Expressed milk')
             }}
           </div>
 
@@ -387,7 +410,11 @@
               name="time-outline">
             </ion-icon>
 
-            <span>{{ feed.time }}</span>
+            <span>{{ item.nursing ? (item.nursing.endedAt | date:'medium') : item.feed?.time }}</span>
+          </div>
+          <div class="feed-time" *ngIf="item.nursing?.notes">{{ item.nursing?.notes }}</div>
+          <div class="feed-time" *ngIf="item.nursing?.createdByName || item.feed?.createdByName">
+            Added by {{ item.nursing?.createdByName || item.feed?.createdByName }}
           </div>
         </div>
       </div>
@@ -395,13 +422,11 @@
       <button
         type="button"
         class="more-button"
-        aria-label="Feeding options"
-        (click)="
-          openFeedActions(feed, $event)
-        ">
+        [attr.aria-label]="item.kind === 'nursing' ? 'Delete nursing session' : 'Feeding options'"
+        (click)="$event.stopPropagation(); item.feed ? openFeedActions(item.feed, $event) : deleteNursing(item.nursing!)">
 
         <ion-icon
-          name="ellipsis-horizontal-outline">
+          [name]="item.kind === 'nursing' ? 'trash-outline' : 'ellipsis-horizontal-outline'">
         </ion-icon>
       </button>
     </div>

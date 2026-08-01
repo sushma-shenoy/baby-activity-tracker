@@ -11,6 +11,7 @@ import {
   onSnapshot,
   serverTimestamp,
   setDoc,
+  waitForPendingWrites,
   Unsubscribe
 } from 'firebase/firestore';
 import { firebaseApp, firebaseAuth } from './firebase.config';
@@ -191,6 +192,11 @@ class TrackerStorage {
 
   requireEditAccess(): void {
     if (!this.testMode) this.assertCanEdit();
+  }
+
+  async waitForSync(): Promise<void> {
+    if (this.testMode || !this.firestore) return;
+    await waitForPendingWrites(this.firestore);
   }
 
   async switchDataOwner(

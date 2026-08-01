@@ -501,7 +501,14 @@ export class SettingsPage {
     this.isSaved = true;
   }
 
-  addProfile(): void {
+  async addProfile(): Promise<void> {
+    if (this.caregiverSharingService.isSharingAnotherFamily) {
+      this.isAddingProfile = false;
+      this.errorMessage =
+        'Only the family owner can add another baby.';
+      return;
+    }
+
     if (this.newProfileForm.invalid) {
       this.newProfileForm.markAllAsTouched();
       this.errorMessage = 'Enter a valid name and date of birth.';
@@ -518,11 +525,13 @@ export class SettingsPage {
       this.preferencesService.preferences.goals
     );
 
+    await this.babyProfileService.waitForSync();
     window.location.assign('/home');
   }
 
-  switchProfile(profileId: string): void {
+  async switchProfile(profileId: string): Promise<void> {
     if (this.babyProfileService.switchProfile(profileId)) {
+      await this.babyProfileService.waitForSync();
       window.location.assign('/home');
     }
   }

@@ -39,6 +39,19 @@ import {
   NursingSide
 } from '../../services/nursing.service';
 import { Subscription } from 'rxjs';
+import { BabyProfileService } from '../../services/baby-profile.service';
+
+type FeedingEntryMode = 'bottle' | 'nursing' | null;
+type NursingEntryMode = 'manual' | 'live' | null;
+type FeedingHistoryFilter = 'all' | 'nursing' | 'formula' | 'expressed';
+
+interface FeedingHistoryItem {
+  id: string;
+  kind: Exclude<FeedingHistoryFilter, 'all'>;
+  timestamp: number;
+  feed?: Feed;
+  nursing?: NursingSession;
+}
 
 @Component({
   selector: 'app-feeding',
@@ -59,6 +72,19 @@ export class FeedingPage implements OnInit, OnDestroy {
   nursingError = '';
   feedError = '';
   editingNursingId = '';
+  entryMode: FeedingEntryMode = null;
+  nursingEntryMode: NursingEntryMode = null;
+  historyFilter: FeedingHistoryFilter = 'all';
+  readonly historyFilters: Array<{
+    type: FeedingHistoryFilter;
+    label: string;
+    icon: string;
+  }> = [
+    { type: 'all', label: 'All', icon: '✨' },
+    { type: 'nursing', label: 'Nursing', icon: '🤱' },
+    { type: 'formula', label: 'Formula', icon: '🍼' },
+    { type: 'expressed', label: 'Expressed milk', icon: '🥛' }
+  ];
   manualNursing = this.createManualNursing();
   private nursingClock?: ReturnType<typeof setInterval>;
   private activitySubscription?: Subscription;
@@ -94,8 +120,16 @@ export class FeedingPage implements OnInit, OnDestroy {
     private readonly actionSheetController:
       ActionSheetController,
     private readonly alertController:
-      AlertController
+      AlertController,
+    public readonly babyProfileService: BabyProfileService
   ) {}
+
+  async switchBaby(profileId: string): Promise<void> {
+    if (this.babyProfileService.switchProfile(profileId)) {
+      await this.babyProfileService.waitForSync();
+      window.location.reload();
+    }
+  }
 
   ngOnInit(): void {
     this.loadFeeds();
@@ -124,6 +158,59 @@ export class FeedingPage implements OnInit, OnDestroy {
   loadNursing(): void {
     this.nursingSessions = this.nursingService.getSessions();
     this.activeNursing = this.nursingService.snapshot();
+    if (this.activeNursing && !this.entryMode) {
+      this.entryMode = 'nursing';
+      this.nursingEntryMode = 'live';
+    }
+  }
+
+  selectEntryMode(mode: Exclude<FeedingEntryMode, null>): void {
+    this.entryMode = mode;
+    this.feedError = '';
+    this.nursingError = '';
+    if (mode !== 'nursing') {
+      this.nursingEntryMode = null;
+      this.closeManualNursing();
+    }
+  }
+
+  selectNursingEntryMode(mode: Exclude<NursingEntryMode, null>): void {
+    this.nursingEntryMode = mode;
+    if (mode === 'manual') this.openManualNursing();
+    else this.closeManualNursing();
+  }
+
+  resetEntryChoice(): void {
+    this.entryMode = null;
+    this.nursingEntryMode = null;
+    this.closeManualNursing();
+    this.feedError = '';
+  }
+
+  setHistoryFilter(filter: FeedingHistoryFilter): void {
+    this.historyFilter = filter;
+  }
+
+  get filteredHistory(): FeedingHistoryItem[] {
+    const bottleItems: FeedingHistoryItem[] = this.feeds.map(feed => ({
+      id: feed.id,
+      kind: feed.type,
+      timestamp: this.getFeedTimestamp(feed),
+      feed
+    }));
+    const nursingItems: FeedingHistoryItem[] = this.nursingSessions.map(nursing => ({
+      id: nursing.id,
+      kind: 'nursing',
+      timestamp: nursing.endedAt,
+      nursing
+    }));
+    return [...bottleItems, ...nursingItems]
+      .filter(item => this.historyFilter === 'all' || item.kind === this.historyFilter)
+      .sort((first, second) => second.timestamp - first.timestamp);
+  }
+
+  get historyCount(): number {
+    return this.feeds.length + this.nursingSessions.length;
   }
 
   toggleNursing(side: NursingSide): void {
@@ -153,6 +240,8 @@ export class FeedingPage implements OnInit, OnDestroy {
 
   openManualNursing(session?: NursingSession): void {
     this.nursingError = '';
+    this.entryMode = 'nursing';
+    this.nursingEntryMode = 'manual';
     this.showManualNursing = true;
     this.editingNursingId = session?.id || '';
     this.manualNursing = session
@@ -225,6 +314,7 @@ export class FeedingPage implements OnInit, OnDestroy {
       });
       this.loadNursing();
       this.closeManualNursing();
+      this.resetEntryChoice();
     } catch (error) {
       this.nursingError =
         error instanceof Error ? error.message : 'Could not save the session.';
@@ -295,12 +385,8 @@ export class FeedingPage implements OnInit, OnDestroy {
         firstFeed,
         secondFeed
       ) =>
-        this.getCreatedAtFromTime(
-          secondFeed.time
-        ) -
-        this.getCreatedAtFromTime(
-          firstFeed.time
-        )
+        this.getFeedTimestamp(secondFeed) -
+        this.getFeedTimestamp(firstFeed)
     );
   }
 
@@ -319,7 +405,8 @@ export class FeedingPage implements OnInit, OnDestroy {
       quantity:
         Number(this.newFeed.quantity),
       type: this.newFeed.type,
-      time: this.newFeed.time
+      time: this.newFeed.time,
+      createdAt: this.getCreatedAtFromTime(this.newFeed.time)
     };
 
     this.feedService.addFeed(feed);
@@ -330,6 +417,7 @@ export class FeedingPage implements OnInit, OnDestroy {
 
     this.resetNewFeedForm();
     this.loadFeeds();
+    this.resetEntryChoice();
   }
 
   edit(feed: Feed): void {
@@ -361,7 +449,10 @@ export class FeedingPage implements OnInit, OnDestroy {
       quantity:
         Number(this.editFeed.quantity),
       type: this.editFeed.type,
-      time: this.editFeed.time
+      time: this.editFeed.time,
+      createdAt: this.getCreatedAtFromTime(this.editFeed.time),
+      createdByUid: this.editFeed.createdByUid,
+      createdByName: this.editFeed.createdByName
     };
 
     const updatedFeeds =
@@ -579,6 +670,10 @@ export class FeedingPage implements OnInit, OnDestroy {
     return feed.id;
   }
 
+  trackByHistoryId(_index: number, item: FeedingHistoryItem): string {
+    return `${item.kind}-${item.id}`;
+  }
+
   private resetNewFeedForm(): void {
     const currentTime =
       this.getCurrentTime();
@@ -685,10 +780,14 @@ export class FeedingPage implements OnInit, OnDestroy {
         feedingType,
       time: feed.time,
       createdAt:
-        this.getCreatedAtFromTime(
-          feed.time
-        )
+        this.getFeedTimestamp(feed)
     };
+  }
+
+  private getFeedTimestamp(feed: Feed): number {
+    return Number.isFinite(feed.createdAt)
+      ? feed.createdAt as number
+      : this.getCreatedAtFromTime(feed.time);
   }
 
   private getCreatedAtFromTime(

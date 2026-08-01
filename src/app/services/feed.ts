@@ -8,6 +8,7 @@ import {
 export interface Feed {
   id: string;
   time: string;
+  createdAt?: number;
   quantity: number;
   type: 'expressed' | 'formula';
   createdByUid?: string;
@@ -82,7 +83,8 @@ export class FeedService {
       quantity >= 5 &&
       quantity <= 1000 &&
       typeof candidate.time === 'string' &&
-      isValidTime24(candidate.time)
+      isValidTime24(candidate.time) &&
+      (candidate.createdAt === undefined || Number.isFinite(candidate.createdAt))
     );
   }
 

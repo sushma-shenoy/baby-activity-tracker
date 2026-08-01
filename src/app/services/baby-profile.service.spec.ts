@@ -66,4 +66,28 @@ describe('BabyProfileService', () => {
     expect(service.switchProfile(second.id)).toBeTrue();
     expect(localStorage.getItem('baby_activities')).toContain('noah-sleep');
   });
+
+  it('keeps the selected baby after the service is recreated', () => {
+    const firstBabyId = service.activeProfileId;
+    service.addProfile(
+      {
+        name: 'Noah',
+        birthDate: '2026-02-03',
+        mood: 'Sleepy 😴'
+      },
+      {
+        feeds: 8,
+        sleepSessions: 5,
+        diapers: 7
+      }
+    );
+
+    expect(service.switchProfile(firstBabyId)).toBeTrue();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(BabyProfileService);
+
+    expect(service.activeProfileId).toBe(firstBabyId);
+    expect(service.activeProfile?.name).toBe('Mia');
+  });
 });

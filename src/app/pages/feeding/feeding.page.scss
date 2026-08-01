@@ -82,6 +82,51 @@ ion-title {
   font-weight: 900;
 }
 
+.feeding-baby-context {
+  margin-top: 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+}
+
+.feeding-baby-context span {
+  opacity: 0.82;
+}
+
+.feeding-baby-context strong {
+  font-weight: 850;
+}
+
+.feeding-baby-switcher {
+  width: min(100%, 220px);
+  min-height: 33px;
+  margin-top: 8px;
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8c5570;
+  font-size: 0.7rem;
+}
+
+.feeding-baby-switcher span { opacity: 0.8; }
+
+.feeding-baby-switcher select {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: #713d58;
+  background: transparent;
+  font: inherit;
+  font-weight: 850;
+  text-align: right;
+}
+
 .hero-icon {
   width: 62px;
   height: 62px;
@@ -104,6 +149,98 @@ ion-title {
 }
 
 /* NURSING TIMER */
+
+.entry-card {
+  margin-top: 0;
+}
+
+.change-entry-button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  color: #a3446c;
+  background: #fff0f6;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.entry-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.entry-choice button {
+  min-height: 132px;
+  padding: 16px 10px;
+  border: 1px solid #f0dfe7;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  color: #604b55;
+  background: #fff9fc;
+}
+
+.entry-choice button > span {
+  font-size: 2rem;
+}
+
+.entry-choice button strong {
+  font-size: 0.86rem;
+}
+
+.entry-choice button small {
+  color: #9b8791;
+  font-size: 0.65rem;
+}
+
+.nursing-method-choice > p {
+  margin-bottom: 10px;
+}
+
+.nursing-method-choice > button {
+  width: 100%;
+  min-height: 67px;
+  margin-top: 9px;
+  padding: 11px 13px;
+  border: 1px solid #f0e2e9;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #59434e;
+  background: #fffafd;
+  text-align: left;
+}
+
+.nursing-method-choice > button > span:first-child {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  display: grid;
+  flex: 0 0 42px;
+  place-items: center;
+  background: #fff0f6;
+  font-size: 1.2rem;
+}
+
+.nursing-method-choice button span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 3px;
+}
+
+.nursing-method-choice button small {
+  color: #9b8791;
+  font-size: 0.66rem;
+}
+
+.nursing-method-choice button b {
+  color: #b4899c;
+  font-size: 1.4rem;
+}
 
 .nursing-card {
   margin: 0 16px 18px;
@@ -291,6 +428,13 @@ ion-title {
   border: 1px solid #eddde6;
   border-radius: 18px;
   background: #fffafd;
+}
+
+.manual-nursing-form.visible-form {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .manual-heading {
@@ -692,6 +836,40 @@ ion-title {
 
 .history-section {
   margin: 24px 16px 110px;
+}
+
+.history-filter {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 15px;
+  padding-bottom: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.history-filter button {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid #eadde4;
+  border-radius: 999px;
+  color: #796a72;
+  background: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.history-filter button span {
+  margin-right: 5px;
+}
+
+.history-filter button.active {
+  border-color: #e583ab;
+  color: #913f62;
+  background: #fff0f6;
 }
 
 .history-header {

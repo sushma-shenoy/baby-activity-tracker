@@ -103,17 +103,47 @@ ion-title {
 }
 
 .baby-switcher {
-  --padding-start: 10px;
-  --padding-end: 8px;
-  width: fit-content;
-  min-height: 30px;
+  width: min(100%, 220px);
   margin-top: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
-  color: #4d416c;
-  background: rgba(255, 255, 255, 0.72);
-  font-size: 0.72rem;
-  font-weight: 800;
+  display: grid;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.baby-select-field {
+  position: relative;
+  min-height: 39px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.baby-select-field select {
+  width: 100%;
+  min-height: 39px;
+  min-width: 0;
+  padding: 7px 34px 7px 11px;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  color: #554172;
+  background: transparent;
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+}
+
+.baby-select-field b {
+  position: absolute;
+  right: 11px;
+  color: #77688d;
+  font-size: 0.6rem;
+  pointer-events: none;
 }
 
 .baby-bubble {
@@ -139,6 +169,73 @@ ion-title {
 }
 
 /* LAST ACTIVITY */
+
+.active-nursing-card {
+  width: calc(100% - 32px);
+  min-height: 78px;
+  margin: 0 16px 14px;
+  padding: 13px 15px;
+  border: 1px solid #f0cfe0;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #684354;
+  background: linear-gradient(135deg, #fff4f9, #fff);
+  box-shadow: 0 10px 24px rgba(190, 80, 128, 0.1);
+  text-align: left;
+}
+
+.active-nursing-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  flex: 0 0 48px;
+  place-items: center;
+  background: #ffe2ef;
+  font-size: 1.45rem;
+}
+
+.active-nursing-copy {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.active-nursing-copy small {
+  color: #a15075;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.active-nursing-copy strong {
+  color: #5d3548;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.active-nursing-copy > span {
+  color: #987483;
+  font-size: 0.68rem;
+}
+
+.active-nursing-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 10px;
+  background: #e65f96;
+  box-shadow: 0 0 0 6px rgba(230, 95, 150, 0.13);
+  animation: nursingPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes nursingPulse {
+  50% { box-shadow: 0 0 0 10px rgba(230, 95, 150, 0); }
+}
 
 .status-grid {
   margin: 0 16px 22px;
@@ -193,6 +290,14 @@ ion-title {
 
 .sleep-status .status-icon {
   background: #e0e7ff;
+}
+
+.solids-status {
+  grid-column: 1 / -1;
+}
+
+.solids-status .status-icon {
+  background: #ffedd5;
 }
 
 .status-card span {
@@ -336,17 +441,20 @@ ion-title {
   background: #dff5f2;
 }
 
-.temperature,
-.milestones {
-  grid-column: span 3;
-}
-
 .temperature .quick-icon {
   background: #ffe8e9;
 }
 
 .milestones .quick-icon {
   background: #faeefe;
+}
+
+.journal {
+  grid-column: 3 / span 2;
+}
+
+.journal .quick-icon {
+  background: #e9e7ff;
 }
 
 /* PROGRESS */
@@ -693,6 +801,16 @@ ion-title {
   .quick-actions {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-card {
+    grid-column: span 1;
+  }
+
+  .quick-card.journal {
+    width: calc(50% - 5px);
+    grid-column: 1 / -1;
+    justify-self: center;
   }
 
   .donut {

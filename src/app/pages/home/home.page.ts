@@ -38,6 +38,10 @@ import {
 import {
   PhotoStorageService
 } from '../../services/photo-storage.service';
+import {
+  ActiveNursingSession,
+  NursingService
+} from '../../services/nursing.service';
 
 interface ProgressItem {
   label: string;
@@ -67,6 +71,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   lastFeedText = 'No feed logged';
   lastSleepText = 'No sleep logged';
+  lastSolidFoodText = 'No solid food logged';
 
   insightText =
     'Start logging activities to see useful daily patterns.';
@@ -85,17 +90,20 @@ export class HomePage implements OnInit, OnDestroy {
     mood: 'Happy 😊'
   };
   babyPhotoUrl = '';
+  activeNursing: ActiveNursingSession | null = null;
 
   private activitiesSubscription?: Subscription;
   private preferencesSubscription?: Subscription;
   private clockTimer?: ReturnType<typeof setInterval>;
+  private nursingClock?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly router: Router,
     private readonly activityService: ActivityService,
     private readonly preferencesService: PreferencesService,
     readonly babyProfileService: BabyProfileService,
-    private readonly photoStorageService: PhotoStorageService
+    private readonly photoStorageService: PhotoStorageService,
+    private readonly nursingService: NursingService
   ) {}
 
   ngOnInit(): void {
@@ -125,10 +133,16 @@ export class HomePage implements OnInit, OnDestroy {
       this.updateGreeting();
       this.refreshLastActivityText();
     }, 60_000);
+
+    this.refreshActiveNursing();
+    this.nursingClock = setInterval(() => {
+      this.refreshActiveNursing();
+    }, 1000);
   }
 
   ionViewWillEnter(): void {
     this.refreshHomeData();
+    this.refreshActiveNursing();
     void this.loadBabyPhoto();
   }
 
@@ -146,6 +160,29 @@ export class HomePage implements OnInit, OnDestroy {
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
     }
+    if (this.nursingClock) {
+      clearInterval(this.nursingClock);
+    }
+  }
+
+  get activeNursingDuration(): string {
+    const totalSeconds =
+      (this.activeNursing?.leftSeconds || 0) +
+      (this.activeNursing?.rightSeconds || 0);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  get activeNursingStatus(): string {
+    const side = this.activeNursing?.activeSide;
+    return side
+      ? `${side[0].toUpperCase()}${side.slice(1)} side active`
+      : 'Timer paused';
+  }
+
+  private refreshActiveNursing(): void {
+    this.activeNursing = this.nursingService.snapshot();
   }
 
   getIcon(type: Activity['type']): string {
@@ -246,8 +283,9 @@ export class HomePage implements OnInit, OnDestroy {
     ]);
   }
 
-  switchBaby(profileId: string): void {
+  async switchBaby(profileId: string): Promise<void> {
     if (this.babyProfileService.switchProfile(profileId)) {
+      await this.babyProfileService.waitForSync();
       window.location.reload();
     }
   }
@@ -312,6 +350,11 @@ export class HomePage implements OnInit, OnDestroy {
         activity.type === 'sleep'
     );
 
+    const lastSolidFood = activities.find(
+      activity =>
+        activity.type === 'solids'
+    );
+
     this.lastFeedText = lastFeed
       ? this.getTimeAgo(lastFeed.createdAt)
       : 'No feed logged';
@@ -319,6 +362,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.lastSleepText = lastSleep
       ? this.getTimeAgo(lastSleep.createdAt)
       : 'No sleep logged';
+
+    this.lastSolidFoodText = lastSolidFood
+      ? this.getTimeAgo(lastSolidFood.createdAt)
+      : 'No solid food logged';
   }
 
   private updateDonuts(): void {
