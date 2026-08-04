@@ -78,6 +78,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/daily-goals/daily-goals.page').then(m => m.DailyGoalsPage)
   },
   {
+    path: 'settings/profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile-edit/profile-edit.page').then(m => m.ProfileEditPage)
+  },
+  {
     path: 'insights',
     canActivate: [authGuard],
       loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)

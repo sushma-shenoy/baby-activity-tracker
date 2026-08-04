@@ -172,134 +172,50 @@
       </form>
     </section>
 
-    <form
+    <section
       *ngIf="caregiverSharingService.canManageBabyProfiles"
-      [formGroup]="preferencesForm"
-      (ngSubmit)="savePreferences()">
-      <section class="settings-section">
+      class="settings-section profile-details-section">
         <div class="section-heading">
           <div>
             <p class="eyebrow">Baby profile</p>
             <h2>Personal details</h2>
           </div>
-          <span class="section-icon">👶</span>
+          <a class="profile-edit-link" routerLink="/settings/profile">
+            Edit
+          </a>
         </div>
 
-        <div class="field-group">
-          <label>Profile photo</label>
-
-          <div class="profile-photo-editor">
-            <div class="profile-photo-preview">
+        <div class="profile-summary">
+          <a
+            class="profile-summary-photo"
+            routerLink="/settings/profile"
+            aria-label="Edit profile photo">
+            <span class="profile-photo-preview">
               <img
                 *ngIf="activeProfilePhoto; else babyPhotoPlaceholder"
                 [src]="activeProfilePhoto"
                 alt="Baby profile photo">
               <ng-template #babyPhotoPlaceholder>👶</ng-template>
+            </span>
+            <span class="profile-photo-edit-icon" aria-hidden="true">✎</span>
+          </a>
+
+          <dl class="profile-summary-details">
+            <div>
+              <dt>Name</dt>
+              <dd>{{ preferencesService.preferences.baby.name }}</dd>
             </div>
-
-            <div class="profile-photo-actions">
-              <label
-                class="profile-photo-upload"
-                [class.disabled]="isSavingProfilePhoto">
-                {{
-                  isSavingProfilePhoto
-                    ? 'Saving…'
-                    : activeProfilePhoto
-                      ? 'Replace photo'
-                      : 'Add photo'
-                }}
-                <input
-                  type="file"
-                  accept="image/*"
-                  [disabled]="isSavingProfilePhoto"
-                  (change)="selectProfilePhoto($event)">
-              </label>
-
-              <button
-                *ngIf="activeProfilePhoto"
-                type="button"
-                class="profile-photo-remove"
-                [disabled]="isSavingProfilePhoto"
-                (click)="removeProfilePhoto()">
-                Remove
-              </button>
+            <div>
+              <dt>Date of birth</dt>
+              <dd>{{ preferencesService.preferences.baby.birthDate | date: 'mediumDate' }}</dd>
             </div>
-          </div>
-          <small class="photo-help">
-            Images are compressed before being stored securely.
-          </small>
+            <div>
+              <dt>Mood</dt>
+              <dd>{{ preferencesService.preferences.baby.mood }}</dd>
+            </div>
+          </dl>
         </div>
-
-        <div class="field-group">
-          <label for="baby-name">Baby’s name</label>
-          <ion-item lines="none">
-            <ion-input
-              id="baby-name"
-              placeholder="Baby"
-              autocomplete="off"
-              maxlength="30"
-              formControlName="babyName">
-            </ion-input>
-          </ion-item>
-          <p class="field-error" *ngIf="babyNameError">
-            {{ babyNameError }}
-          </p>
-        </div>
-
-        <div class="field-group">
-          <label for="birth-date">Date of birth</label>
-          <ion-item lines="none">
-            <ion-input
-              id="birth-date"
-              type="date"
-              [max]="maximumBirthDate"
-              [class.invalid]="birthDateError"
-              formControlName="birthDate">
-            </ion-input>
-          </ion-item>
-          <p class="field-error" *ngIf="birthDateError">
-            {{ birthDateError }}
-          </p>
-        </div>
-
-        <div class="field-group">
-          <label>Mood</label>
-          <ion-item lines="none">
-            <ion-select
-              interface="popover"
-              formControlName="mood">
-              <ion-select-option value="Happy 😊">
-                Happy 😊
-              </ion-select-option>
-              <ion-select-option value="Sleepy 😴">
-                Sleepy 😴
-              </ion-select-option>
-              <ion-select-option value="Playful 🧸">
-                Playful 🧸
-              </ion-select-option>
-              <ion-select-option value="Fussy 🥺">
-                Fussy 🥺
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-        </div>
-      </section>
-
-      <p class="error-message" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </p>
-
-      <p class="success-message" *ngIf="isSaved">
-        ✓ Preferences saved
-      </p>
-
-      <ion-button
-        class="save-button"
-        expand="block"
-        type="submit">
-        Save changes
-      </ion-button>
-    </form>
+    </section>
 
     <section class="daily-goals-card">
       <div class="daily-goals-heading">
