@@ -315,6 +315,18 @@ export class SettingsPage {
     return this.babyProfileService.activeProfileId;
   }
 
+  get activeProfileBirthDate(): string {
+    const value = this.preferencesService.preferences.baby.birthDate;
+    const date = new Date(`${value}T00:00:00`);
+    return Number.isNaN(date.getTime())
+      ? value
+      : new Intl.DateTimeFormat(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }).format(date);
+  }
+
   ionViewWillEnter(): void {
     void this.loadProfilePhotos();
     void this.loadCaregivers();
@@ -557,6 +569,9 @@ export class SettingsPage {
             this.isDeletingProfile = true;
             this.errorMessage = '';
             try {
+              await this.caregiverSharingService.revokeInvitesForProfile(
+                profile.id
+              );
               await this.photoStorageService.deletePhoto(
                 profile.photoId
               );

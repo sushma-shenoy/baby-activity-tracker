@@ -808,9 +808,33 @@
   background: linear-gradient(145deg, #fff, #f4fbf9);
 }
 
+.data-navigation-card {
+  border-color: #dce9e6;
+  background: linear-gradient(145deg, #fff, #f4fbf9);
+}
+
+.data-navigation-card .section-icon {
+  background: #e8f5f1;
+}
+
+.data-navigation-card .settings-navigation-copy small,
+.data-navigation-card .settings-navigation-arrow {
+  color: #397a6b;
+}
+
 .caregiver-section {
   border-color: #e5ddf5;
   background: linear-gradient(145deg, #fff, #faf7ff);
+}
+
+.family-navigation-card {
+  border-color: #e5ddf5;
+  background: linear-gradient(145deg, #fff, #faf7ff);
+}
+
+.family-navigation-card .settings-navigation-copy small,
+.family-navigation-card .settings-navigation-arrow {
+  color: #7357a6;
 }
 
 .family-primary-button,

@@ -1,0 +1,67 @@
+<ion-header [translucent]="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/settings"></ion-back-button></ion-buttons>
+    <ion-title>Family sharing</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="family-page">
+  <div class="family-shell">
+    <section class="family-card">
+      <div class="family-heading">
+        <span aria-hidden="true">👨‍👩‍👧</span>
+        <div><p>Family access</p><h1>Caregiver sharing</h1></div>
+      </div>
+      <p class="description">
+        Each caregiver uses their own login. An invitation grants family
+        account access to all baby profiles and shared care records without
+        sharing your password.
+      </p>
+
+      <ng-container *ngIf="caregiverSharingService.canManageBabyProfiles; else joinedFamily">
+        <a class="primary-action" routerLink="/caregiver-invite">Add caregiver</a>
+
+        <div class="caregiver-list" *ngIf="caregivers.length">
+          <h2>People with access</h2>
+          <article *ngFor="let caregiver of caregivers">
+            <div class="identity"><strong>{{ caregiver.displayName }}</strong><span>{{ caregiver.email }}</span></div>
+            <div class="controls">
+              <select aria-label="Caregiver permission" [value]="caregiver.role" [disabled]="isBusy" (change)="changeRole(caregiver, $any($event.target).value)">
+                <option value="editor">Editor</option><option value="viewer">Viewer</option>
+              </select>
+              <button type="button" [disabled]="isBusy" (click)="removeCaregiver(caregiver)">Remove</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="family-list" *ngIf="sharedFamilies.length">
+          <h2>Your profiles</h2>
+          <button type="button" class="family-option active"><span>👤</span><div><strong>My private profile</strong><small>Currently selected</small></div></button>
+          <button type="button" class="family-option" *ngFor="let family of sharedFamilies" [disabled]="isBusy" (click)="switchToFamily(family)">
+            <span>👨‍👩‍👧</span><div><strong>{{ family.ownerName }}</strong><small>Shared family</small></div>
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #joinedFamily>
+        <div class="shared-banner">
+          <strong>{{ activeSharedFamilyName }}</strong>
+          <p>{{ caregiverSharingService.canEditCurrentFamily ? 'You have Editor access and can update this family.' : 'You have Viewer access. Records are read-only.' }}</p>
+          <button type="button" [disabled]="isBusy" (click)="switchToPrivateProfile()">Switch to my private profile</button>
+          <button type="button" class="danger-action" [disabled]="isBusy" (click)="leaveFamily()">Leave family permanently</button>
+        </div>
+
+        <div class="family-list" *ngIf="sharedFamilies.length > 1">
+          <h2>Other shared families</h2>
+          <button type="button" class="family-option" *ngFor="let family of sharedFamilies" [class.active]="family.ownerId === caregiverSharingService.familyOwnerId" [disabled]="isBusy || family.ownerId === caregiverSharingService.familyOwnerId" (click)="switchToFamily(family)">
+            <span>👨‍👩‍👧</span><div><strong>{{ family.ownerName }}</strong><small>{{ family.ownerId === caregiverSharingService.familyOwnerId ? 'Currently selected' : 'Shared family' }}</small></div>
+          </button>
+        </div>
+      </ng-template>
+
+      <ion-spinner *ngIf="isBusy" name="crescent"></ion-spinner>
+      <p class="success" *ngIf="message">✓ {{ message }}</p>
+      <p class="error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </section>
+  </div>
+</ion-content>

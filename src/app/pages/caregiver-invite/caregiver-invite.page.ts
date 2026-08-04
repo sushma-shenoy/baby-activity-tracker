@@ -73,12 +73,13 @@ export class CaregiverInvitePage implements OnInit {
       this.errorMessage = 'Enter a valid caregiver email address first.';
       return;
     }
-    const subject = `You’re invited to care for ${this.babyName}`;
+    const subject = 'You’re invited to a Baby Tracker family account';
     const body = [
       '👶 You have been invited to be a caregiver!',
       '',
-      `You are invited to help care for ${this.babyName} in Baby Tracker.`,
-      'You will be able to stay connected with feeding, sleep, diaper, health, and milestone updates.',
+      'You are invited to join a family account in Baby Tracker as a caregiver.',
+      `This family account currently includes ${this.babyName}.`,
+      'Accepting gives you access to all baby profiles and shared care records in this family account.',
       '',
       'Open your secure invitation:',
       this.inviteUrl,
@@ -86,7 +87,7 @@ export class CaregiverInvitePage implements OnInit {
       'This invitation expires in 24 hours and works only once.',
       '',
       'With care,',
-      `${this.babyName}’s family 💜`
+      'The family account owner 💜'
     ].join('\n');
     window.location.href =
       `mailto:${encodeURIComponent(this.recipientEmail)}` +
@@ -97,11 +98,12 @@ export class CaregiverInvitePage implements OnInit {
   async shareInvitation(): Promise<void> {
     if (!this.inviteUrl) return;
     const text =
-      `You’re invited to be a caregiver for ${this.babyName} in Baby Tracker. ` +
-      'This secure invitation expires in 24 hours.';
+      'You’re invited to a Baby Tracker family account as a caregiver. ' +
+      'This grants access to all baby profiles and shared care records. ' +
+      'The secure invitation expires in 24 hours.';
     if (navigator.share) {
       await navigator.share({
-        title: `Care for ${this.babyName}`,
+        title: 'Baby Tracker family account invitation',
         text,
         url: this.inviteUrl
       });

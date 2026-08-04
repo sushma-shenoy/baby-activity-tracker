@@ -1,0 +1,48 @@
+<ion-header [translucent]="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Your records</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="data-page">
+  <div class="data-shell">
+    <section class="data-card">
+      <div class="data-heading">
+        <span aria-hidden="true">🔐</span>
+        <div>
+          <p>Privacy and data</p>
+          <h1>Download your records</h1>
+        </div>
+      </div>
+
+      <p class="description">
+        Create a JSON backup of the tracker records stored in your account.
+        Sign-in tokens and unrelated browser data are never included.
+      </p>
+
+      <ion-button expand="block" fill="outline" (click)="downloadBackup()">
+        Download baby data
+      </ion-button>
+
+      <label class="restore-button" [class.disabled]="isRestoring">
+        <span>{{ isRestoring ? 'Restoring…' : 'Restore from backup' }}</span>
+        <input
+          type="file"
+          accept="application/json,.json"
+          [disabled]="isRestoring"
+          (change)="selectBackup($event)">
+      </label>
+
+      <p class="restore-note">
+        Restoring replaces tracker data in your account. You’ll be asked to
+        confirm before anything changes.
+      </p>
+
+      <p class="success-message" *ngIf="message">✓ {{ message }}</p>
+      <p class="error-message" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </section>
+  </div>
+</ion-content>

@@ -207,7 +207,7 @@
             </div>
             <div>
               <dt>Date of birth</dt>
-              <dd>{{ preferencesService.preferences.baby.birthDate | date: 'mediumDate' }}</dd>
+              <dd>{{ activeProfileBirthDate }}</dd>
             </div>
             <div>
               <dt>Mood</dt>
@@ -258,160 +258,24 @@
       <span class="settings-navigation-arrow" aria-hidden="true">›</span>
     </a>
 
-    <section class="settings-section caregiver-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Family access</p>
-          <h2>Caregiver sharing</h2>
-        </div>
-        <span class="section-icon">👨‍👩‍👧</span>
-      </div>
+    <a class="settings-navigation-card family-navigation-card" routerLink="/settings/family">
+      <span class="section-icon" aria-hidden="true">👨‍👩‍👧</span>
+      <span class="settings-navigation-copy">
+        <small>Family access</small>
+        <strong>Caregiver sharing</strong>
+        <span *ngIf="caregivers.length">{{ caregivers.length }} {{ caregivers.length === 1 ? 'caregiver' : 'caregivers' }} with access</span>
+      </span>
+      <span class="settings-navigation-arrow" aria-hidden="true">›</span>
+    </a>
 
-      <p class="section-description">
-        Each caregiver uses their own login. Shared entries update the same
-        baby records without sharing your password.
-      </p>
-
-      <ng-container *ngIf="caregiverSharingService.canManageBabyProfiles; else joinedFamily">
-        <button
-          type="button"
-          class="family-primary-button"
-          routerLink="/caregiver-invite">
-          Add caregiver
-        </button>
-
-        <div class="caregiver-list" *ngIf="caregivers.length">
-          <p>People with access</p>
-          <article *ngFor="let caregiver of caregivers">
-            <div class="caregiver-identity">
-              <strong>{{ caregiver.displayName }}</strong>
-              <span>{{ caregiver.email }}</span>
-            </div>
-            <div class="caregiver-controls">
-              <select
-                aria-label="Caregiver permission"
-                [value]="caregiver.role"
-                [disabled]="isCaregiverBusy"
-                (change)="changeCaregiverRole(caregiver, $any($event.target).value)">
-                <option value="editor">Editor</option>
-                <option value="viewer">Viewer</option>
-              </select>
-              <button type="button" (click)="removeCaregiver(caregiver)">Remove</button>
-            </div>
-          </article>
-        </div>
-
-        <div class="family-switcher" *ngIf="sharedFamilies.length">
-          <p>Your profiles</p>
-          <button type="button" class="family-option active">
-            <span>👤</span>
-            <div>
-              <strong>My private profile</strong>
-              <small>Currently selected</small>
-            </div>
-          </button>
-          <button
-            type="button"
-            class="family-option"
-            *ngFor="let family of sharedFamilies"
-            (click)="switchToSharedFamily(family)">
-            <span>👨‍👩‍👧</span>
-            <div>
-              <strong>{{ family.ownerName }}</strong>
-              <small>Shared family</small>
-            </div>
-          </button>
-        </div>
-
-      </ng-container>
-
-      <ng-template #joinedFamily>
-        <div class="shared-family-banner">
-          <strong>{{ activeSharedFamilyName }}</strong>
-          <p *ngIf="caregiverSharingService.canEditCurrentFamily">
-            You have Editor access and can update this family.
-          </p>
-          <p *ngIf="!caregiverSharingService.canEditCurrentFamily">
-            You have Viewer access. Records are read-only.
-          </p>
-          <div class="shared-family-actions">
-            <button type="button" (click)="switchToPrivateProfile()">
-              Switch to my private profile
-            </button>
-            <button type="button" class="leave-family" (click)="leaveSharedFamily()">
-              Leave family permanently
-            </button>
-          </div>
-        </div>
-
-        <div class="family-switcher" *ngIf="sharedFamilies.length > 1">
-          <p>Other shared families</p>
-          <button
-            type="button"
-            class="family-option"
-            *ngFor="let family of sharedFamilies"
-            [class.active]="family.ownerId === caregiverSharingService.familyOwnerId"
-            [disabled]="family.ownerId === caregiverSharingService.familyOwnerId"
-            (click)="switchToSharedFamily(family)">
-            <span>👨‍👩‍👧</span>
-            <div>
-              <strong>{{ family.ownerName }}</strong>
-              <small>
-                {{ family.ownerId === caregiverSharingService.familyOwnerId ? 'Currently selected' : 'Shared family' }}
-              </small>
-            </div>
-          </button>
-        </div>
-      </ng-template>
-
-      <p class="reminder-success" *ngIf="caregiverMessage">
-        ✓ {{ caregiverMessage }}
-      </p>
-      <p class="reminder-error" role="alert" *ngIf="caregiverError">
-        {{ caregiverError }}
-      </p>
-    </section>
-
-    <section class="settings-section data-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Privacy and data</p>
-          <h2>Download your records</h2>
-        </div>
-        <span class="section-icon">🔐</span>
-      </div>
-
-      <p class="section-description">
-        Create a JSON backup of the tracker records stored in your account.
-        Sign-in tokens and unrelated browser data are never included.
-      </p>
-
-      <ion-button
-        expand="block"
-        fill="outline"
-        class="export-button"
-        (click)="downloadBackup()">
-        Download baby data
-      </ion-button>
-
-      <label class="restore-button" [class.disabled]="isRestoring">
-        <span>{{ isRestoring ? 'Restoring…' : 'Restore from backup' }}</span>
-        <input
-          type="file"
-          accept="application/json,.json"
-          [disabled]="isRestoring"
-          (change)="selectBackup($event)">
-      </label>
-
-      <p class="restore-note">
-        Restoring replaces tracker data in your account. You’ll be asked to
-        confirm before anything changes.
-      </p>
-
-      <p class="export-message" *ngIf="exportMessage">
-        ✓ {{ exportMessage }}
-      </p>
-    </section>
+    <a class="settings-navigation-card data-navigation-card" routerLink="/settings/data">
+      <span class="section-icon" aria-hidden="true">🔐</span>
+      <span class="settings-navigation-copy">
+        <small>Privacy and data</small>
+        <strong>Download your records</strong>
+      </span>
+      <span class="settings-navigation-arrow" aria-hidden="true">›</span>
+    </a>
 
     <div class="account-actions">
       <p class="eyebrow">Account</p>

@@ -83,6 +83,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile-edit/profile-edit.page').then(m => m.ProfileEditPage)
   },
   {
+    path: 'settings/data',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/data-settings/data-settings.page').then(m => m.DataSettingsPage)
+  },
+  {
+    path: 'settings/family',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/family-settings/family-settings.page').then(m => m.FamilySettingsPage)
+  },
+  {
     path: 'insights',
     canActivate: [authGuard],
       loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)

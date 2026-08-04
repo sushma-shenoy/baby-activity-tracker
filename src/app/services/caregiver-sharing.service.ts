@@ -5,8 +5,10 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  query,
   setDoc,
   updateDoc,
+  where,
   writeBatch
 } from 'firebase/firestore';
 import {
@@ -19,6 +21,7 @@ import { BabyProfileService } from './baby-profile.service';
 export interface CaregiverInviteDetails {
   ownerName: string;
   babyName: string;
+  profileId: string;
   expiresAt: number;
 }
 
@@ -73,13 +76,15 @@ export class CaregiverSharingService {
     }
 
     const code = this.createCode();
+    const profile = this.babyProfileService.activeProfile;
+    if (!profile) throw new Error('Choose a baby profile first.');
     await setDoc(
       doc(this.firestore, 'caregiverInvites', code),
       {
         ownerId: user.uid,
         ownerName: user.displayName || 'Baby’s family',
-        babyName:
-          this.babyProfileService.activeProfile?.name || 'the baby',
+        babyName: profile.name,
+        profileId: profile.id,
         createdAt: Date.now(),
         expiresAt: Date.now() + 86_400_000
       }
@@ -99,9 +104,13 @@ export class CaregiverSharingService {
     if (Number(invite.expiresAt) < Date.now()) {
       throw new Error('That invitation has expired. Ask the family for a new one.');
     }
+    if (!invite.profileId) {
+      throw new Error('This invitation is outdated. Ask the owner for a new one.');
+    }
     return {
       ownerName: invite.ownerName || 'Baby’s family',
       babyName: invite.babyName || 'the baby',
+      profileId: invite.profileId,
       expiresAt: Number(invite.expiresAt)
     };
   }
@@ -123,10 +132,12 @@ export class CaregiverSharingService {
     const invite = inviteSnapshot.data() as {
       ownerId?: string;
       ownerName?: string;
+      profileId?: string;
       expiresAt?: number;
     };
     if (
       !invite.ownerId ||
+      !invite.profileId ||
       Number(invite.expiresAt) < Date.now()
     ) {
       throw new Error('That invite code is invalid or has expired.');
@@ -195,6 +206,27 @@ export class CaregiverSharingService {
       id: item.id,
       ...(item.data() as Omit<CaregiverMember, 'id'>)
     }));
+  }
+
+  async revokeInvitesForProfile(profileId: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can revoke invitations.');
+    }
+
+    const snapshot = await getDocs(query(
+      collection(this.firestore, 'caregiverInvites'),
+      where('ownerId', '==', user.uid)
+    ));
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(this.firestore);
+    for (const invitation of snapshot.docs) {
+      if (invitation.data()['profileId'] === profileId) {
+        batch.delete(invitation.ref);
+      }
+    }
+    await batch.commit();
   }
 
   async listSharedFamilies(): Promise<SharedFamily[]> {

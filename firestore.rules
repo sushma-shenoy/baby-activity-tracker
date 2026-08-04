@@ -25,8 +25,8 @@ service cloud.firestore {
       );
     }
 
-    function isOwnerManagedTrackerKey() {
-      return resource.data.key == 'baby_profiles_v2';
+    function isOwnerManagedTrackerDocument(dataKey) {
+      return dataKey == 'baby_profiles_v2';
     }
 
     function isOwnerManagedWrite() {
@@ -36,10 +36,15 @@ service cloud.firestore {
     match /users/{userId}/trackerData/{dataKey} {
       allow read: if owns(userId) || isCaregiver(userId);
       allow delete: if canEditFamily(userId)
-        && (!isOwnerManagedTrackerKey() || owns(userId));
+        && (!isOwnerManagedTrackerDocument(dataKey) || owns(userId));
 
       allow create, update: if canEditFamily(userId)
-        && (!isOwnerManagedWrite() || owns(userId))
+        && (
+          (
+            !isOwnerManagedTrackerDocument(dataKey) &&
+            !isOwnerManagedWrite()
+          ) || owns(userId)
+        )
         && request.resource.data.keys().hasOnly([
           'key',
           'value',
@@ -70,11 +75,13 @@ service cloud.firestore {
 
     match /caregiverInvites/{inviteCode} {
       allow get: if signedIn();
-      allow list: if false;
+      allow list: if signedIn()
+        && resource.data.ownerId == request.auth.uid;
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.ownerName is string
         && request.resource.data.babyName is string
+        && request.resource.data.profileId is string
         && request.resource.data.createdAt is number
         && request.resource.data.expiresAt is number
         && request.resource.data.expiresAt > request.time.toMillis()
@@ -82,6 +89,7 @@ service cloud.firestore {
           'ownerId',
           'ownerName',
           'babyName',
+          'profileId',
           'createdAt',
           'expiresAt'
         ]);

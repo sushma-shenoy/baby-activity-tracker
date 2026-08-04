@@ -1,0 +1,65 @@
+<ion-header [translucent]="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Edit profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="profile-edit-page">
+  <form class="profile-edit-shell" [formGroup]="profileForm" (ngSubmit)="save()">
+    <section class="edit-card">
+      <div class="photo-editor">
+        <div class="photo-wrap">
+          <div class="photo-preview">
+            <img *ngIf="activeProfilePhoto; else placeholder" [src]="activeProfilePhoto" alt="Baby profile photo">
+            <ng-template #placeholder>👶</ng-template>
+          </div>
+          <label class="photo-edit-badge" aria-label="Choose profile photo">
+            ✎
+            <input type="file" accept="image/*" [disabled]="isSavingPhoto" (change)="selectProfilePhoto($event)">
+          </label>
+        </div>
+        <div class="photo-copy">
+          <strong>Profile photo</strong>
+          <span>{{ isSavingPhoto ? 'Saving…' : 'Tap the pencil to change photo' }}</span>
+          <button *ngIf="activeProfilePhoto" type="button" (click)="removeProfilePhoto()" [disabled]="isSavingPhoto">
+            Remove photo
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="edit-baby-name">Baby’s name</label>
+        <ion-item lines="none">
+          <ion-input id="edit-baby-name" maxlength="30" autocomplete="off" formControlName="babyName"></ion-input>
+        </ion-item>
+        <p class="field-error" *ngIf="nameError">{{ nameError }}</p>
+      </div>
+
+      <div class="field-group">
+        <label for="edit-birth-date">Date of birth</label>
+        <ion-item lines="none">
+          <ion-input id="edit-birth-date" type="date" [max]="maximumBirthDate" formControlName="birthDate"></ion-input>
+        </ion-item>
+        <p class="field-error" *ngIf="birthDateError">{{ birthDateError }}</p>
+      </div>
+
+      <div class="field-group">
+        <label>Mood</label>
+        <ion-item lines="none">
+          <ion-select interface="popover" formControlName="mood">
+            <ion-select-option value="Happy 😊">Happy 😊</ion-select-option>
+            <ion-select-option value="Sleepy 😴">Sleepy 😴</ion-select-option>
+            <ion-select-option value="Playful 🧸">Playful 🧸</ion-select-option>
+            <ion-select-option value="Fussy 🥺">Fussy 🥺</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+    </section>
+
+    <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <ion-button expand="block" type="submit">Save changes</ion-button>
+  </form>
+</ion-content>

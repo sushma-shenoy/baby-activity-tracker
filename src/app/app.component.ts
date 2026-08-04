@@ -18,6 +18,11 @@ export class AppComponent implements OnDestroy {
   private readonly accessRemovedListener = () => {
     void this.showAccessRemovedMessage();
   };
+  private readonly writeFailedListener = () => {
+    void this.showPermissionMessage(
+      'Your change could not be saved. The previous value has been restored.'
+    );
+  };
 
   constructor(
     private readonly activityReminderService: ActivityReminderService,
@@ -32,6 +37,10 @@ export class AppComponent implements OnDestroy {
       'baby-tracker:family-access-removed',
       this.accessRemovedListener
     );
+    window.addEventListener(
+      'baby-tracker:write-failed',
+      this.writeFailedListener
+    );
   }
 
   ngOnDestroy(): void {
@@ -42,6 +51,10 @@ export class AppComponent implements OnDestroy {
     window.removeEventListener(
       'baby-tracker:family-access-removed',
       this.accessRemovedListener
+    );
+    window.removeEventListener(
+      'baby-tracker:write-failed',
+      this.writeFailedListener
     );
   }
 
