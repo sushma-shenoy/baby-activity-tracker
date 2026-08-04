@@ -111,7 +111,7 @@ export class LoginPage {
     this.successMessage = '';
   }
 
-  private getPostLoginDestination(): string {
+  getPostLoginDestination(): string {
     const returnUrl =
       this.route.snapshot.queryParamMap.get(
         'returnUrl'

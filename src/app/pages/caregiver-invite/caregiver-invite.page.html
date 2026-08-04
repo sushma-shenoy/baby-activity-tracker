@@ -1,0 +1,76 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Caregiver invitation</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="invite-page">
+  <main class="invite-shell">
+    <ng-container *ngIf="state === 'create'">
+      <section class="invite-hero">
+        <span class="hero-art">👶💜</span>
+        <p>Share the care</p>
+        <h1>Invite a caregiver for {{ babyName }}</h1>
+        <span>One secure invitation can be accepted by one caregiver within 24 hours.</span>
+      </section>
+
+      <section class="invite-card" *ngIf="!inviteUrl">
+        <span class="card-icon">💌</span>
+        <h2>Create a secure invitation</h2>
+        <p>We’ll make an email link, share link, invite code, and QR code.</p>
+        <button type="button" class="primary-button" [disabled]="isBusy" (click)="createInvitation()">
+          {{ isBusy ? 'Creating invitation…' : 'Create invitation' }}
+        </button>
+      </section>
+
+      <ng-container *ngIf="inviteUrl">
+        <section class="invite-card email-card">
+          <div class="card-heading"><span>✉️</span><div><h2>Send by email</h2><p>Opens your mail app with a friendly message.</p></div></div>
+          <label for="caregiver-email">Caregiver email</label>
+          <input id="caregiver-email" type="email" inputmode="email" placeholder="caregiver@example.com" [(ngModel)]="recipientEmail">
+          <button type="button" class="primary-button" (click)="sendEmail()">Open email message</button>
+        </section>
+
+        <section class="invite-card qr-card">
+          <div class="card-heading"><span>📱</span><div><h2>Scan QR code</h2><p>The caregiver can scan this with their phone camera.</p></div></div>
+          <img [src]="qrDataUrl" alt="Caregiver invitation QR code">
+          <small>Single use · Expires in 24 hours</small>
+        </section>
+
+        <section class="invite-card link-card">
+          <div class="card-heading"><span>🔗</span><div><h2>Share another way</h2><p>Send through Messages, WhatsApp, or another app.</p></div></div>
+          <div class="invite-code"><span>Invite code</span><strong>{{ inviteCode }}</strong></div>
+          <button type="button" class="secondary-button" (click)="shareInvitation()">Share invitation</button>
+          <button type="button" class="text-button" (click)="copyLink()">Copy link</button>
+        </section>
+      </ng-container>
+
+      <p class="success-message" *ngIf="message">✓ {{ message }}</p>
+      <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </ng-container>
+
+    <section class="result-card joining" *ngIf="state === 'joining'">
+      <ion-spinner name="crescent"></ion-spinner>
+      <h1>Adding you as a caregiver…</h1>
+      <p>We’re securely connecting your account to the baby’s care team.</p>
+    </section>
+
+    <section class="result-card joined" *ngIf="state === 'joined'">
+      <span class="result-art">🎉👶💜</span>
+      <p class="result-eyebrow">Invitation accepted</p>
+      <h1>You’re now a caregiver for {{ joinedBabyName }}</h1>
+      <p>You’ve joined {{ joinedFamilyName }}. Updates will now stay synchronized with the family in real time.</p>
+      <a routerLink="/home" class="primary-link">Go to baby’s home</a>
+    </section>
+
+    <section class="result-card error" *ngIf="state === 'error'">
+      <span class="result-art">⏳</span>
+      <h1>Invitation unavailable</h1>
+      <p>{{ errorMessage }}</p>
+      <a routerLink="/home" class="secondary-link">Return home</a>
+    </section>
+  </main>
+</ion-content>

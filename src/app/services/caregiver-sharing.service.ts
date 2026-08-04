@@ -14,6 +14,13 @@ import {
   firebaseAuth
 } from '../firebase/firebase.config';
 import { trackerStorage } from '../firebase/tracker-storage';
+import { BabyProfileService } from './baby-profile.service';
+
+export interface CaregiverInviteDetails {
+  ownerName: string;
+  babyName: string;
+  expiresAt: number;
+}
 
 export interface CaregiverMember {
   id: string;
@@ -33,6 +40,10 @@ export interface SharedFamily {
 export class CaregiverSharingService {
   private readonly firestore =
     getFirestore(firebaseApp);
+
+  constructor(
+    private readonly babyProfileService: BabyProfileService
+  ) {}
 
   get isSharingAnotherFamily(): boolean {
     return trackerStorage.isUsingSharedFamily;
@@ -60,11 +71,32 @@ export class CaregiverSharingService {
       {
         ownerId: user.uid,
         ownerName: user.displayName || 'Baby’s family',
+        babyName:
+          this.babyProfileService.activeProfile?.name || 'the baby',
         createdAt: Date.now(),
         expiresAt: Date.now() + 86_400_000
       }
     );
     return code;
+  }
+
+  async getInviteDetails(rawCode: string): Promise<CaregiverInviteDetails> {
+    const code = rawCode.trim().toUpperCase();
+    const snapshot = await getDoc(
+      doc(this.firestore, 'caregiverInvites', code)
+    );
+    if (!snapshot.exists()) {
+      throw new Error('That invitation is invalid, expired, or already used.');
+    }
+    const invite = snapshot.data() as Partial<CaregiverInviteDetails>;
+    if (Number(invite.expiresAt) < Date.now()) {
+      throw new Error('That invitation has expired. Ask the family for a new one.');
+    }
+    return {
+      ownerName: invite.ownerName || 'Baby’s family',
+      babyName: invite.babyName || 'the baby',
+      expiresAt: Number(invite.expiresAt)
+    };
   }
 
   async joinWithCode(rawCode: string): Promise<string> {

@@ -83,6 +83,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/journal/journal.page').then(m => m.JournalPage)
   },
   {
+    path: 'caregiver-invite',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/caregiver-invite/caregiver-invite.page').then(m => m.CaregiverInvitePage)
+  },
+  {
     path: 'signup',
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/signup/signup.page').then( m => m.SignupPage)

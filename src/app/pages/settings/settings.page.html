@@ -508,15 +508,9 @@
         <button
           type="button"
           class="family-primary-button"
-          [disabled]="isCaregiverBusy"
-          (click)="createCaregiverInvite()">
-          Generate caregiver invite
+          routerLink="/caregiver-invite">
+          Add caregiver
         </button>
-
-        <div class="invite-code" *ngIf="caregiverInviteCode">
-          <code>{{ caregiverInviteCode }}</code>
-          <button type="button" (click)="copyCaregiverInvite()">Copy</button>
-        </div>
 
         <div class="caregiver-list" *ngIf="caregivers.length">
           <p>People with access</p>
@@ -561,24 +555,6 @@
           </button>
         </div>
 
-        <div class="join-family-box">
-          <label for="caregiver-code">Have an invite code?</label>
-          <div>
-            <input
-              id="caregiver-code"
-              type="text"
-              maxlength="24"
-              placeholder="Enter 24-character code"
-              [value]="caregiverJoinCode"
-              (input)="updateCaregiverJoinCode($event)">
-            <button
-              type="button"
-              [disabled]="isCaregiverBusy"
-              (click)="joinCaregiverFamily()">
-              Join
-            </button>
-          </div>
-        </div>
       </ng-container>
 
       <ng-template #joinedFamily>
