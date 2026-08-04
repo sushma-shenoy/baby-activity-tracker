@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import * as QRCode from 'qrcode';
 import { environment } from '../../../environments/environment';
@@ -18,7 +18,7 @@ type InviteState = 'create' | 'joining' | 'joined' | 'error';
   templateUrl: './caregiver-invite.page.html',
   styleUrls: ['./caregiver-invite.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, RouterLink]
+  imports: [CommonModule, FormsModule, IonicModule]
 })
 export class CaregiverInvitePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -29,6 +29,7 @@ export class CaregiverInvitePage implements OnInit {
   isBusy = false;
   recipientEmail = '';
   inviteCode = '';
+  redemptionCode = '';
   inviteUrl = '';
   qrDataUrl = '';
   message = '';
@@ -66,6 +67,15 @@ export class CaregiverInvitePage implements OnInit {
     } finally {
       this.isBusy = false;
     }
+  }
+
+  async redeemCode(): Promise<void> {
+    const code = this.redemptionCode.trim();
+    if (!code) {
+      this.errorMessage = 'Enter an invite code.';
+      return;
+    }
+    await this.acceptInvitation(code);
   }
 
   sendEmail(): void {

@@ -64,6 +64,11 @@ export class CaregiverSharingService {
   async createInvite(): Promise<string> {
     const user = firebaseAuth.currentUser;
     if (!user) throw new Error('Sign in first.');
+    if (trackerStorage.isUsingSharedFamily) {
+      throw new Error(
+        'Switch to your own family before inviting a caregiver.'
+      );
+    }
 
     const code = this.createCode();
     await setDoc(
