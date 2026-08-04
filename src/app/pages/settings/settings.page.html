@@ -25,6 +25,20 @@
       </ion-card-content>
     </ion-card>
 
+    <aside
+      *ngIf="caregiverSharingService.isSharingAnotherFamily"
+      class="caregiver-profile-banner"
+      role="status">
+      <span class="caregiver-profile-icon" aria-hidden="true">🤝</span>
+      <div>
+        <p>Caregiver profile</p>
+        <strong>{{ activeSharedFamilyName }}</strong>
+        <small>
+          {{ caregiverSharingService.currentFamilyRole | titlecase }} access
+        </small>
+      </div>
+    </aside>
+
     <section class="settings-section profiles-section">
       <div class="section-heading">
         <div>
@@ -74,9 +88,10 @@
           <button
             type="button"
             class="profile-delete"
-            *ngIf="profile.id !== activeProfileId"
+            *ngIf="caregiverSharingService.canManageBabyProfiles && profiles.length > 1"
             (click)="deleteProfile(profile)"
-            [attr.aria-label]="'Remove ' + profile.name">
+            [disabled]="isDeletingProfile"
+            [attr.aria-label]="'Delete ' + profile.name">
             ×
           </button>
         </article>
@@ -158,6 +173,7 @@
     </section>
 
     <form
+      *ngIf="caregiverSharingService.canManageBabyProfiles"
       [formGroup]="preferencesForm"
       (ngSubmit)="savePreferences()">
       <section class="settings-section">
@@ -504,7 +520,7 @@
         baby records without sharing your password.
       </p>
 
-      <ng-container *ngIf="!caregiverSharingService.isSharingAnotherFamily; else joinedFamily">
+      <ng-container *ngIf="caregiverSharingService.canManageBabyProfiles; else joinedFamily">
         <button
           type="button"
           class="family-primary-button"

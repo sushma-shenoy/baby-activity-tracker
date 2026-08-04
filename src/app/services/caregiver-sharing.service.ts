@@ -61,9 +61,16 @@ export class CaregiverSharingService {
     return trackerStorage.currentAccessRole;
   }
 
+  get canManageBabyProfiles(): boolean {
+    return this.currentFamilyRole === 'owner';
+  }
+
   async createInvite(): Promise<string> {
     const user = firebaseAuth.currentUser;
     if (!user) throw new Error('Sign in first.');
+    if (!this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can invite caregivers.');
+    }
 
     const code = this.createCode();
     await setDoc(

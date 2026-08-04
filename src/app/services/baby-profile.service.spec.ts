@@ -90,4 +90,36 @@ describe('BabyProfileService', () => {
     expect(service.activeProfileId).toBe(firstBabyId);
     expect(service.activeProfile?.name).toBe('Mia');
   });
+
+  it('deletes the active profile and switches to another baby', () => {
+    const miaId = service.activeProfileId;
+    const noah = service.addProfile(
+      {
+        name: 'Noah',
+        birthDate: '2026-02-03',
+        mood: 'Sleepy 😴'
+      },
+      {
+        feeds: 8,
+        sleepSessions: 5,
+        diapers: 7
+      }
+    );
+    localStorage.setItem(
+      `baby_profile_data:${miaId}:baby_daily_journal_entries`,
+      JSON.stringify([{ id: 'mia-journal' }])
+    );
+
+    expect(service.deleteProfile(miaId)).toBeTrue();
+    expect(service.activeProfileId).toBe(noah.id);
+    expect(service.profiles.map(profile => profile.id)).toEqual([noah.id]);
+    expect(localStorage.getItem(
+      `baby_profile_data:${miaId}:baby_daily_journal_entries`
+    )).toBeNull();
+  });
+
+  it('does not delete the family\'s only baby profile', () => {
+    expect(service.deleteProfile(service.activeProfileId)).toBeFalse();
+    expect(service.profiles.length).toBe(1);
+  });
 });

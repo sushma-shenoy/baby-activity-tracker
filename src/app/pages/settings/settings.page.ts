@@ -108,6 +108,7 @@ export class SettingsPage {
   readonly profilePhotoUrls:
     Record<string, string> = {};
   isSavingProfilePhoto = false;
+  isDeletingProfile = false;
   caregiverInviteCode = '';
   caregiverJoinCode = '';
   caregiverMessage = '';
@@ -354,6 +355,12 @@ export class SettingsPage {
 
   async selectProfilePhoto(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
+    if (!this.caregiverSharingService.canManageBabyProfiles) {
+      input.value = '';
+      this.errorMessage =
+        'Only the baby profile owner can change the profile photo.';
+      return;
+    }
     const file = input.files?.[0];
     input.value = '';
 
@@ -395,6 +402,12 @@ export class SettingsPage {
   }
 
   async removeProfilePhoto(): Promise<void> {
+    if (!this.caregiverSharingService.canManageBabyProfiles) {
+      this.errorMessage =
+        'Only the baby profile owner can change the profile photo.';
+      return;
+    }
+
     const profile =
       this.babyProfileService.activeProfile;
 
@@ -473,6 +486,12 @@ export class SettingsPage {
   savePreferences(): void {
     this.isSaved = false;
 
+    if (!this.caregiverSharingService.canManageBabyProfiles) {
+      this.errorMessage =
+        'Only the baby profile owner can change profile details and targets.';
+      return;
+    }
+
     if (this.preferencesForm.invalid) {
       this.preferencesForm.markAllAsTouched();
       this.errorMessage =
@@ -538,21 +557,43 @@ export class SettingsPage {
   }
 
   async deleteProfile(profile: ManagedBabyProfile): Promise<void> {
+    if (!this.caregiverSharingService.canManageBabyProfiles) {
+      this.errorMessage = 'Only the baby profile owner can delete it.';
+      return;
+    }
+
     const alert = await this.alertController.create({
-      header: `Remove ${profile.name}?`,
+      header: `Delete ${profile.name}?`,
       message:
-        'This removes this baby profile and its tracker records from your account.',
+        'This permanently deletes this baby profile and all of its tracker records for you and every caregiver.',
       cssClass: 'activity-delete-alert',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
-          text: 'Remove profile',
+          text: 'Delete profile',
           role: 'destructive',
           handler: async () => {
-            await this.photoStorageService.deletePhoto(
-              profile.photoId
-            );
-            this.babyProfileService.deleteProfile(profile.id);
+            this.isDeletingProfile = true;
+            this.errorMessage = '';
+            try {
+              await this.photoStorageService.deletePhoto(
+                profile.photoId
+              );
+              const deleted =
+                this.babyProfileService.deleteProfile(profile.id);
+              if (!deleted) {
+                throw new Error(
+                  'Keep at least one baby profile in the family.'
+                );
+              }
+              await this.babyProfileService.waitForSync();
+              window.location.assign('/settings');
+            } catch (error) {
+              this.errorMessage = error instanceof Error
+                ? error.message
+                : 'Unable to delete the baby profile.';
+              this.isDeletingProfile = false;
+            }
           }
         }
       ]

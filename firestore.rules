@@ -25,11 +25,21 @@ service cloud.firestore {
       );
     }
 
+    function isOwnerManagedTrackerKey() {
+      return resource.data.key == 'baby_profiles_v2';
+    }
+
+    function isOwnerManagedWrite() {
+      return request.resource.data.key == 'baby_profiles_v2';
+    }
+
     match /users/{userId}/trackerData/{dataKey} {
       allow read: if owns(userId) || isCaregiver(userId);
-      allow delete: if canEditFamily(userId);
+      allow delete: if canEditFamily(userId)
+        && (!isOwnerManagedTrackerKey() || owns(userId));
 
       allow create, update: if canEditFamily(userId)
+        && (!isOwnerManagedWrite() || owns(userId))
         && request.resource.data.keys().hasOnly([
           'key',
           'value',
