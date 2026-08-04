@@ -1,0 +1,27 @@
+.reminders-page { --background: #f7f8fc; }
+.reminders-shell { max-width: 620px; margin: 0 auto; padding: 24px 16px; }
+.reminders-card { padding: 22px; border: 1px solid #eee4ce; border-radius: 22px; background: linear-gradient(145deg, #fff, #fffbf2); box-shadow: 0 8px 26px rgba(37, 45, 75, .055); }
+.page-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.page-heading p, .page-heading h1 { margin: 0; }
+.page-heading p, .custom-label { color: #8a7751; font-size: .7rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.page-heading h1 { margin-top: 4px; color: #252d4b; font-size: 1.3rem; }
+.page-heading > span { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 14px; background: #f7f1e6; font-size: 1.25rem; }
+.description { margin: -8px 0 18px; color: #7b8091; font-size: .82rem; line-height: 1.5; }
+.reminder-list { display: grid; gap: 9px; }
+.reminder-row { display: flex; min-height: 67px; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid #ece7dd; border-radius: 17px; background: rgba(255,255,255,.88); }
+.reminder-icon { display: grid; flex: 0 0 42px; width: 42px; height: 42px; place-items: center; border-radius: 14px; background: #f7f1e6; font-size: 1.15rem; }
+.reminder-copy { display: grid; flex: 1; min-width: 0; gap: 4px; }
+.reminder-copy strong { color: #343047; font-size: .8rem; }
+.reminder-copy input { width: 105px; padding: 3px 5px; border: 0; border-radius: 7px; color: #7566a8; background: #f6f3fb; font: inherit; font-size: .72rem; font-weight: 800; }
+ion-toggle { --track-background: #ddd8e5; --track-background-checked: #a99ad8; --handle-background-checked: #67599b; }
+.custom-reminders { display: grid; gap: 9px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #ece7dd; }
+.custom-label { margin: 0 0 -1px 2px; }
+.delete-button { display: grid; flex: 0 0 30px; width: 30px; height: 30px; place-items: center; border: 0; border-radius: 9px; color: #b85c68; background: #fff0f2; font-size: 1.15rem; }
+.secondary-button, .test-button { width: 100%; margin-top: 12px; padding: 12px; border: 1px solid #d8cba9; border-radius: 13px; color: #74603b; background: #fffaf0; font-size: .76rem; font-weight: 800; }
+.custom-form { display: grid; gap: 8px; margin-top: 14px; padding: 15px; border: 1px solid #ece3d0; border-radius: 16px; background: #fff; }
+.custom-form label { color: #42475e; font-size: .76rem; font-weight: 700; }
+.custom-form ion-item { --background: #fafafe; --border-radius: 11px; }
+.custom-form ion-button { --background: #7566a8; --border-radius: 13px; margin-top: 6px; text-transform: none; }
+.success, .error { margin: 10px 2px 0; font-size: .72rem; line-height: 1.45; }
+.success { color: #397a6b; } .error { color: #b64755; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }

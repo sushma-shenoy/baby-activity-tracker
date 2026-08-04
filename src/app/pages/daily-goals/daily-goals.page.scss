@@ -1,0 +1,15 @@
+.goals-page { --background: #f7f8fc; }
+.goals-shell { max-width: 620px; margin: 0 auto; padding: 24px 16px; }
+.goals-card { padding: 22px; border: 1px solid #e9e3f4; border-radius: 22px; background: #fff; box-shadow: 0 8px 26px rgba(37,45,75,.055); }
+.page-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.page-heading p, .page-heading h1 { margin: 0; }
+.page-heading p { color: #7c6ff0; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.page-heading h1 { margin-top: 4px; color: #252d4b; font-size: 1.3rem; }
+.page-heading span { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 14px; background: #f0edff; font-size: 1.25rem; }
+.description { margin: -8px 0 22px; color: #7b8091; font-size: .82rem; }
+label { display: block; margin: 16px 3px 7px; color: #42475e; font-size: .8rem; font-weight: 750; }
+ion-item { --background: #fafafe; --border-radius: 12px; border: 1px solid #ebe9f3; border-radius: 12px; }
+ion-item.invalid { border-color: #d96d78; }
+ion-input { --padding-start: 12px; font-weight: 750; }
+ion-button { --background: #7566a8; --border-radius: 14px; min-height: 50px; margin-top: 24px; text-transform: none; font-weight: 800; }
+.error { margin: 12px 3px 0; color: #b64755; font-size: .76rem; }

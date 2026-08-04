@@ -22,7 +22,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonSpinner,
-  IonToggle,
   IonTitle,
   IonToolbar
 } from '@ionic/angular/standalone';
@@ -40,11 +39,6 @@ import {
   BabyProfileService,
   ManagedBabyProfile
 } from '../../services/baby-profile.service';
-import {
-  ActivityReminder,
-  ActivityReminderService,
-  CustomReminder
-} from '../../services/notification';
 import {
   PhotoStorageService
 } from '../../services/photo-storage.service';
@@ -75,7 +69,6 @@ import {
     IonSelect,
     IonSelectOption,
     IonSpinner,
-    IonToggle,
     IonTitle,
     IonToolbar
   ]
@@ -92,7 +85,6 @@ export class SettingsPage {
   private readonly photoStorageService = inject(PhotoStorageService);
   readonly caregiverSharingService =
     inject(CaregiverSharingService);
-  readonly reminderService = inject(ActivityReminderService);
 
   isLoggingOut = false;
   isSaved = false;
@@ -101,10 +93,6 @@ export class SettingsPage {
   isRestoring = false;
   readonly maximumBirthDate = this.toDateInput(new Date());
   isAddingProfile = false;
-  reminderMessage = '';
-  reminderError = '';
-  reminderSavingType = '';
-  isAddingCustomReminder = false;
   readonly profilePhotoUrls:
     Record<string, string> = {};
   isSavingProfilePhoto = false;
@@ -261,13 +249,6 @@ export class SettingsPage {
     ],
     birthDate: ['', [Validators.required, this.validBirthDateValidator()]],
     mood: ['Happy 😊']
-  });
-
-  readonly customReminderForm = this.fb.nonNullable.group({
-    label: ['', [Validators.required, Validators.maxLength(50)]],
-    time: ['12:00', [Validators.required, Validators.pattern(
-      /^([01]\d|2[0-3]):([0-5]\d)$/
-    )]]
   });
 
   readonly preferencesForm = this.fb.nonNullable.group({
@@ -615,102 +596,6 @@ export class SettingsPage {
     );
   }
 
-  async updateReminder(
-    reminder: ActivityReminder,
-    enabled: boolean,
-    time = reminder.time
-  ): Promise<void> {
-    this.reminderMessage = '';
-    this.reminderError = '';
-    this.reminderSavingType = reminder.type;
-
-    const result = await this.reminderService.update(
-      reminder.type,
-      { enabled, time }
-    );
-
-    this.reminderSavingType = '';
-    if (!result.success) {
-      this.reminderError = result.message || 'Could not update the reminder.';
-      return;
-    }
-
-    this.reminderMessage = enabled
-      ? `${reminder.label} set for ${this.formatReminderTime(time)}.`
-      : `${reminder.label} turned off.`;
-  }
-
-  async sendTestReminder(): Promise<void> {
-    this.reminderMessage = '';
-    this.reminderError = '';
-
-    try {
-      const result = await this.reminderService.sendTest();
-      if (result.success) {
-        this.reminderMessage = result.message;
-      } else {
-        this.reminderError = result.message;
-      }
-    } catch {
-      this.reminderError =
-        'Could not schedule a test notification on this device.';
-    }
-  }
-
-  async addCustomReminder(): Promise<void> {
-    this.reminderMessage = '';
-    this.reminderError = '';
-    if (this.customReminderForm.invalid) {
-      this.customReminderForm.markAllAsTouched();
-      this.reminderError =
-        'Enter a reminder name and choose a valid time.';
-      return;
-    }
-
-    const value = this.customReminderForm.getRawValue();
-    const result = await this.reminderService.addCustomReminder(
-      value.label,
-      value.time
-    );
-    if (!result.success) {
-      this.reminderError = result.message || 'Could not add the reminder.';
-      return;
-    }
-
-    this.reminderMessage =
-      `${value.label.trim()} set for ${this.formatReminderTime(value.time)}.`;
-    this.customReminderForm.reset({ label: '', time: '12:00' });
-    this.isAddingCustomReminder = false;
-  }
-
-  async updateCustomReminder(
-    reminder: CustomReminder,
-    enabled: boolean,
-    time = reminder.time
-  ): Promise<void> {
-    this.reminderMessage = '';
-    this.reminderError = '';
-    this.reminderSavingType = reminder.id;
-    const result = await this.reminderService.updateCustomReminder(
-      reminder.id,
-      { enabled, time }
-    );
-    this.reminderSavingType = '';
-    if (!result.success) {
-      this.reminderError = result.message || 'Could not update the reminder.';
-      return;
-    }
-    this.reminderMessage = enabled
-      ? `${reminder.label} set for ${this.formatReminderTime(time)}.`
-      : `${reminder.label} turned off.`;
-  }
-
-  async deleteCustomReminder(reminder: CustomReminder): Promise<void> {
-    await this.reminderService.deleteCustomReminder(reminder.id);
-    this.reminderMessage = `${reminder.label} removed.`;
-    this.reminderError = '';
-  }
-
   downloadBackup(): void {
     this.errorMessage = '';
     this.exportMessage = '';
@@ -814,11 +699,4 @@ export class SettingsPage {
     );
   }
 
-  private formatReminderTime(value: string): string {
-    const [hour, minute] = value.split(':').map(Number);
-    return new Intl.DateTimeFormat(undefined, {
-      hour: 'numeric',
-      minute: '2-digit'
-    }).format(new Date(2000, 0, 1, hour, minute));
-  }
 }

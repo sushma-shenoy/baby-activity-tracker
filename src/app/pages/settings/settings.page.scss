@@ -365,6 +365,127 @@
   background: linear-gradient(145deg, #fff, #fffbf2);
 }
 
+.settings-navigation-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 19px 20px;
+  border: 1px solid #eee4ce;
+  border-radius: 22px;
+  color: inherit;
+  background: linear-gradient(145deg, #fff, #fffbf2);
+  box-shadow: 0 8px 26px rgba(37, 45, 75, 0.055);
+  text-decoration: none;
+}
+
+.daily-goals-card {
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  border: 1px solid #e9e3f4;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fff, #faf8ff);
+  box-shadow: 0 8px 26px rgba(37, 45, 75, 0.05);
+}
+
+.daily-goals-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+
+.daily-goals-heading div {
+  display: grid;
+  gap: 2px;
+}
+
+.daily-goals-heading small {
+  color: #7c6ff0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.daily-goals-heading strong {
+  color: #252d4b;
+  font-size: 1rem;
+}
+
+.daily-goals-heading a {
+  padding: 7px 12px;
+  border-radius: 10px;
+  color: #6657a0;
+  background: #f0edff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.daily-goals-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.daily-goals-summary span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 6px;
+  border-radius: 12px;
+  color: #666b7d;
+  background: #f8f7fc;
+  text-align: center;
+}
+
+.daily-goals-summary strong {
+  color: #343047;
+  font-size: 0.95rem;
+}
+
+.daily-goals-summary i,
+.daily-goals-summary em {
+  font-style: normal;
+}
+
+.daily-goals-summary em {
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.settings-navigation-copy {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+}
+
+.settings-navigation-copy small {
+  color: #8a7751;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-navigation-copy strong {
+  color: #252d4b;
+  font-size: 1rem;
+}
+
+.settings-navigation-copy span {
+  color: #7b8091;
+  font-size: 0.76rem;
+}
+
+.settings-navigation-arrow {
+  color: #8a7751;
+  font-size: 2rem;
+  line-height: 1;
+}
+
 .reminder-list {
   display: grid;
   gap: 9px;

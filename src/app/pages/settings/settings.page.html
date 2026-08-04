@@ -285,64 +285,6 @@
         </div>
       </section>
 
-      <section class="settings-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Daily goals</p>
-            <h2>Today’s targets</h2>
-          </div>
-          <span class="section-icon">✨</span>
-        </div>
-
-        <p class="section-description">
-          These targets control the progress rings on Home.
-        </p>
-
-        <div class="goal-grid">
-          <label class="goal-field">
-            <span>🍼 Feeds</span>
-            <ion-input
-              type="number"
-              min="1"
-              max="24"
-              inputmode="numeric"
-              formControlName="feedsGoal">
-            </ion-input>
-            <small class="field-error" *ngIf="goalError('feedsGoal')">
-              {{ goalError('feedsGoal') }}
-            </small>
-          </label>
-
-          <label class="goal-field">
-            <span>😴 Sleeps</span>
-            <ion-input
-              type="number"
-              min="1"
-              max="24"
-              inputmode="numeric"
-              formControlName="sleepGoal">
-            </ion-input>
-            <small class="field-error" *ngIf="goalError('sleepGoal')">
-              {{ goalError('sleepGoal') }}
-            </small>
-          </label>
-
-          <label class="goal-field">
-            <span>🧷 Diapers</span>
-            <ion-input
-              type="number"
-              min="1"
-              max="24"
-              inputmode="numeric"
-              formControlName="diapersGoal">
-            </ion-input>
-            <small class="field-error" *ngIf="goalError('diapersGoal')">
-              {{ goalError('diapersGoal') }}
-            </small>
-          </label>
-        </div>
-      </section>
-
       <p class="error-message" *ngIf="errorMessage">
         {{ errorMessage }}
       </p>
@@ -359,152 +301,46 @@
       </ion-button>
     </form>
 
-    <section class="settings-section reminders-section">
-      <div class="section-heading">
+    <section class="daily-goals-card">
+      <div class="daily-goals-heading">
         <div>
-          <p class="eyebrow">Gentle nudges</p>
-          <h2>Activity reminders</h2>
+          <small>Daily goals</small>
+          <strong>Today’s targets</strong>
         </div>
-        <span class="section-icon">🔔</span>
+        <a
+          *ngIf="caregiverSharingService.canManageBabyProfiles"
+          routerLink="/settings/goals">
+          Edit
+        </a>
       </div>
-
-      <p class="section-description">
-        Choose a daily time for each reminder. Notifications use the active
-        baby profile and still arrive when the app is closed.
-      </p>
-
-      <div class="reminder-list">
-        <article
-          class="reminder-row"
-          *ngFor="let reminder of reminderService.reminders">
-          <div class="reminder-icon" aria-hidden="true">
-            {{ reminder.icon }}
-          </div>
-
-          <div class="reminder-copy">
-            <strong>{{ reminder.label }}</strong>
-            <label>
-              <span class="sr-only">{{ reminder.label }} time</span>
-              <input
-                type="time"
-                [value]="reminder.time"
-                [disabled]="reminderSavingType === reminder.type"
-                (change)="
-                  updateReminder(
-                    reminder,
-                    reminder.enabled,
-                    $any($event.target).value
-                  )
-                ">
-            </label>
-          </div>
-
-          <ion-toggle
-            [checked]="reminder.enabled"
-            [disabled]="reminderSavingType === reminder.type"
-            [attr.aria-label]="'Enable ' + reminder.label"
-            (ionChange)="
-              updateReminder(reminder, $event.detail.checked)
-            ">
-          </ion-toggle>
-        </article>
+      <div class="daily-goals-summary">
+        <span>
+          <i aria-hidden="true">🍼</i>
+          <strong>{{ preferencesService.preferences.goals.feeds }}</strong>
+          <em>Feeds</em>
+        </span>
+        <span>
+          <i aria-hidden="true">😴</i>
+          <strong>{{ preferencesService.preferences.goals.sleepSessions }}</strong>
+          <em>Sleeps</em>
+        </span>
+        <span>
+          <i aria-hidden="true">🧷</i>
+          <strong>{{ preferencesService.preferences.goals.diapers }}</strong>
+          <em>Diapers</em>
+        </span>
       </div>
-
-      <div
-        class="custom-reminders"
-        *ngIf="reminderService.customReminders.length > 0">
-        <p class="custom-reminders-label">Custom</p>
-        <article
-          class="reminder-row custom-reminder-row"
-          *ngFor="let reminder of reminderService.customReminders">
-          <div class="reminder-icon" aria-hidden="true">⏰</div>
-          <div class="reminder-copy">
-            <strong>{{ reminder.label }}</strong>
-            <input
-              type="time"
-              [value]="reminder.time"
-              [disabled]="reminderSavingType === reminder.id"
-              (change)="
-                updateCustomReminder(
-                  reminder,
-                  reminder.enabled,
-                  $any($event.target).value
-                )
-              ">
-          </div>
-          <ion-toggle
-            [checked]="reminder.enabled"
-            [disabled]="reminderSavingType === reminder.id"
-            [attr.aria-label]="'Enable ' + reminder.label"
-            (ionChange)="
-              updateCustomReminder(reminder, $event.detail.checked)
-            ">
-          </ion-toggle>
-          <button
-            type="button"
-            class="custom-reminder-delete"
-            [attr.aria-label]="'Delete ' + reminder.label"
-            (click)="deleteCustomReminder(reminder)">
-            ×
-          </button>
-        </article>
-      </div>
-
-      <button
-        type="button"
-        class="add-profile-toggle custom-reminder-toggle"
-        (click)="isAddingCustomReminder = !isAddingCustomReminder">
-        {{ isAddingCustomReminder ? 'Cancel' : '+ Add custom reminder' }}
-      </button>
-
-      <form
-        class="custom-reminder-form"
-        *ngIf="isAddingCustomReminder"
-        [formGroup]="customReminderForm"
-        (ngSubmit)="addCustomReminder()">
-        <div class="field-group">
-          <label for="custom-reminder-name">Reminder name</label>
-          <ion-item lines="none">
-            <ion-input
-              id="custom-reminder-name"
-              placeholder="Example: Vitamin D"
-              maxlength="50"
-              formControlName="label">
-            </ion-input>
-          </ion-item>
-        </div>
-        <div class="field-group">
-          <label for="custom-reminder-time">Daily time</label>
-          <ion-item lines="none">
-            <ion-input
-              id="custom-reminder-time"
-              type="time"
-              formControlName="time">
-            </ion-input>
-          </ion-item>
-        </div>
-        <ion-button
-          class="create-profile-button"
-          expand="block"
-          type="submit">
-          Create reminder
-        </ion-button>
-      </form>
-
-      <button
-        type="button"
-        class="test-reminder-button"
-        (click)="sendTestReminder()">
-        Send a test reminder
-      </button>
-
-      <p class="reminder-success" *ngIf="reminderMessage">
-        ✓ {{ reminderMessage }}
-      </p>
-      <p class="reminder-error" role="alert" *ngIf="reminderError">
-        {{ reminderError }}
-      </p>
     </section>
+
+    <a class="settings-navigation-card reminders-link" routerLink="/reminders">
+      <span class="section-icon" aria-hidden="true">🔔</span>
+      <span class="settings-navigation-copy">
+        <small>Gentle nudges</small>
+        <strong>Activity reminders</strong>
+        <span>Manage reminder times and custom notifications</span>
+      </span>
+      <span class="settings-navigation-arrow" aria-hidden="true">›</span>
+    </a>
 
     <section class="settings-section caregiver-section">
       <div class="section-heading">

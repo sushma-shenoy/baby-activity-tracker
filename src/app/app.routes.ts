@@ -68,6 +68,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage)
   },
   {
+    path: 'reminders',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/reminders/reminders.page').then(m => m.RemindersPage)
+  },
+  {
+    path: 'settings/goals',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/daily-goals/daily-goals.page').then(m => m.DailyGoalsPage)
+  },
+  {
     path: 'insights',
     canActivate: [authGuard],
       loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)
