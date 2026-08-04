@@ -131,7 +131,11 @@
 
         <p class="auth-switch">
           New here?
-          <a routerLink="/signup">Create your account</a>
+          <a
+            routerLink="/signup"
+            [queryParams]="{ returnUrl: getPostLoginDestination() }">
+            Create your account
+          </a>
         </p>
       </form>
 

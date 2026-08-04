@@ -64,12 +64,14 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.ownerName is string
+        && request.resource.data.babyName is string
         && request.resource.data.createdAt is number
         && request.resource.data.expiresAt is number
         && request.resource.data.expiresAt > request.time.toMillis()
         && request.resource.data.keys().hasOnly([
           'ownerId',
           'ownerName',
+          'babyName',
           'createdAt',
           'expiresAt'
         ]);
