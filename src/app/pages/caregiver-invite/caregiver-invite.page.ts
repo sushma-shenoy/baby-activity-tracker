@@ -29,6 +29,7 @@ export class CaregiverInvitePage implements OnInit {
   isBusy = false;
   recipientEmail = '';
   inviteCode = '';
+  redemptionCode = '';
   inviteUrl = '';
   qrDataUrl = '';
   message = '';
@@ -120,6 +121,17 @@ export class CaregiverInvitePage implements OnInit {
     this.message = 'Invitation link copied.';
   }
 
+  async redeemCode(): Promise<void> {
+    const code = this.redemptionCode.trim();
+    this.errorMessage = '';
+    this.message = '';
+    if (!code) {
+      this.errorMessage = 'Enter an invite code.';
+      return;
+    }
+    await this.loadInvitation(code, true);
+  }
+
   async confirmInvitation(): Promise<void> {
     if (!this.pendingInviteCode) return;
     this.state = 'joining';
@@ -143,7 +155,10 @@ export class CaregiverInvitePage implements OnInit {
     }).format(new Date(this.inviteExpiresAt));
   }
 
-  private async loadInvitation(code: string): Promise<void> {
+  private async loadInvitation(
+    code: string,
+    keepCreateStateOnError = false
+  ): Promise<void> {
     this.state = 'joining';
     try {
       const details: CaregiverInviteDetails =
@@ -155,7 +170,7 @@ export class CaregiverInvitePage implements OnInit {
       this.state = 'review';
     } catch (error) {
       this.errorMessage = this.errorText(error);
-      this.state = 'error';
+      this.state = keepCreateStateOnError ? 'create' : 'error';
     }
   }
 

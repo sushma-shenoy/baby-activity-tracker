@@ -16,8 +16,8 @@ ion-toolbar { --background: rgba(250, 247, 255, .94); --border-color: transparen
 .card-heading > span { width: 43px; height: 43px; border-radius: 14px; display: grid; flex: 0 0 43px; place-items: center; background: #f3ecfa; font-size: 1.25rem; }
 .card-heading h2, .card-heading p { margin: 0; }
 .card-heading h2 { color: #40354d; font-size: .95rem; }
-.email-card label { display: block; margin-bottom: 6px; color: #5f5367; font-size: .7rem; font-weight: 800; }
-.email-card input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #dfd7e5; border-radius: 13px; color: #413748; background: #fcfbfd; font: inherit; }
+.email-card label, .redeem-card label { display: block; margin-bottom: 6px; color: #5f5367; font-size: .7rem; font-weight: 800; }
+.email-card input, .redeem-card input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #dfd7e5; border-radius: 13px; color: #413748; background: #fcfbfd; font: inherit; }
 .primary-button, .secondary-button { width: 100%; min-height: 48px; margin-top: 13px; border: 0; border-radius: 14px; color: #fff; background: linear-gradient(135deg, #8f6cbd, #cf6d9b); font-weight: 850; }
 .primary-button:disabled { opacity: .55; }
 .secondary-button { color: #654a81; background: #eee6f7; }

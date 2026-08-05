@@ -10,7 +10,7 @@
 <ion-content class="invite-page">
   <main class="invite-shell">
     <ng-container *ngIf="state === 'create'">
-      <section class="invite-hero">
+      <section class="invite-hero" *ngIf="!sharingService.isSharingAnotherFamily">
         <span class="hero-art">👶💜</span>
         <p>Share the care</p>
         <h1>Invite a caregiver to your family account</h1>
@@ -20,7 +20,7 @@
         </span>
       </section>
 
-      <section class="invite-card" *ngIf="!inviteUrl">
+      <section class="invite-card" *ngIf="!inviteUrl && !sharingService.isSharingAnotherFamily">
         <span class="card-icon">💌</span>
         <h2>Create a secure family account invitation</h2>
         <p>
@@ -32,7 +32,7 @@
         </button>
       </section>
 
-      <ng-container *ngIf="inviteUrl">
+      <ng-container *ngIf="inviteUrl && !sharingService.isSharingAnotherFamily">
         <section class="invite-card email-card">
           <div class="card-heading"><span>✉️</span><div><h2>Send by email</h2><p>Opens your mail app with a friendly message.</p></div></div>
           <label for="caregiver-email">Caregiver email</label>
@@ -53,6 +53,15 @@
           <button type="button" class="text-button" (click)="copyLink()">Copy link</button>
         </section>
       </ng-container>
+
+      <section class="invite-card redeem-card">
+        <div class="card-heading"><span>🔑</span><div><h2>Have an invite code?</h2><p>Enter a code shared by the baby’s family.</p></div></div>
+        <label for="invite-code">Invite code</label>
+        <input id="invite-code" type="text" autocapitalize="characters" autocomplete="off" placeholder="Enter invite code" [(ngModel)]="redemptionCode">
+        <button type="button" class="primary-button" [disabled]="isBusy" (click)="redeemCode()">
+          Accept invitation
+        </button>
+      </section>
 
       <p class="success-message" *ngIf="message">✓ {{ message }}</p>
       <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
