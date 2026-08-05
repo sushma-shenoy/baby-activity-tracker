@@ -62,6 +62,13 @@ body.viewer-mode ion-content .profile-switch {
   display: flex !important;
 }
 
+/* Caregiver photo uploads are not applied before owner approval. */
+body.caregiver-mode input[type='file'],
+body.caregiver-mode .profile-photo-upload,
+body.caregiver-mode button[class*='photo'] {
+  display: none !important;
+}
+
 /* Shared top-level page navigation */
 ion-header.app-header {
   box-shadow: none;

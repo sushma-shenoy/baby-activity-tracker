@@ -93,6 +93,16 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/family-settings/family-settings.page').then(m => m.FamilySettingsPage)
   },
   {
+    path: 'settings/change-requests',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/change-requests/change-requests.page').then(m => m.ChangeRequestsPage)
+  },
+  {
+    path: 'my-change-requests',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/my-change-requests/my-change-requests.page').then(m => m.MyChangeRequestsPage)
+  },
+  {
     path: 'insights',
     canActivate: [authGuard],
       loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)

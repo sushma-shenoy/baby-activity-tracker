@@ -302,7 +302,9 @@ export class BabyProfileService {
 
   private setActiveProfileId(profileId: string): void {
     localStorage.setItem(DEVICE_ACTIVE_PROFILE_KEY, profileId);
-    trackerStorage.setItem(ACTIVE_PROFILE_KEY, profileId);
+    if (!trackerStorage.isUsingSharedFamily) {
+      trackerStorage.setItem(ACTIVE_PROFILE_KEY, profileId);
+    }
   }
 
   private profileDataKey(profileId: string, key: string): string {

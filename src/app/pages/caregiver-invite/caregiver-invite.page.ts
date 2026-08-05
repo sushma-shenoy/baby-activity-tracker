@@ -11,7 +11,7 @@ import {
 } from '../../services/caregiver-sharing.service';
 import { BabyProfileService } from '../../services/baby-profile.service';
 
-type InviteState = 'create' | 'joining' | 'joined' | 'error';
+type InviteState = 'create' | 'review' | 'joining' | 'joined' | 'error';
 
 @Component({
   selector: 'app-caregiver-invite',
@@ -35,10 +35,12 @@ export class CaregiverInvitePage implements OnInit {
   errorMessage = '';
   joinedFamilyName = '';
   joinedBabyName = '';
+  pendingInviteCode = '';
+  inviteExpiresAt = 0;
 
   async ngOnInit(): Promise<void> {
     const code = this.route.snapshot.queryParamMap.get('code');
-    if (code) await this.acceptInvitation(code);
+    if (code) await this.loadInvitation(code);
   }
 
   get babyName(): string {
@@ -118,14 +120,39 @@ export class CaregiverInvitePage implements OnInit {
     this.message = 'Invitation link copied.';
   }
 
-  private async acceptInvitation(code: string): Promise<void> {
+  async confirmInvitation(): Promise<void> {
+    if (!this.pendingInviteCode) return;
+    this.state = 'joining';
+    try {
+      this.joinedFamilyName = await this.sharingService.joinWithCode(
+        this.pendingInviteCode
+      );
+      this.state = 'joined';
+    } catch (error) {
+      this.errorMessage = this.errorText(error);
+      this.state = 'error';
+    }
+  }
+
+  get inviteExpiryLabel(): string {
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(new Date(this.inviteExpiresAt));
+  }
+
+  private async loadInvitation(code: string): Promise<void> {
     this.state = 'joining';
     try {
       const details: CaregiverInviteDetails =
         await this.sharingService.getInviteDetails(code);
+      this.pendingInviteCode = code.trim().toUpperCase();
       this.joinedBabyName = details.babyName;
-      this.joinedFamilyName = await this.sharingService.joinWithCode(code);
-      this.state = 'joined';
+      this.joinedFamilyName = details.ownerName;
+      this.inviteExpiresAt = details.expiresAt;
+      this.state = 'review';
     } catch (error) {
       this.errorMessage = this.errorText(error);
       this.state = 'error';

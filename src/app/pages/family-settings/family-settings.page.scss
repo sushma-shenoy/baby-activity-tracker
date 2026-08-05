@@ -16,6 +16,11 @@ h2 { margin: 20px 0 7px; color: #746681; font-size: .72rem; }
 .controls { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; }
 .controls select { padding: 6px 24px 6px 8px; border: 1px solid #ddd3e9; border-radius: 9px; color: #594b64; background: #fff; font-size: .68rem; font-weight: 800; }
 .controls button { border: 0; color: #a04455; background: transparent; font-size: .68rem; font-weight: 800; }
+.pending-invites article { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 0; border-bottom: 1px solid #eee8f5; }
+.pending-invites article div { display: grid; gap: 3px; }
+.pending-invites strong { color: #44384e; font-size: .8rem; }
+.pending-invites small { color: #91859a; font-size: .66rem; }
+.pending-invites button { padding: 7px 10px; border: 0; border-radius: 9px; color: #a04455; background: #fff0f2; font-size: .68rem; font-weight: 800; }
 .family-option { display: flex; width: 100%; min-height: 52px; align-items: center; gap: 10px; margin-top: 7px; padding: 9px 11px; border: 1px solid #e4dced; border-radius: 13px; color: #574a61; background: #fff; text-align: left; }
 .family-option.active { border-color: #a896c2; background: #f4f0f9; }
 .family-option > span { font-size: 1.25rem; }

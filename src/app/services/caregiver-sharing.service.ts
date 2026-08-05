@@ -33,6 +33,14 @@ export interface CaregiverMember {
   joinedAt: number;
 }
 
+export interface PendingCaregiverInvite {
+  code: string;
+  babyName: string;
+  profileId: string;
+  createdAt: number;
+  expiresAt: number;
+}
+
 export interface SharedFamily {
   ownerId: string;
   ownerName: string;
@@ -202,10 +210,58 @@ export class CaregiverSharingService {
       )
     );
 
-    return snapshot.docs.map(item => ({
+    const caregivers = snapshot.docs.map(item => ({
       id: item.id,
       ...(item.data() as Omit<CaregiverMember, 'id'>)
     }));
+    await this.refreshSharedFamilyNames(caregivers);
+    return caregivers;
+  }
+
+  async listPendingInvites(): Promise<PendingCaregiverInvite[]> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) return [];
+
+    const snapshot = await getDocs(query(
+      collection(this.firestore, 'caregiverInvites'),
+      where('ownerId', '==', user.uid)
+    ));
+    const now = Date.now();
+    const expired = snapshot.docs.filter(
+      invitation => Number(invitation.data()['expiresAt']) <= now
+    );
+    if (expired.length) {
+      const batch = writeBatch(this.firestore);
+      for (const invitation of expired) batch.delete(invitation.ref);
+      await batch.commit();
+    }
+
+    return snapshot.docs
+      .filter(invitation => Number(invitation.data()['expiresAt']) > now)
+      .map(invitation => ({
+        code: invitation.id,
+        babyName: String(invitation.data()['babyName'] || 'Family account'),
+        profileId: String(invitation.data()['profileId'] || ''),
+        createdAt: Number(invitation.data()['createdAt']) || 0,
+        expiresAt: Number(invitation.data()['expiresAt'])
+      }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async revokeInvite(code: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can revoke invitations.');
+    }
+    const reference = doc(this.firestore, 'caregiverInvites', code);
+    const snapshot = await getDoc(reference);
+    if (!snapshot.exists()) return;
+    if (snapshot.data()['ownerId'] !== user.uid) {
+      throw new Error('You cannot revoke this invitation.');
+    }
+    const batch = writeBatch(this.firestore);
+    batch.delete(reference);
+    await batch.commit();
   }
 
   async revokeInvitesForProfile(profileId: string): Promise<void> {
@@ -402,6 +458,26 @@ export class CaregiverSharingService {
     );
     await batch.commit();
     await trackerStorage.switchDataOwner(user.uid);
+  }
+
+  private async refreshSharedFamilyNames(
+    caregivers: CaregiverMember[]
+  ): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !caregivers.length) return;
+    const ownerName = user.displayName || 'Shared family';
+    await Promise.all(caregivers.map(caregiver =>
+      updateDoc(
+        doc(
+          this.firestore,
+          'userFamilyLinks',
+          caregiver.id,
+          'families',
+          user.uid
+        ),
+        { ownerName }
+      ).catch(() => undefined)
+    ));
   }
 
   private createCode(): string {

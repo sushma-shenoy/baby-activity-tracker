@@ -21,6 +21,22 @@
       <ng-container *ngIf="caregiverSharingService.canManageBabyProfiles; else joinedFamily">
         <a class="primary-action" routerLink="/caregiver-invite">Add caregiver</a>
 
+        <div class="pending-invites" *ngIf="pendingInvites.length">
+          <h2>Pending invitations</h2>
+          <article *ngFor="let invite of pendingInvites">
+            <div>
+              <strong>{{ invite.babyName }}</strong>
+              <small>Expires {{ inviteExpiryLabel(invite) }}</small>
+            </div>
+            <button
+              type="button"
+              [disabled]="isBusy"
+              (click)="revokeInvite(invite)">
+              Revoke
+            </button>
+          </article>
+        </div>
+
         <div class="caregiver-list" *ngIf="caregivers.length">
           <h2>People with access</h2>
           <article *ngFor="let caregiver of caregivers">
@@ -46,7 +62,7 @@
       <ng-template #joinedFamily>
         <div class="shared-banner">
           <strong>{{ activeSharedFamilyName }}</strong>
-          <p>{{ caregiverSharingService.canEditCurrentFamily ? 'You have Editor access and can update this family.' : 'You have Viewer access. Records are read-only.' }}</p>
+          <p>{{ caregiverSharingService.canEditCurrentFamily ? 'You have Editor access. Your changes require owner approval.' : 'You have Viewer access. Records are read-only.' }}</p>
           <button type="button" [disabled]="isBusy" (click)="switchToPrivateProfile()">Switch to my private profile</button>
           <button type="button" class="danger-action" [disabled]="isBusy" (click)="leaveFamily()">Leave family permanently</button>
         </div>

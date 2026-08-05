@@ -78,6 +78,13 @@ class TrackerStorage {
       return;
     }
 
+    if (this.isUsingSharedFamily && this.accessRole === 'editor') {
+      if (this.values.get(key) === value) return;
+      this.submitChangeRequest('set', key, value);
+      queueMicrotask(() => this.dispatchDataChanged(key));
+      return;
+    }
+
     this.assertCanEdit();
 
     const previousValue = this.values.get(key);
@@ -105,6 +112,13 @@ class TrackerStorage {
   removeItem(key: string): void {
     if (this.testMode) {
       localStorage.removeItem(key);
+      return;
+    }
+
+    if (this.isUsingSharedFamily && this.accessRole === 'editor') {
+      if (!this.values.has(key)) return;
+      this.submitChangeRequest('remove', key, '');
+      queueMicrotask(() => this.dispatchDataChanged(key));
       return;
     }
 
@@ -294,6 +308,7 @@ class TrackerStorage {
     this.dataOwnerId = '';
     this.accessRole = 'owner';
     document.body.classList.remove('viewer-mode');
+    document.body.classList.remove('caregiver-mode');
     this.values.clear();
   }
 
@@ -422,6 +437,10 @@ class TrackerStorage {
 
   private syncViewerMode(): void {
     document.body.classList.toggle(
+      'caregiver-mode',
+      this.isUsingSharedFamily
+    );
+    document.body.classList.toggle(
       'viewer-mode',
       this.isUsingSharedFamily && this.accessRole === 'viewer'
     );
@@ -442,6 +461,40 @@ class TrackerStorage {
           : 'The change could not be saved.'
       }
     }));
+  }
+
+  private submitChangeRequest(
+    operation: 'set' | 'remove',
+    key: string,
+    value: string
+  ): void {
+    const user = firebaseAuth.currentUser;
+    if (!this.firestore || !user || !this.currentDataOwnerId) return;
+    const requestId = globalThis.crypto?.randomUUID?.() ??
+      `request-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    void setDoc(
+      doc(
+        this.firestore,
+        'users',
+        this.currentDataOwnerId,
+        'changeRequests',
+        requestId
+      ),
+      {
+        key,
+        value,
+        baseValue: this.getItem(key) || '',
+        operation,
+        caregiverId: user.uid,
+        caregiverName: user.displayName || user.email || 'Caregiver',
+        createdAt: Date.now()
+      }
+    ).then(() => {
+      window.dispatchEvent(new CustomEvent('baby-tracker:change-proposed'));
+    }).catch(error => {
+      this.dispatchWriteFailed(key, error);
+      console.error(`Unable to submit change request for "${key}":`, error);
+    });
   }
 
   private subscribeToOwnerData(ownerId: string): void {

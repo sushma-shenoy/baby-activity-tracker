@@ -534,7 +534,7 @@ export class ActivityReminderService {
   private loadScheduledIds(): number[] {
     try {
       const ids = JSON.parse(
-        trackerStorage.getItem(this.scheduledIdsKey) || '[]'
+        localStorage.getItem(this.scheduledIdsKey) || '[]'
       ) as number[];
       return Array.isArray(ids)
         ? ids.filter(id => Number.isSafeInteger(id))
@@ -545,7 +545,7 @@ export class ActivityReminderService {
   }
 
   private persistScheduledIds(ids: number[]): void {
-    trackerStorage.setItem(this.scheduledIdsKey, JSON.stringify(ids));
+    localStorage.setItem(this.scheduledIdsKey, JSON.stringify(ids));
   }
 
   private isValidTime(value: string): boolean {

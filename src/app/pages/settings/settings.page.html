@@ -268,6 +268,19 @@
       <span class="settings-navigation-arrow" aria-hidden="true">›</span>
     </a>
 
+    <a
+      *ngIf="caregiverSharingService.canManageBabyProfiles"
+      class="settings-navigation-card"
+      routerLink="/settings/change-requests">
+      <span class="section-icon" aria-hidden="true">✅</span>
+      <span class="settings-navigation-copy">
+        <small>Owner approval</small>
+        <strong>Caregiver change requests</strong>
+        <span>Review changes before they appear in the family account</span>
+      </span>
+      <span class="settings-navigation-arrow" aria-hidden="true">›</span>
+    </a>
+
     <a class="settings-navigation-card data-navigation-card" routerLink="/settings/data">
       <span class="section-icon" aria-hidden="true">🔐</span>
       <span class="settings-navigation-copy">

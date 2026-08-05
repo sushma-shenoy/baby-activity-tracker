@@ -42,6 +42,8 @@ import {
   ActiveNursingSession,
   NursingService
 } from '../../services/nursing.service';
+import { ChangeRequestService } from '../../services/change-request.service';
+import { CaregiverSharingService } from '../../services/caregiver-sharing.service';
 
 interface ProgressItem {
   label: string;
@@ -91,6 +93,8 @@ export class HomePage implements OnInit, OnDestroy {
   };
   babyPhotoUrl = '';
   activeNursing: ActiveNursingSession | null = null;
+  pendingCaregiverRequestCount = 0;
+  pendingCaregiverSubmissionCount = 0;
 
   private activitiesSubscription?: Subscription;
   private preferencesSubscription?: Subscription;
@@ -103,7 +107,9 @@ export class HomePage implements OnInit, OnDestroy {
     private readonly preferencesService: PreferencesService,
     readonly babyProfileService: BabyProfileService,
     private readonly photoStorageService: PhotoStorageService,
-    private readonly nursingService: NursingService
+    private readonly nursingService: NursingService,
+    private readonly changeRequestService: ChangeRequestService,
+    readonly caregiverSharingService: CaregiverSharingService
   ) {}
 
   ngOnInit(): void {
@@ -144,6 +150,27 @@ export class HomePage implements OnInit, OnDestroy {
     this.refreshHomeData();
     this.refreshActiveNursing();
     void this.loadBabyPhoto();
+    void this.loadCaregiverRequests();
+  }
+
+  private async loadCaregiverRequests(): Promise<void> {
+    this.pendingCaregiverRequestCount = 0;
+    this.pendingCaregiverSubmissionCount = 0;
+
+    try {
+      if (this.caregiverSharingService.canManageBabyProfiles) {
+        this.pendingCaregiverRequestCount =
+          (await this.changeRequestService.list()).length;
+      } else if (
+        this.caregiverSharingService.currentFamilyRole === 'editor'
+      ) {
+        this.pendingCaregiverSubmissionCount = (
+          await this.changeRequestService.listMine(
+            this.caregiverSharingService.familyOwnerId
+          )
+        ).length;
+      }
+    } catch {}
   }
 
   private async loadBabyPhoto(): Promise<void> {

@@ -1,0 +1,65 @@
+<ion-header [translucent]="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My pending requests</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="pending-page">
+  <main class="pending-shell">
+    <div class="heading">
+      <span aria-hidden="true">⏳</span>
+      <div><p>Waiting for review</p><h1>Pending owner approval</h1></div>
+    </div>
+    <p class="description">
+      These changes are not part of the family account yet. The owner must approve them first.
+    </p>
+
+    <div class="loading" *ngIf="loading"><ion-spinner name="crescent"></ion-spinner></div>
+
+    <div class="empty" *ngIf="!loading && !requests.length && !errorMessage">
+      <span aria-hidden="true">✓</span>
+      <strong>No pending requests</strong>
+      <p>Your requests were approved, rejected, or cancelled.</p>
+    </div>
+
+    <div class="bulk-actions" *ngIf="!loading && requests.length">
+      <label>
+        <input type="checkbox"
+          [checked]="selectedIds.size === requests.length"
+          (change)="toggleAll()">
+        <span>Select all</span>
+      </label>
+      <button type="button" [disabled]="!selectedIds.size || busyId === 'bulk'"
+        (click)="cancelSelected()">
+        <ion-spinner *ngIf="busyId === 'bulk'" name="crescent"></ion-spinner>
+        <span *ngIf="busyId !== 'bulk'">Cancel selected ({{ selectedIds.size }})</span>
+      </button>
+    </div>
+
+    <article class="pending-request" [class.selected]="isSelected(request.id)" *ngFor="let request of requests">
+      <div class="request-heading">
+        <label class="request-select">
+          <input type="checkbox" [checked]="isSelected(request.id)"
+            (change)="toggleSelected(request.id)">
+          <span><strong>{{ title(request) }}</strong><small>Submitted {{ dateLabel(request) }}</small></span>
+        </label>
+        <span class="status">Pending</span>
+      </div>
+      <div class="proposed">
+        <small>Proposed change</small>
+        <p>{{ proposedValue(request) }}</p>
+        <span>Caregiver: {{ request.caregiverName }}</span>
+      </div>
+      <button type="button" [disabled]="busyId === request.id || busyId === 'bulk'" (click)="cancel(request)">
+        <ion-spinner *ngIf="busyId === request.id" name="crescent"></ion-spinner>
+        <span *ngIf="busyId !== request.id">Cancel request</span>
+      </button>
+    </article>
+
+    <p class="success" *ngIf="message">✓ {{ message }}</p>
+    <p class="error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </main>
+</ion-content>
