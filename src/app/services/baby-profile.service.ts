@@ -36,7 +36,8 @@ export const BABY_TRACKER_DATA_KEYS = [
   'active_nursing_session',
   'baby_activity_reminders',
   'baby_custom_reminders',
-  'baby_vaccination_reminder'
+  'baby_vaccination_reminder',
+  'baby_daily_journal_entries'
 ] as const;
 
 @Injectable({ providedIn: 'root' })
@@ -165,7 +166,7 @@ export class BabyProfileService {
 
   deleteProfile(profileId: string): boolean {
     if (
-      profileId === this.activeProfileId ||
+      !this.profiles.some(profile => profile.id === profileId) ||
       this.profiles.length <= 1
     ) {
       return false;
@@ -174,6 +175,12 @@ export class BabyProfileService {
     const profiles = this.profiles.filter(
       profile => profile.id !== profileId
     );
+
+    if (profileId === this.activeProfileId) {
+      this.clearActiveData();
+      this.restoreProfile(profiles[0].id);
+      this.setActiveProfileId(profiles[0].id);
+    }
 
     for (const key of BABY_TRACKER_DATA_KEYS) {
       trackerStorage.removeItem(this.profileDataKey(profileId, key));
@@ -295,7 +302,9 @@ export class BabyProfileService {
 
   private setActiveProfileId(profileId: string): void {
     localStorage.setItem(DEVICE_ACTIVE_PROFILE_KEY, profileId);
-    trackerStorage.setItem(ACTIVE_PROFILE_KEY, profileId);
+    if (!trackerStorage.isUsingSharedFamily) {
+      trackerStorage.setItem(ACTIVE_PROFILE_KEY, profileId);
+    }
   }
 
   private profileDataKey(profileId: string, key: string): string {

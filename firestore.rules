@@ -18,18 +18,38 @@ service cloud.firestore {
       return signedIn() && exists(caregiverPath(userId));
     }
 
-    function canEditFamily(userId) {
-      return owns(userId) || (
-        isCaregiver(userId) &&
-        get(caregiverPath(userId)).data.role == 'editor'
-      );
+    function hasValidInvite(inviteCode, ownerId) {
+      return inviteCode is string
+        && exists(
+          /databases/$(database)/documents/caregiverInvites/$(inviteCode)
+        )
+        && get(
+          /databases/$(database)/documents/caregiverInvites/$(inviteCode)
+        ).data.ownerId == ownerId
+        && get(
+          /databases/$(database)/documents/caregiverInvites/$(inviteCode)
+        ).data.expiresAt > request.time.toMillis();
+    }
+
+    function isOwnerManagedTrackerDocument(dataKey) {
+      return dataKey == 'baby_profiles_v2';
+    }
+
+    function isOwnerManagedWrite() {
+      return request.resource.data.key == 'baby_profiles_v2';
     }
 
     match /users/{userId}/trackerData/{dataKey} {
       allow read: if owns(userId) || isCaregiver(userId);
-      allow delete: if canEditFamily(userId);
+      allow delete: if owns(userId);
 
-      allow create, update: if canEditFamily(userId)
+      allow create, update: if owns(userId)
+        && (
+          (
+            !isOwnerManagedTrackerDocument(dataKey) &&
+            !isOwnerManagedWrite()
+          ) || owns(userId)
+        )
         && request.resource.data.keys().hasOnly([
           'key',
           'value',
@@ -43,9 +63,9 @@ service cloud.firestore {
 
     match /users/{userId}/photos/{photoId} {
       allow read: if owns(userId) || isCaregiver(userId);
-      allow delete: if canEditFamily(userId);
+      allow delete: if owns(userId);
 
-      allow create, update: if canEditFamily(userId)
+      allow create, update: if owns(userId)
         && request.resource.data.keys().hasOnly([
           'imageBytes',
           'contentType',
@@ -58,13 +78,47 @@ service cloud.firestore {
         && request.resource.data.category in ['diaper', 'profile'];
     }
 
+    match /users/{ownerId}/changeRequests/{requestId} {
+      allow read: if owns(ownerId) || (
+        signedIn() && resource.data.caregiverId == request.auth.uid
+      );
+      allow delete: if owns(ownerId) || (
+        signedIn() && resource.data.caregiverId == request.auth.uid
+      );
+      allow create: if signedIn()
+        && request.resource.data.caregiverId == request.auth.uid
+        && isCaregiver(ownerId)
+        && get(caregiverPath(ownerId)).data.role == 'editor'
+        && request.resource.data.key is string
+        && request.resource.data.key.size() <= 300
+        && request.resource.data.value is string
+        && request.resource.data.value.size() <= 900000
+        && request.resource.data.baseValue is string
+        && request.resource.data.baseValue.size() <= 900000
+        && request.resource.data.operation in ['set', 'remove']
+        && request.resource.data.caregiverName is string
+        && request.resource.data.createdAt is number
+        && request.resource.data.keys().hasOnly([
+          'key',
+          'value',
+          'baseValue',
+          'operation',
+          'caregiverId',
+          'caregiverName',
+          'createdAt'
+        ]);
+      allow update: if false;
+    }
+
     match /caregiverInvites/{inviteCode} {
       allow get: if signedIn();
-      allow list: if false;
+      allow list: if signedIn()
+        && resource.data.ownerId == request.auth.uid;
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.ownerName is string
         && request.resource.data.babyName is string
+        && request.resource.data.profileId is string
         && request.resource.data.createdAt is number
         && request.resource.data.expiresAt is number
         && request.resource.data.expiresAt > request.time.toMillis()
@@ -72,6 +126,7 @@ service cloud.firestore {
           'ownerId',
           'ownerName',
           'babyName',
+          'profileId',
           'createdAt',
           'expiresAt'
         ]);
@@ -116,10 +171,27 @@ service cloud.firestore {
           'joinedAt'
         ]);
 
-      allow update: if owns(ownerId)
+      allow update: if (
+        owns(ownerId)
         && request.resource.data.role in ['editor', 'viewer']
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['role']);
+          .hasOnly(['role'])
+      ) || (
+        signedIn()
+        && request.auth.uid == caregiverId
+        && hasValidInvite(request.resource.data.inviteCode, ownerId)
+        && request.resource.data.role == 'editor'
+        && request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && request.resource.data.joinedAt is number
+        && request.resource.data.keys().hasOnly([
+          'inviteCode',
+          'displayName',
+          'email',
+          'role',
+          'joinedAt'
+        ])
+      );
       allow delete: if owns(ownerId) || (
         signedIn() && request.auth.uid == caregiverId
       );
@@ -160,7 +232,26 @@ service cloud.firestore {
           'ownerName',
           'joinedAt'
         ]);
-      allow update: if false;
+      allow update: if (
+        signedIn()
+        && request.auth.uid == userId
+        && hasValidInvite(request.resource.data.inviteCode, ownerId)
+        && request.resource.data.ownerId == ownerId
+        && request.resource.data.ownerName is string
+        && request.resource.data.joinedAt is number
+        && request.resource.data.keys().hasOnly([
+          'inviteCode',
+          'ownerId',
+          'ownerName',
+          'joinedAt'
+        ])
+      ) || (
+        signedIn()
+        && request.auth.uid == ownerId
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['ownerName'])
+        && request.resource.data.ownerName is string
+      );
     }
 
     match /{document=**} {

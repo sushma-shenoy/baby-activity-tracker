@@ -11,7 +11,7 @@ import {
 } from '../../services/caregiver-sharing.service';
 import { BabyProfileService } from '../../services/baby-profile.service';
 
-type InviteState = 'create' | 'joining' | 'joined' | 'error';
+type InviteState = 'create' | 'review' | 'joining' | 'joined' | 'error';
 
 @Component({
   selector: 'app-caregiver-invite',
@@ -35,10 +35,12 @@ export class CaregiverInvitePage implements OnInit {
   errorMessage = '';
   joinedFamilyName = '';
   joinedBabyName = '';
+  pendingInviteCode = '';
+  inviteExpiresAt = 0;
 
   async ngOnInit(): Promise<void> {
     const code = this.route.snapshot.queryParamMap.get('code');
-    if (code) await this.acceptInvitation(code);
+    if (code) await this.loadInvitation(code);
   }
 
   get babyName(): string {
@@ -73,12 +75,13 @@ export class CaregiverInvitePage implements OnInit {
       this.errorMessage = 'Enter a valid caregiver email address first.';
       return;
     }
-    const subject = `You’re invited to care for ${this.babyName}`;
+    const subject = 'You’re invited to a Baby Tracker family account';
     const body = [
       '👶 You have been invited to be a caregiver!',
       '',
-      `You are invited to help care for ${this.babyName} in Baby Tracker.`,
-      'You will be able to stay connected with feeding, sleep, diaper, health, and milestone updates.',
+      'You are invited to join a family account in Baby Tracker as a caregiver.',
+      `This family account currently includes ${this.babyName}.`,
+      'Accepting gives you access to all baby profiles and shared care records in this family account.',
       '',
       'Open your secure invitation:',
       this.inviteUrl,
@@ -86,7 +89,7 @@ export class CaregiverInvitePage implements OnInit {
       'This invitation expires in 24 hours and works only once.',
       '',
       'With care,',
-      `${this.babyName}’s family 💜`
+      'The family account owner 💜'
     ].join('\n');
     window.location.href =
       `mailto:${encodeURIComponent(this.recipientEmail)}` +
@@ -97,11 +100,12 @@ export class CaregiverInvitePage implements OnInit {
   async shareInvitation(): Promise<void> {
     if (!this.inviteUrl) return;
     const text =
-      `You’re invited to be a caregiver for ${this.babyName} in Baby Tracker. ` +
-      'This secure invitation expires in 24 hours.';
+      'You’re invited to a Baby Tracker family account as a caregiver. ' +
+      'This grants access to all baby profiles and shared care records. ' +
+      'The secure invitation expires in 24 hours.';
     if (navigator.share) {
       await navigator.share({
-        title: `Care for ${this.babyName}`,
+        title: 'Baby Tracker family account invitation',
         text,
         url: this.inviteUrl
       });
@@ -116,14 +120,39 @@ export class CaregiverInvitePage implements OnInit {
     this.message = 'Invitation link copied.';
   }
 
-  private async acceptInvitation(code: string): Promise<void> {
+  async confirmInvitation(): Promise<void> {
+    if (!this.pendingInviteCode) return;
+    this.state = 'joining';
+    try {
+      this.joinedFamilyName = await this.sharingService.joinWithCode(
+        this.pendingInviteCode
+      );
+      this.state = 'joined';
+    } catch (error) {
+      this.errorMessage = this.errorText(error);
+      this.state = 'error';
+    }
+  }
+
+  get inviteExpiryLabel(): string {
+    return new Intl.DateTimeFormat(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(new Date(this.inviteExpiresAt));
+  }
+
+  private async loadInvitation(code: string): Promise<void> {
     this.state = 'joining';
     try {
       const details: CaregiverInviteDetails =
         await this.sharingService.getInviteDetails(code);
+      this.pendingInviteCode = code.trim().toUpperCase();
       this.joinedBabyName = details.babyName;
-      this.joinedFamilyName = await this.sharingService.joinWithCode(code);
-      this.state = 'joined';
+      this.joinedFamilyName = details.ownerName;
+      this.inviteExpiresAt = details.expiresAt;
+      this.state = 'review';
     } catch (error) {
       this.errorMessage = this.errorText(error);
       this.state = 'error';

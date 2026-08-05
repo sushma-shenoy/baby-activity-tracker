@@ -78,8 +78,16 @@ class TrackerStorage {
       return;
     }
 
+    if (this.isUsingSharedFamily && this.accessRole === 'editor') {
+      if (this.values.get(key) === value) return;
+      this.submitChangeRequest('set', key, value);
+      queueMicrotask(() => this.dispatchDataChanged(key));
+      return;
+    }
+
     this.assertCanEdit();
 
+    const previousValue = this.values.get(key);
     this.values.set(key, value);
     if (!this.firestore || !this.userId) return;
 
@@ -91,6 +99,12 @@ class TrackerStorage {
         updatedAt: serverTimestamp()
       }
     ).catch(error => {
+      if (this.values.get(key) === value) {
+        if (previousValue === undefined) this.values.delete(key);
+        else this.values.set(key, previousValue);
+        this.dispatchDataChanged(key);
+      }
+      this.dispatchWriteFailed(key, error);
       console.error(`Unable to save tracker data "${key}" to Firestore:`, error);
     });
   }
@@ -101,12 +115,25 @@ class TrackerStorage {
       return;
     }
 
+    if (this.isUsingSharedFamily && this.accessRole === 'editor') {
+      if (!this.values.has(key)) return;
+      this.submitChangeRequest('remove', key, '');
+      queueMicrotask(() => this.dispatchDataChanged(key));
+      return;
+    }
+
     this.assertCanEdit();
 
+    const previousValue = this.values.get(key);
     this.values.delete(key);
     if (!this.firestore || !this.userId) return;
 
     void deleteDoc(this.documentReference(key)).catch(error => {
+      if (!this.values.has(key) && previousValue !== undefined) {
+        this.values.set(key, previousValue);
+        this.dispatchDataChanged(key);
+      }
+      this.dispatchWriteFailed(key, error);
       console.error(`Unable to delete tracker data "${key}" from Firestore:`, error);
     });
   }
@@ -243,6 +270,7 @@ class TrackerStorage {
     await this.loadAccessRole(ownerId);
 
     this.dataOwnerId = ownerId;
+    this.syncViewerMode();
     this.values.clear();
 
     const snapshot = await getDocs(
@@ -279,6 +307,8 @@ class TrackerStorage {
     this.userId = '';
     this.dataOwnerId = '';
     this.accessRole = 'owner';
+    document.body.classList.remove('viewer-mode');
+    document.body.classList.remove('caregiver-mode');
     this.values.clear();
   }
 
@@ -346,6 +376,7 @@ class TrackerStorage {
 
     if (!this.firestore || ownerId === this.userId) {
       this.accessRole = 'owner';
+      this.syncViewerMode();
       return;
     }
 
@@ -363,12 +394,14 @@ class TrackerStorage {
     this.accessRole = membership.data()['role'] === 'viewer'
       ? 'viewer'
       : 'editor';
+    this.syncViewerMode();
 
     this.accessSubscription = onSnapshot(
       membershipReference,
       snapshot => {
         if (!snapshot.exists()) {
           this.accessRole = 'viewer';
+          this.syncViewerMode();
           if (this.currentDataOwnerId === ownerId) {
             void this.switchDataOwner(this.userId).then(() => {
               window.dispatchEvent(
@@ -383,6 +416,7 @@ class TrackerStorage {
         this.accessRole = snapshot.data()['role'] === 'viewer'
           ? 'viewer'
           : 'editor';
+        this.syncViewerMode();
       },
       error => console.error('Unable to refresh caregiver permission:', error)
     );
@@ -399,6 +433,68 @@ class TrackerStorage {
       );
       throw new Error(message);
     }
+  }
+
+  private syncViewerMode(): void {
+    document.body.classList.toggle(
+      'caregiver-mode',
+      this.isUsingSharedFamily
+    );
+    document.body.classList.toggle(
+      'viewer-mode',
+      this.isUsingSharedFamily && this.accessRole === 'viewer'
+    );
+  }
+
+  private dispatchDataChanged(key: string): void {
+    window.dispatchEvent(new CustomEvent('baby-tracker:data-changed', {
+      detail: { keys: [key] }
+    }));
+  }
+
+  private dispatchWriteFailed(key: string, error: unknown): void {
+    window.dispatchEvent(new CustomEvent('baby-tracker:write-failed', {
+      detail: {
+        key,
+        message: error instanceof Error
+          ? error.message
+          : 'The change could not be saved.'
+      }
+    }));
+  }
+
+  private submitChangeRequest(
+    operation: 'set' | 'remove',
+    key: string,
+    value: string
+  ): void {
+    const user = firebaseAuth.currentUser;
+    if (!this.firestore || !user || !this.currentDataOwnerId) return;
+    const requestId = globalThis.crypto?.randomUUID?.() ??
+      `request-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    void setDoc(
+      doc(
+        this.firestore,
+        'users',
+        this.currentDataOwnerId,
+        'changeRequests',
+        requestId
+      ),
+      {
+        key,
+        value,
+        baseValue: this.getItem(key) || '',
+        operation,
+        caregiverId: user.uid,
+        caregiverName: user.displayName || user.email || 'Caregiver',
+        createdAt: Date.now()
+      }
+    ).then(() => {
+      window.dispatchEvent(new CustomEvent('baby-tracker:change-proposed'));
+    }).catch(error => {
+      this.dispatchWriteFailed(key, error);
+      console.error(`Unable to submit change request for "${key}":`, error);
+    });
   }
 
   private subscribeToOwnerData(ownerId: string): void {

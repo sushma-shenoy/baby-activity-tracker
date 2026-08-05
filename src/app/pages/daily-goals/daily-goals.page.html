@@ -1,0 +1,48 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Daily goals</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="goals-page">
+  <main class="goals-shell">
+    <form [formGroup]="goalsForm" (ngSubmit)="save()" class="goals-card">
+      <div class="page-heading">
+        <div>
+          <p>Daily goals</p>
+          <h1>Edit today’s targets</h1>
+        </div>
+        <span aria-hidden="true">✨</span>
+      </div>
+      <p class="description">
+        These targets control the progress rings on Home.
+      </p>
+
+      <label for="feeds-goal">🍼 Feeds</label>
+      <ion-item lines="none" [class.invalid]="hasError('feeds')">
+        <ion-input id="feeds-goal" type="number" min="1" max="24"
+          inputmode="numeric" formControlName="feeds"></ion-input>
+      </ion-item>
+
+      <label for="sleep-goal">😴 Sleep sessions</label>
+      <ion-item lines="none" [class.invalid]="hasError('sleepSessions')">
+        <ion-input id="sleep-goal" type="number" min="1" max="24"
+          inputmode="numeric" formControlName="sleepSessions"></ion-input>
+      </ion-item>
+
+      <label for="diapers-goal">🧷 Diapers</label>
+      <ion-item lines="none" [class.invalid]="hasError('diapers')">
+        <ion-input id="diapers-goal" type="number" min="1" max="24"
+          inputmode="numeric" formControlName="diapers"></ion-input>
+      </ion-item>
+
+      <p class="error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <ion-button expand="block" type="submit" [disabled]="isSaving">
+        {{ isSaving ? 'Saving…' : 'Save targets' }}
+      </ion-button>
+    </form>
+  </main>
+</ion-content>

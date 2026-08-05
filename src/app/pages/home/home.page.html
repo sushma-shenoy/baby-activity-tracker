@@ -60,6 +60,44 @@
     </div>
   </section>
 
+  <a
+    *ngIf="caregiverSharingService.canManageBabyProfiles && pendingCaregiverRequestCount > 0"
+    class="caregiver-request-card"
+    routerLink="/settings/change-requests">
+    <span class="caregiver-request-icon" aria-hidden="true">👥</span>
+    <span class="caregiver-request-copy">
+      <strong>Caregiver requests</strong>
+      <small>
+        {{ pendingCaregiverRequestCount }} {{ pendingCaregiverRequestCount === 1 ? 'change needs' : 'changes need' }} your review
+      </small>
+    </span>
+    <span
+      *ngIf="pendingCaregiverRequestCount > 0"
+      class="caregiver-request-count"
+      aria-label="Pending requests">
+      {{ pendingCaregiverRequestCount }}
+    </span>
+    <span class="caregiver-request-arrow" aria-hidden="true">›</span>
+  </a>
+
+  <a
+    *ngIf="caregiverSharingService.currentFamilyRole === 'editor' && pendingCaregiverSubmissionCount > 0"
+    class="caregiver-request-card caregiver-pending-card"
+    routerLink="/my-change-requests"
+    aria-live="polite">
+    <span class="caregiver-request-icon" aria-hidden="true">⏳</span>
+    <span class="caregiver-request-copy">
+      <strong>Pending owner approval</strong>
+      <small>
+        {{ pendingCaregiverSubmissionCount }} {{ pendingCaregiverSubmissionCount === 1 ? 'change is' : 'changes are' }} waiting for the family owner to review
+      </small>
+    </span>
+    <span class="caregiver-request-count" aria-label="Pending approval">
+      {{ pendingCaregiverSubmissionCount }}
+    </span>
+    <span class="caregiver-request-arrow" aria-hidden="true">›</span>
+  </a>
+
   <button
     *ngIf="activeNursing"
     type="button"

@@ -1,0 +1,35 @@
+.data-page { --background: #f7f8fc; }
+
+.data-shell {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.data-card {
+  padding: 22px;
+  border: 1px solid #dce9e6;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fff, #f4fbf9);
+  box-shadow: 0 8px 26px rgba(37, 45, 75, 0.055);
+}
+
+.data-heading { display: flex; align-items: center; gap: 13px; margin-bottom: 16px; }
+.data-heading > span { display: grid; flex: 0 0 44px; width: 44px; height: 44px; place-items: center; border-radius: 14px; background: #e8f5f1; font-size: 1.2rem; }
+.data-heading p, .data-heading h1 { margin: 0; }
+.data-heading p { color: #397a6b; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.data-heading h1 { margin-top: 3px; color: #252d4b; font-size: 1.2rem; }
+.description { margin: 0 0 18px; color: #7b8091; font-size: 0.82rem; line-height: 1.5; }
+ion-button { --border-color: #6d9c90; --border-radius: 13px; --color: #397a6b; min-height: 48px; margin: 0 0 12px; text-transform: none; font-weight: 750; }
+.restore-button { display: grid; min-height: 48px; place-items: center; border-radius: 13px; color: #fff; background: #397a6b; font-size: 0.82rem; font-weight: 800; cursor: pointer; }
+.restore-button input { display: none; }
+.restore-button.disabled { opacity: 0.6; }
+.restore-note { margin: 10px 2px 0; color: #8a8598; font-size: 0.7rem; line-height: 1.45; }
+.success-message, .error-message { margin: 14px 2px 0; font-size: 0.78rem; font-weight: 700; }
+.success-message { color: #397a6b; }
+.error-message { color: #b64755; }
+
+@media (max-width: 480px) {
+  .data-shell { padding: 18px 13px 28px; }
+  .data-card { padding: 18px; }
+}

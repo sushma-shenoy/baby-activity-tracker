@@ -13,14 +13,20 @@
       <section class="invite-hero">
         <span class="hero-art">👶💜</span>
         <p>Share the care</p>
-        <h1>Invite a caregiver for {{ babyName }}</h1>
-        <span>One secure invitation can be accepted by one caregiver within 24 hours.</span>
+        <h1>Invite a caregiver to your family account</h1>
+        <span>
+          This grants access to all baby profiles and shared care records in
+          your family account. One caregiver can accept it within 24 hours.
+        </span>
       </section>
 
       <section class="invite-card" *ngIf="!inviteUrl">
         <span class="card-icon">💌</span>
-        <h2>Create a secure invitation</h2>
-        <p>We’ll make an email link, share link, invite code, and QR code.</p>
+        <h2>Create a secure family account invitation</h2>
+        <p>
+          We’ll make an email link, share link, invite code, and QR code.
+          The caregiver will receive family account access.
+        </p>
         <button type="button" class="primary-button" [disabled]="isBusy" (click)="createInvitation()">
           {{ isBusy ? 'Creating invitation…' : 'Create invitation' }}
         </button>
@@ -52,6 +58,21 @@
       <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
     </ng-container>
 
+    <section class="result-card review" *ngIf="state === 'review'">
+      <span class="result-art">👨‍👩‍👧💜</span>
+      <p class="result-eyebrow">Review invitation</p>
+      <h1>Join {{ joinedFamilyName }}?</h1>
+      <p>
+        You’ll receive family account access to all baby profiles and shared
+        care records. This invitation currently references {{ joinedBabyName }}.
+      </p>
+      <small>Invitation expires {{ inviteExpiryLabel }}</small>
+      <button type="button" class="primary-button" (click)="confirmInvitation()">
+        Accept and join family
+      </button>
+      <a routerLink="/home" class="secondary-link">Not now</a>
+    </section>
+
     <section class="result-card joining" *ngIf="state === 'joining'">
       <ion-spinner name="crescent"></ion-spinner>
       <h1>Adding you as a caregiver…</h1>
@@ -61,8 +82,11 @@
     <section class="result-card joined" *ngIf="state === 'joined'">
       <span class="result-art">🎉👶💜</span>
       <p class="result-eyebrow">Invitation accepted</p>
-      <h1>You’re now a caregiver for {{ joinedBabyName }}</h1>
-      <p>You’ve joined {{ joinedFamilyName }}. Updates will now stay synchronized with the family in real time.</p>
+      <h1>You now have family account access</h1>
+      <p>
+        You’ve joined {{ joinedFamilyName }} as a caregiver. You can access all
+        baby profiles and shared care records in this family account.
+      </p>
       <a routerLink="/home" class="primary-link">Go to baby’s home</a>
     </section>
 

@@ -68,6 +68,41 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage)
   },
   {
+    path: 'reminders',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/reminders/reminders.page').then(m => m.RemindersPage)
+  },
+  {
+    path: 'settings/goals',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/daily-goals/daily-goals.page').then(m => m.DailyGoalsPage)
+  },
+  {
+    path: 'settings/profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile-edit/profile-edit.page').then(m => m.ProfileEditPage)
+  },
+  {
+    path: 'settings/data',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/data-settings/data-settings.page').then(m => m.DataSettingsPage)
+  },
+  {
+    path: 'settings/family',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/family-settings/family-settings.page').then(m => m.FamilySettingsPage)
+  },
+  {
+    path: 'settings/change-requests',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/change-requests/change-requests.page').then(m => m.ChangeRequestsPage)
+  },
+  {
+    path: 'my-change-requests',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/my-change-requests/my-change-requests.page').then(m => m.MyChangeRequestsPage)
+  },
+  {
     path: 'insights',
     canActivate: [authGuard],
       loadComponent: () => import('./pages/insights/insights.page').then( m => m.InsightsPage)

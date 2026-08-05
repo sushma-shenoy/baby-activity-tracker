@@ -38,6 +38,37 @@ ion-content {
   --color: #1f1f1f;
 }
 
+/* Viewer caregivers can browse records but cannot reach mutation controls. */
+body.viewer-mode form,
+body.viewer-mode ion-toggle,
+body.viewer-mode input[type='file'],
+body.viewer-mode ion-fab,
+body.viewer-mode ion-content button,
+body.viewer-mode ion-content ion-button,
+body.viewer-mode .quick-action,
+body.viewer-mode button[class*='save'],
+body.viewer-mode button[class*='delete'],
+body.viewer-mode button[class*='remove'],
+body.viewer-mode button[class*='edit'],
+body.viewer-mode button[class*='add'],
+body.viewer-mode .reminder-copy input,
+body.viewer-mode .profile-photo-upload {
+  display: none !important;
+}
+
+/* Family/profile switching changes only what is being viewed, not family data. */
+body.viewer-mode ion-content.family-page button,
+body.viewer-mode ion-content .profile-switch {
+  display: flex !important;
+}
+
+/* Caregiver photo uploads are not applied before owner approval. */
+body.caregiver-mode input[type='file'],
+body.caregiver-mode .profile-photo-upload,
+body.caregiver-mode button[class*='photo'] {
+  display: none !important;
+}
+
 /* Shared top-level page navigation */
 ion-header.app-header {
   box-shadow: none;

@@ -168,6 +168,72 @@ ion-title {
   object-fit: cover;
 }
 
+.caregiver-request-card {
+  width: calc(100% - 32px);
+  min-height: 72px;
+  margin: 0 16px 14px;
+  padding: 12px 14px;
+  border: 1px solid #d9cdf0;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #4f4168;
+  background: linear-gradient(135deg, #f5efff, #ffffff);
+  box-shadow: 0 9px 22px rgba(97, 73, 137, 0.11);
+  text-decoration: none;
+}
+
+.caregiver-request-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  background: #e9ddfb;
+  font-size: 1.25rem;
+}
+
+.caregiver-request-copy {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 3px;
+}
+
+.caregiver-request-copy strong { font-size: 0.86rem; }
+.caregiver-request-copy small { color: #7b6b8f; font-size: 0.72rem; }
+
+.caregiver-request-count {
+  min-width: 25px;
+  height: 25px;
+  padding: 0 7px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #8b63bf;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.caregiver-request-arrow {
+  color: #8b7a9e;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.caregiver-pending-card {
+  border-color: #efd7a5;
+  color: #65522e;
+  background: linear-gradient(135deg, #fff8e8, #ffffff);
+}
+
+.caregiver-pending-card .caregiver-request-icon { background: #ffedc5; }
+.caregiver-pending-card .caregiver-request-copy small { color: #897247; }
+.caregiver-pending-card .caregiver-request-count { background: #bd8734; }
+
 /* LAST ACTIVITY */
 
 .active-nursing-card {

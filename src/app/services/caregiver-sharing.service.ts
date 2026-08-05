@@ -5,8 +5,10 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  query,
   setDoc,
   updateDoc,
+  where,
   writeBatch
 } from 'firebase/firestore';
 import {
@@ -19,6 +21,7 @@ import { BabyProfileService } from './baby-profile.service';
 export interface CaregiverInviteDetails {
   ownerName: string;
   babyName: string;
+  profileId: string;
   expiresAt: number;
 }
 
@@ -28,6 +31,14 @@ export interface CaregiverMember {
   email: string;
   role: 'editor' | 'viewer';
   joinedAt: number;
+}
+
+export interface PendingCaregiverInvite {
+  code: string;
+  babyName: string;
+  profileId: string;
+  createdAt: number;
+  expiresAt: number;
 }
 
 export interface SharedFamily {
@@ -61,18 +72,27 @@ export class CaregiverSharingService {
     return trackerStorage.currentAccessRole;
   }
 
+  get canManageBabyProfiles(): boolean {
+    return this.currentFamilyRole === 'owner';
+  }
+
   async createInvite(): Promise<string> {
     const user = firebaseAuth.currentUser;
     if (!user) throw new Error('Sign in first.');
+    if (!this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can invite caregivers.');
+    }
 
     const code = this.createCode();
+    const profile = this.babyProfileService.activeProfile;
+    if (!profile) throw new Error('Choose a baby profile first.');
     await setDoc(
       doc(this.firestore, 'caregiverInvites', code),
       {
         ownerId: user.uid,
         ownerName: user.displayName || 'Baby’s family',
-        babyName:
-          this.babyProfileService.activeProfile?.name || 'the baby',
+        babyName: profile.name,
+        profileId: profile.id,
         createdAt: Date.now(),
         expiresAt: Date.now() + 86_400_000
       }
@@ -92,9 +112,13 @@ export class CaregiverSharingService {
     if (Number(invite.expiresAt) < Date.now()) {
       throw new Error('That invitation has expired. Ask the family for a new one.');
     }
+    if (!invite.profileId) {
+      throw new Error('This invitation is outdated. Ask the owner for a new one.');
+    }
     return {
       ownerName: invite.ownerName || 'Baby’s family',
       babyName: invite.babyName || 'the baby',
+      profileId: invite.profileId,
       expiresAt: Number(invite.expiresAt)
     };
   }
@@ -116,10 +140,12 @@ export class CaregiverSharingService {
     const invite = inviteSnapshot.data() as {
       ownerId?: string;
       ownerName?: string;
+      profileId?: string;
       expiresAt?: number;
     };
     if (
       !invite.ownerId ||
+      !invite.profileId ||
       Number(invite.expiresAt) < Date.now()
     ) {
       throw new Error('That invite code is invalid or has expired.');
@@ -184,10 +210,79 @@ export class CaregiverSharingService {
       )
     );
 
-    return snapshot.docs.map(item => ({
+    const caregivers = snapshot.docs.map(item => ({
       id: item.id,
       ...(item.data() as Omit<CaregiverMember, 'id'>)
     }));
+    await this.refreshSharedFamilyNames(caregivers);
+    return caregivers;
+  }
+
+  async listPendingInvites(): Promise<PendingCaregiverInvite[]> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) return [];
+
+    const snapshot = await getDocs(query(
+      collection(this.firestore, 'caregiverInvites'),
+      where('ownerId', '==', user.uid)
+    ));
+    const now = Date.now();
+    const expired = snapshot.docs.filter(
+      invitation => Number(invitation.data()['expiresAt']) <= now
+    );
+    if (expired.length) {
+      const batch = writeBatch(this.firestore);
+      for (const invitation of expired) batch.delete(invitation.ref);
+      await batch.commit();
+    }
+
+    return snapshot.docs
+      .filter(invitation => Number(invitation.data()['expiresAt']) > now)
+      .map(invitation => ({
+        code: invitation.id,
+        babyName: String(invitation.data()['babyName'] || 'Family account'),
+        profileId: String(invitation.data()['profileId'] || ''),
+        createdAt: Number(invitation.data()['createdAt']) || 0,
+        expiresAt: Number(invitation.data()['expiresAt'])
+      }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async revokeInvite(code: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can revoke invitations.');
+    }
+    const reference = doc(this.firestore, 'caregiverInvites', code);
+    const snapshot = await getDoc(reference);
+    if (!snapshot.exists()) return;
+    if (snapshot.data()['ownerId'] !== user.uid) {
+      throw new Error('You cannot revoke this invitation.');
+    }
+    const batch = writeBatch(this.firestore);
+    batch.delete(reference);
+    await batch.commit();
+  }
+
+  async revokeInvitesForProfile(profileId: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can revoke invitations.');
+    }
+
+    const snapshot = await getDocs(query(
+      collection(this.firestore, 'caregiverInvites'),
+      where('ownerId', '==', user.uid)
+    ));
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(this.firestore);
+    for (const invitation of snapshot.docs) {
+      if (invitation.data()['profileId'] === profileId) {
+        batch.delete(invitation.ref);
+      }
+    }
+    await batch.commit();
   }
 
   async listSharedFamilies(): Promise<SharedFamily[]> {
@@ -363,6 +458,26 @@ export class CaregiverSharingService {
     );
     await batch.commit();
     await trackerStorage.switchDataOwner(user.uid);
+  }
+
+  private async refreshSharedFamilyNames(
+    caregivers: CaregiverMember[]
+  ): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !caregivers.length) return;
+    const ownerName = user.displayName || 'Shared family';
+    await Promise.all(caregivers.map(caregiver =>
+      updateDoc(
+        doc(
+          this.firestore,
+          'userFamilyLinks',
+          caregiver.id,
+          'families',
+          user.uid
+        ),
+        { ownerName }
+      ).catch(() => undefined)
+    ));
   }
 
   private createCode(): string {

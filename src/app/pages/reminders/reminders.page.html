@@ -1,0 +1,93 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Activity reminders</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="reminders-page">
+  <main class="reminders-shell">
+    <section class="reminders-card">
+      <div class="page-heading">
+        <div>
+          <p>Gentle nudges</p>
+          <h1>Activity reminders</h1>
+        </div>
+        <span aria-hidden="true">🔔</span>
+      </div>
+      <p class="description">
+        Choose a daily time for each reminder. Notifications use the active
+        baby profile and still arrive when the app is closed.
+      </p>
+
+      <div class="reminder-list">
+        <article class="reminder-row" *ngFor="let reminder of reminderService.reminders">
+          <div class="reminder-icon" aria-hidden="true">{{ reminder.icon }}</div>
+          <div class="reminder-copy">
+            <strong>{{ reminder.label }}</strong>
+            <label>
+              <span class="sr-only">{{ reminder.label }} time</span>
+              <input type="time" [value]="reminder.time"
+                [disabled]="reminderSavingType === reminder.type"
+                (change)="updateReminder(reminder, reminder.enabled, $any($event.target).value)">
+            </label>
+          </div>
+          <ion-toggle [checked]="reminder.enabled"
+            [disabled]="reminderSavingType === reminder.type"
+            [attr.aria-label]="'Enable ' + reminder.label"
+            (ionChange)="updateReminder(reminder, $event.detail.checked)">
+          </ion-toggle>
+        </article>
+      </div>
+
+      <div class="custom-reminders" *ngIf="reminderService.customReminders.length">
+        <p class="custom-label">Custom</p>
+        <article class="reminder-row" *ngFor="let reminder of reminderService.customReminders">
+          <div class="reminder-icon" aria-hidden="true">⏰</div>
+          <div class="reminder-copy">
+            <strong>{{ reminder.label }}</strong>
+            <input type="time" [value]="reminder.time"
+              [disabled]="reminderSavingType === reminder.id"
+              (change)="updateCustomReminder(reminder, reminder.enabled, $any($event.target).value)">
+          </div>
+          <ion-toggle [checked]="reminder.enabled"
+            [disabled]="reminderSavingType === reminder.id"
+            [attr.aria-label]="'Enable ' + reminder.label"
+            (ionChange)="updateCustomReminder(reminder, $event.detail.checked)">
+          </ion-toggle>
+          <button type="button" class="delete-button"
+            [attr.aria-label]="'Delete ' + reminder.label"
+            (click)="deleteCustomReminder(reminder)">×</button>
+        </article>
+      </div>
+
+      <button type="button" class="secondary-button"
+        (click)="isAddingCustomReminder = !isAddingCustomReminder">
+        {{ isAddingCustomReminder ? 'Cancel' : '+ Add custom reminder' }}
+      </button>
+
+      <form *ngIf="isAddingCustomReminder" [formGroup]="customReminderForm"
+        (ngSubmit)="addCustomReminder()" class="custom-form">
+        <label for="custom-reminder-name">Reminder name</label>
+        <ion-item lines="none">
+          <ion-input id="custom-reminder-name" maxlength="50"
+            placeholder="Example: Vitamin D" formControlName="label"></ion-input>
+        </ion-item>
+        <label for="custom-reminder-time">Daily time</label>
+        <ion-item lines="none">
+          <ion-input id="custom-reminder-time" type="time"
+            formControlName="time"></ion-input>
+        </ion-item>
+        <ion-button expand="block" type="submit">Create reminder</ion-button>
+      </form>
+
+      <button type="button" class="test-button" (click)="sendTestReminder()">
+        Send a test reminder
+      </button>
+      <p class="success" *ngIf="reminderMessage">✓ {{ reminderMessage }}</p>
+      <p class="error" role="alert" *ngIf="reminderError">{{ reminderError }}</p>
+    </section>
+  </main>
+</ion-content>

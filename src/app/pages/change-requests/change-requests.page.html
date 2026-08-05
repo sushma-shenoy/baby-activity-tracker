@@ -1,0 +1,70 @@
+<ion-header [translucent]="true" class="app-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Caregiver requests</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="requests-page">
+  <main class="requests-shell">
+    <section class="requests-card">
+      <div class="heading">
+        <span aria-hidden="true">✅</span>
+        <div><p>Owner approval</p><h1>Pending changes</h1></div>
+      </div>
+      <p class="description">
+        Caregiver changes do not appear in the family account until you approve them.
+      </p>
+
+      <div class="empty" *ngIf="!requests.length && !errorMessage">
+        <span aria-hidden="true">✨</span>
+        <strong>No changes waiting</strong>
+        <p>New caregiver requests will appear here.</p>
+      </div>
+
+      <div class="bulk-actions" *ngIf="requests.length">
+        <label>
+          <input type="checkbox"
+            [checked]="selectedIds.size === requests.length"
+            (change)="toggleAll()">
+          <span>Select all</span>
+        </label>
+        <button type="button" [disabled]="!selectedIds.size || busyId === 'bulk'"
+          (click)="approveSelected()">
+          <ion-spinner *ngIf="busyId === 'bulk'" name="crescent"></ion-spinner>
+          <span *ngIf="busyId !== 'bulk'">Approve selected ({{ selectedIds.size }})</span>
+        </button>
+      </div>
+
+      <article class="request" [class.selected]="isSelected(request.id)" *ngFor="let request of requests">
+        <div class="request-heading">
+          <label class="request-select">
+            <input type="checkbox" [checked]="isSelected(request.id)"
+              (change)="toggleSelected(request.id)">
+            <span><strong>{{ title(request) }}</strong><small>Submitted {{ dateLabel(request) }}</small></span>
+          </label>
+          <span class="status">Pending</span>
+        </div>
+        <div class="proposed">
+          <small>Proposed change</small>
+          <p>{{ proposedValue(request) }}</p>
+          <span>Caregiver: {{ request.caregiverName }}</span>
+        </div>
+        <div class="actions">
+          <button type="button" class="reject" [disabled]="busyId === request.id"
+            (click)="reject(request)">Reject</button>
+          <button type="button" class="approve" [disabled]="busyId === request.id"
+            (click)="approve(request)">
+            <ion-spinner *ngIf="busyId === request.id" name="crescent"></ion-spinner>
+            <span *ngIf="busyId !== request.id">Approve</span>
+          </button>
+        </div>
+      </article>
+
+      <p class="success" *ngIf="message">✓ {{ message }}</p>
+      <p class="error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </section>
+  </main>
+</ion-content>
