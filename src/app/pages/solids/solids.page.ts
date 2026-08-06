@@ -11,6 +11,7 @@ import {
 } from '../../services/solid-food.service';
 import { formatTime24 } from '../../shared/date-time.utils';
 import { Subscription } from 'rxjs';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 @Component({
   selector: 'app-solids',
@@ -20,7 +21,8 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class SolidsPage implements OnDestroy {

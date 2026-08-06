@@ -31,6 +31,15 @@
             (change)="toggleAll()">
           <span>Select all</span>
         </label>
+        <button type="button" class="bulk-trash"
+          *ngIf="selectedIds.size"
+          [disabled]="busyId === 'bulk-reject'"
+          aria-label="Reject selected requests"
+          title="Reject selected"
+          (click)="rejectSelected()">
+          <ion-spinner *ngIf="busyId === 'bulk-reject'" name="crescent"></ion-spinner>
+          <span *ngIf="busyId !== 'bulk-reject'" aria-hidden="true">🗑️</span>
+        </button>
         <button type="button" [disabled]="!selectedIds.size || busyId === 'bulk'"
           (click)="approveSelected()">
           <ion-spinner *ngIf="busyId === 'bulk'" name="crescent"></ion-spinner>
@@ -50,7 +59,7 @@
         <div class="proposed">
           <small>Proposed change</small>
           <p>{{ proposedValue(request) }}</p>
-          <span>Caregiver: {{ request.caregiverName }}</span>
+          <span>Baby: {{ babyName(request) }} · Caregiver: {{ request.caregiverName }}</span>
         </div>
         <div class="actions">
           <button type="button" class="reject" [disabled]="busyId === request.id"

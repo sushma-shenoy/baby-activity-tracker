@@ -14,11 +14,12 @@ import {
   calendarDateValidator,
   trimmedRequiredValidator
 } from '../../shared/form-validators';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 @Component({
   selector: 'app-milestones',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, PendingChangesPanelComponent],
   templateUrl: './milestones.page.html',
   styleUrls: ['./milestones.page.scss']
 })

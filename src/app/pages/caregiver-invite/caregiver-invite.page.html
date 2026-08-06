@@ -15,8 +15,8 @@
         <p>Share the care</p>
         <h1>Invite a caregiver to your family account</h1>
         <span>
-          This grants access to all baby profiles and shared care records in
-          your family account. One caregiver can accept it within 24 hours.
+          This grants access to {{ babyName }} and that baby’s shared care
+          records. One caregiver can accept it within 24 hours.
         </span>
       </section>
 
@@ -72,8 +72,8 @@
       <p class="result-eyebrow">Review invitation</p>
       <h1>Join {{ joinedFamilyName }}?</h1>
       <p>
-        You’ll receive family account access to all baby profiles and shared
-        care records. This invitation currently references {{ joinedBabyName }}.
+        You’ll receive family account access to {{ joinedBabyName }} and that
+        baby’s shared care records.
       </p>
       <small>Invitation expires {{ inviteExpiryLabel }}</small>
       <button type="button" class="primary-button" (click)="confirmInvitation()">
@@ -93,8 +93,8 @@
       <p class="result-eyebrow">Invitation accepted</p>
       <h1>You now have family account access</h1>
       <p>
-        You’ve joined {{ joinedFamilyName }} as a caregiver. You can access all
-        baby profiles and shared care records in this family account.
+        You’ve joined {{ joinedFamilyName }} as a caregiver. You can access
+        {{ joinedBabyName }} and that baby’s shared care records.
       </p>
       <a routerLink="/home" class="primary-link">Go to baby’s home</a>
     </section>

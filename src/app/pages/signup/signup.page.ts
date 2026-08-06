@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { trackerStorage } from '../../firebase/tracker-storage';
 import {
   IonContent,
   IonButton,
@@ -136,8 +137,22 @@ export class SignupPage {
       return;
     }
 
+    const destination = this.getPostSignupDestination();
+    if (
+      result.user &&
+      destination.startsWith('/caregiver-invite')
+    ) {
+      try {
+        await trackerStorage.setCaregiverOnlyAccount(true);
+      } catch {
+        this.errorMessage =
+          'Your account was created, but caregiver setup could not be saved. Please try signing in again.';
+        return;
+      }
+    }
+
     // Reload so the new account starts with its Firestore-backed data store.
-    this.reloadApp(this.getPostSignupDestination());
+    this.reloadApp(destination);
   }
 
   reloadApp(destination = '/home'): void {

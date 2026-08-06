@@ -1,0 +1,27 @@
+<ion-header translucent="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button [defaultHref]="backHref"></ion-back-button></ion-buttons>
+    <ion-title>Create family account</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="create-family-page">
+  <main>
+    <p class="eyebrow">Your family account</p>
+    <h1>Tell us about your baby</h1>
+    <p>Your caregiver profiles will stay connected and can be accessed again at any time.</p>
+
+    <form [formGroup]="form" (ngSubmit)="createFamily()" novalidate>
+      <label for="family-baby-name">Baby’s name</label>
+      <input id="family-baby-name" formControlName="name" maxlength="30" autocomplete="off" placeholder="Enter baby’s name">
+
+      <label for="family-baby-dob">Date of birth</label>
+      <input id="family-baby-dob" type="date" formControlName="birthDate" [max]="maximumBirthDate">
+
+      <p class="error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <button type="submit" [disabled]="isBusy">
+        {{ isBusy ? 'Creating family account…' : 'Create family account' }}
+      </button>
+    </form>
+  </main>
+</ion-content>

@@ -40,6 +40,7 @@ import {
 } from '../../services/nursing.service';
 import { Subscription } from 'rxjs';
 import { BabyProfileService } from '../../services/baby-profile.service';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 type FeedingEntryMode = 'bottle' | 'nursing' | null;
 type NursingEntryMode = 'manual' | 'live' | null;
@@ -61,7 +62,8 @@ interface FeedingHistoryItem {
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class FeedingPage implements OnInit, OnDestroy {
@@ -123,13 +125,6 @@ export class FeedingPage implements OnInit, OnDestroy {
       AlertController,
     public readonly babyProfileService: BabyProfileService
   ) {}
-
-  async switchBaby(profileId: string): Promise<void> {
-    if (this.babyProfileService.switchProfile(profileId)) {
-      await this.babyProfileService.waitForSync();
-      window.location.reload();
-    }
-  }
 
   ngOnInit(): void {
     this.loadFeeds();
@@ -707,7 +702,8 @@ export class FeedingPage implements OnInit, OnDestroy {
       quantity >= 5 &&
       quantity <= 1000 &&
       Number.isInteger(quantity) &&
-      isValidTime24(feed.time)
+      isValidTime24(feed.time) &&
+      this.getCreatedAtFromTime(feed.time) <= Date.now() + 60_000
     );
   }
 

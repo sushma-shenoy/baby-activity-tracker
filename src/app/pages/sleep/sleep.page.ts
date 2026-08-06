@@ -38,6 +38,7 @@ import {
 import {
   formatTime24
 } from '../../shared/date-time.utils';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 @Component({
   selector: 'app-sleep',
@@ -47,7 +48,8 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class SleepPage

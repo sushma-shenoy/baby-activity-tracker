@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 import {
   IonBackButton,
   IonButtons,
@@ -16,6 +17,7 @@ import {
 } from '../../services/change-request.service';
 import { CaregiverSharingService } from '../../services/caregiver-sharing.service';
 import { trackerStorage } from '../../firebase/tracker-storage';
+import { BabyProfileService } from '../../services/baby-profile.service';
 
 @Component({
   selector: 'app-change-requests',
@@ -37,6 +39,8 @@ export class ChangeRequestsPage {
   private readonly requestService = inject(ChangeRequestService);
   private readonly sharingService = inject(CaregiverSharingService);
   private readonly router = inject(Router);
+  private readonly profiles = inject(BabyProfileService);
+  private readonly alertController = inject(AlertController);
 
   requests: CaregiverChangeRequest[] = [];
   busyId = '';
@@ -60,10 +64,7 @@ export class ChangeRequestsPage {
 
   async reject(request: CaregiverChangeRequest): Promise<void> {
     await this.run(request, 'rejected', () =>
-      Promise.all(
-        [request.id, ...(request.companionIds || [])]
-          .map(id => this.requestService.reject(id))
-      ).then(() => undefined)
+      this.requestService.rejectMany([request.id, ...(request.companionIds || [])])
     );
   }
 
@@ -105,7 +106,25 @@ export class ChangeRequestsPage {
     }
   }
 
+  async rejectSelected(): Promise<void> {
+    if (!this.selectedIds.size) return;
+    const alert = await this.alertController.create({
+      header: `Reject ${this.selectedIds.size} selected requests?`,
+      message: 'The caregiver’s proposed changes will not be added to the family record.',
+      buttons: [
+        { text: 'Keep requests', role: 'cancel' },
+        {
+          text: 'Reject selected',
+          role: 'destructive',
+          handler: () => void this.confirmRejectSelected()
+        }
+      ]
+    });
+    await alert.present();
+  }
+
   title(request: CaregiverChangeRequest): string {
+    if (request.key === 'baby_activities') return `${this.activityType(request)} change`;
     const labels: Record<string, string> = {
       baby_activities: 'Activity timeline',
       feeds: 'Feeding records',
@@ -120,6 +139,11 @@ export class ChangeRequestsPage {
       baby_daily_journal_entries: 'Journal entries'
     };
     return labels[request.key] || 'Family tracker data';
+  }
+
+  babyName(request: CaregiverChangeRequest): string {
+    if (!request.profileId) return 'Outdated request — baby not recorded';
+    return this.profiles.profiles.find(profile => profile.id === request.profileId)?.name || 'Baby';
   }
 
   summary(request: CaregiverChangeRequest): string {
@@ -195,6 +219,25 @@ export class ChangeRequestsPage {
     }
   }
 
+  private async confirmRejectSelected(): Promise<void> {
+    const selected = this.requests.filter(item => this.selectedIds.has(item.id));
+    const ids = selected.reduce<string[]>((all, item) =>
+      [...all, item.id, ...(item.companionIds || [])], []);
+    this.busyId = 'bulk-reject';
+    this.errorMessage = '';
+    this.message = '';
+    try {
+      await this.requestService.rejectMany(ids);
+      this.requests = this.requests.filter(item => !this.selectedIds.has(item.id));
+      this.selectedIds.clear();
+      this.message = `${selected.length} ${selected.length === 1 ? 'request' : 'requests'} rejected.`;
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : 'Unable to reject selected requests.';
+    } finally {
+      this.busyId = '';
+    }
+  }
+
   private describeObject(value: object): string {
     const record = value as Record<string, unknown>;
     if (
@@ -219,5 +262,14 @@ export class ChangeRequestsPage {
 
   private words(value: string): string {
     return value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ').toLowerCase();
+  }
+
+  private activityType(request: CaregiverChangeRequest): string {
+    try {
+      const after = JSON.parse(request.value) as Array<{ type?: string }>;
+      const before = new Set((JSON.parse(request.baseValue || '[]') as unknown[]).map(item => JSON.stringify(item)));
+      const item = Array.isArray(after) ? after.find(value => !before.has(JSON.stringify(value))) : null;
+      return item?.type === 'diaper' ? 'Diaper' : item?.type === 'sleep' ? 'Sleep' : item?.type === 'solids' ? 'Solid food' : 'Feeding';
+    } catch { return 'Tracker'; }
   }
 }

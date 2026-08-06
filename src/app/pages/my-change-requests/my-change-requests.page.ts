@@ -16,6 +16,7 @@ import {
   ChangeRequestService
 } from '../../services/change-request.service';
 import { CaregiverSharingService } from '../../services/caregiver-sharing.service';
+import { BabyProfileService } from '../../services/baby-profile.service';
 
 @Component({
   selector: 'app-my-change-requests',
@@ -38,6 +39,7 @@ export class MyChangeRequestsPage {
   private readonly sharingService = inject(CaregiverSharingService);
   private readonly router = inject(Router);
   private readonly alertController = inject(AlertController);
+  private readonly profiles = inject(BabyProfileService);
 
   requests: CaregiverChangeRequest[] = [];
   loading = true;
@@ -55,6 +57,7 @@ export class MyChangeRequestsPage {
   }
 
   title(request: CaregiverChangeRequest): string {
+    if (request.key === 'baby_activities') return `${this.activityType(request)} change`;
     const labels: Record<string, string> = {
       baby_activities: 'Activity timeline',
       feeds: 'Feeding records',
@@ -69,6 +72,11 @@ export class MyChangeRequestsPage {
       baby_daily_journal_entries: 'Journal entries'
     };
     return labels[request.key] || 'Family tracker data';
+  }
+
+  babyName(request: CaregiverChangeRequest): string {
+    if (!request.profileId) return 'Outdated request — baby not recorded';
+    return this.profiles.profiles.find(profile => profile.id === request.profileId)?.name || 'Baby';
   }
 
   proposedValue(request: CaregiverChangeRequest): string {
@@ -231,5 +239,14 @@ export class MyChangeRequestsPage {
 
   private words(value: string): string {
     return value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ').toLowerCase();
+  }
+
+  private activityType(request: CaregiverChangeRequest): string {
+    try {
+      const after = JSON.parse(request.value) as Array<{ type?: string }>;
+      const before = new Set((JSON.parse(request.baseValue || '[]') as unknown[]).map(item => JSON.stringify(item)));
+      const item = Array.isArray(after) ? after.find(value => !before.has(JSON.stringify(value))) : null;
+      return item?.type === 'diaper' ? 'Diaper' : item?.type === 'sleep' ? 'Sleep' : item?.type === 'solids' ? 'Solid food' : 'Feeding';
+    } catch { return 'Tracker'; }
   }
 }

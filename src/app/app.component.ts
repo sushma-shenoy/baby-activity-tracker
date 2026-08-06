@@ -4,6 +4,8 @@ import { ToastController } from '@ionic/angular';
 import {
   ActivityReminderService
 } from './services/notification';
+import { firebaseAuth } from './firebase/firebase.config';
+import { trackerStorage } from './firebase/tracker-storage';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -17,6 +19,9 @@ export class AppComponent implements OnDestroy {
   };
   private readonly accessRemovedListener = () => {
     void this.showAccessRemovedMessage();
+  };
+  private readonly assignmentChangedListener = () => {
+    void this.showAssignmentChangedMessage();
   };
   private readonly writeFailedListener = () => {
     void this.showPermissionMessage(
@@ -43,6 +48,10 @@ export class AppComponent implements OnDestroy {
       this.accessRemovedListener
     );
     window.addEventListener(
+      'baby-tracker:caregiver-assignment-changed',
+      this.assignmentChangedListener
+    );
+    window.addEventListener(
       'baby-tracker:write-failed',
       this.writeFailedListener
     );
@@ -50,6 +59,16 @@ export class AppComponent implements OnDestroy {
       'baby-tracker:change-proposed',
       this.changeProposedListener
     );
+    const user = firebaseAuth.currentUser;
+    if (
+      user &&
+      trackerStorage.isCaregiverOnlyAccount &&
+      !trackerStorage.isUsingSharedFamily &&
+      window.location.pathname !== '/caregiver-no-access' &&
+      !window.location.pathname.startsWith('/caregiver-invite')
+    ) {
+      queueMicrotask(() => window.location.assign('/caregiver-no-access'));
+    }
   }
 
   ngOnDestroy(): void {
@@ -60,6 +79,10 @@ export class AppComponent implements OnDestroy {
     window.removeEventListener(
       'baby-tracker:family-access-removed',
       this.accessRemovedListener
+    );
+    window.removeEventListener(
+      'baby-tracker:caregiver-assignment-changed',
+      this.assignmentChangedListener
     );
     window.removeEventListener(
       'baby-tracker:write-failed',
@@ -91,6 +114,19 @@ export class AppComponent implements OnDestroy {
       duration: 4500,
       position: 'bottom',
       color: 'warning',
+      buttons: [{ text: 'OK', role: 'cancel' }]
+    });
+    await this.permissionToast.present();
+    window.setTimeout(() => window.location.assign('/caregiver-no-access'), 250);
+  }
+
+  private async showAssignmentChangedMessage(): Promise<void> {
+    await this.permissionToast?.dismiss();
+    this.permissionToast = await this.toastController.create({
+      message: 'Your assigned baby was changed by the family owner. The new baby profile is now open.',
+      duration: 4500,
+      position: 'bottom',
+      color: 'primary',
       buttons: [{ text: 'OK', role: 'cancel' }]
     });
     await this.permissionToast.present();

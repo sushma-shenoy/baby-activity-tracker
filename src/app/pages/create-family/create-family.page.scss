@@ -1,0 +1,21 @@
+.create-family-page {
+  --background: #f8f4fb;
+}
+
+main {
+  width: min(520px, calc(100% - 32px));
+  margin: 40px auto;
+  padding: 28px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 14px 40px rgba(73, 57, 102, 0.1);
+}
+
+.eyebrow { color: #765d96; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+h1 { margin: 8px 0; color: #352746; }
+form { display: grid; gap: 10px; margin-top: 28px; }
+label { margin-top: 8px; color: #493966; font-weight: 700; }
+input { min-height: 48px; padding: 0 14px; border: 1px solid #d9cfe3; border-radius: 12px; font: inherit; }
+button { min-height: 50px; margin-top: 14px; border: 0; border-radius: 14px; background: #765d96; color: #fff; font: inherit; font-weight: 700; }
+button:disabled { opacity: .6; }
+.error { color: #a8304d; }

@@ -31,6 +31,7 @@ import {
   notFutureDateTimeValidator,
   validDateTimeValidator
 } from '../../shared/form-validators';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 Chart.register(...registerables);
 
@@ -39,7 +40,7 @@ Chart.register(...registerables);
   templateUrl: './temperature.page.html',
   styleUrls: ['./temperature.page.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule]
+  imports: [CommonModule, ReactiveFormsModule, IonicModule, PendingChangesPanelComponent]
 })
 export class TemperaturePage
   implements AfterViewInit, OnDestroy {

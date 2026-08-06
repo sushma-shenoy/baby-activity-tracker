@@ -31,6 +31,7 @@ import {
 import {
   PreferencesService
 } from '../../services/preferences.service';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 Chart.register(...registerables);
 
@@ -42,7 +43,8 @@ Chart.register(...registerables);
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class GrowthPage

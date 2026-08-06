@@ -22,6 +22,7 @@ import {
   trimmedRequiredValidator,
   validDateTimeValidator
 } from '../../shared/form-validators';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 @Component({
   selector: 'app-medicine',
@@ -31,7 +32,8 @@ import {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class MedicinePage implements OnDestroy {

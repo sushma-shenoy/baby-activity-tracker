@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import {
   Bytes,
+  collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   getFirestore,
   serverTimestamp,
-  setDoc
+  setDoc,
+  query,
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import { firebaseApp, firebaseAuth } from '../firebase/firebase.config';
 import { trackerStorage } from '../firebase/tracker-storage';
@@ -48,6 +53,7 @@ export class PhotoStorageService {
         ),
         contentType: image.type,
         category,
+        profileId: localStorage.getItem('baby_tracker_device_active_profile_id') || '',
         updatedAt: serverTimestamp()
       }
     );
@@ -131,6 +137,21 @@ export class PhotoStorageService {
       )
     );
     this.clearCachedPhoto(photoId);
+  }
+
+  async deletePhotosForProfile(profileId: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !profileId) return;
+    const snapshot = await getDocs(query(
+      collection(this.firestore, 'users', trackerStorage.currentDataOwnerId, 'photos'),
+      where('profileId', '==', profileId)
+    ));
+    for (let index = 0; index < snapshot.docs.length; index += 400) {
+      const batch = writeBatch(this.firestore);
+      snapshot.docs.slice(index, index + 400).forEach(item => batch.delete(item.ref));
+      await batch.commit();
+    }
+    snapshot.docs.forEach(item => this.clearCachedPhoto(item.id));
   }
 
   private async compressPhoto(

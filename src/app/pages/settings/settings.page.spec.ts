@@ -79,4 +79,14 @@ describe('SettingsPage', () => {
     expect(component.newProfileBirthDateError)
       .toBe('Enter a valid calendar date.');
   });
+
+  it('blocks deleting the final baby before cleanup begins', async () => {
+    const onlyProfile = component.profiles[0];
+
+    await component.deleteProfile(onlyProfile);
+
+    expect(component.errorMessage).toContain(
+      'Keep at least one baby in your family account.'
+    );
+  });
 });

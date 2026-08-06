@@ -49,6 +49,7 @@ class TrackerStorage {
   private userId = '';
   private dataOwnerId = '';
   private accessRole: 'owner' | 'editor' | 'viewer' = 'owner';
+  private caregiverProfileId = '';
   private accessSubscription?: Unsubscribe;
   private dataSubscription?: Unsubscribe;
   private testMode = Boolean(
@@ -98,7 +99,7 @@ class TrackerStorage {
         value,
         updatedAt: serverTimestamp()
       }
-    ).catch(error => {
+    ).then(() => this.syncSharedProfileForKey(key)).catch(error => {
       if (this.values.get(key) === value) {
         if (previousValue === undefined) this.values.delete(key);
         else this.values.set(key, previousValue);
@@ -128,14 +129,16 @@ class TrackerStorage {
     this.values.delete(key);
     if (!this.firestore || !this.userId) return;
 
-    void deleteDoc(this.documentReference(key)).catch(error => {
+    void deleteDoc(this.documentReference(key))
+      .then(() => this.syncSharedProfileForKey(key))
+      .catch(error => {
       if (!this.values.has(key) && previousValue !== undefined) {
         this.values.set(key, previousValue);
         this.dispatchDataChanged(key);
       }
       this.dispatchWriteFailed(key, error);
       console.error(`Unable to delete tracker data "${key}" from Firestore:`, error);
-    });
+      });
   }
 
   clear(): void {
@@ -177,6 +180,7 @@ class TrackerStorage {
     if (this.userId === userId && this.values.size > 0) return;
 
     this.userId = userId;
+    await this.syncCaregiverOnlyAccount(userId);
     const preferredOwner = localStorage.getItem(
       this.ownerPreferenceKey(userId)
     );
@@ -215,6 +219,58 @@ class TrackerStorage {
 
   get currentAccessRole(): 'owner' | 'editor' | 'viewer' {
     return this.accessRole;
+  }
+
+  get currentCaregiverProfileId(): string { return this.caregiverProfileId; }
+
+  get isCaregiverOnlyAccount(): boolean {
+    return Boolean(
+      this.userId &&
+      localStorage.getItem(this.caregiverOnlyKey(this.userId)) === 'true'
+    );
+  }
+
+  get pendingOwnFamilyBaby(): { name: string; birthDate: string } | null {
+    if (!this.userId) return null;
+    try {
+      const value = JSON.parse(
+        localStorage.getItem(`baby_new_family:${this.userId}`) || 'null'
+      ) as { name?: unknown; birthDate?: unknown } | null;
+      return value && typeof value.name === 'string' &&
+        typeof value.birthDate === 'string'
+        ? { name: value.name, birthDate: value.birthDate }
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  setPendingOwnFamilyBaby(baby: { name: string; birthDate: string }): void {
+    if (!this.userId) throw new Error('Sign in first.');
+    localStorage.setItem(
+      `baby_new_family:${this.userId}`,
+      JSON.stringify(baby)
+    );
+  }
+
+  clearPendingOwnFamilyBaby(): void {
+    if (this.userId) {
+      localStorage.removeItem(`baby_new_family:${this.userId}`);
+    }
+  }
+
+  async setCaregiverOnlyAccount(caregiverOnly: boolean): Promise<void> {
+    if (!this.userId) throw new Error('Sign in first.');
+    if (caregiverOnly) {
+      localStorage.setItem(this.caregiverOnlyKey(this.userId), 'true');
+    } else {
+      localStorage.removeItem(this.caregiverOnlyKey(this.userId));
+    }
+    if (!this.firestore || this.testMode) return;
+    await setDoc(
+      doc(this.firestore, 'users', this.userId, 'accountSettings', 'profile'),
+      { caregiverOnly, updatedAt: serverTimestamp() }
+    );
   }
 
   requireEditAccess(): void {
@@ -271,11 +327,10 @@ class TrackerStorage {
 
     this.dataOwnerId = ownerId;
     this.syncViewerMode();
+    const previousKeys = new Set(this.values.keys());
     this.values.clear();
 
-    const snapshot = await getDocs(
-      collection(this.firestore, 'users', ownerId, 'trackerData')
-    );
+    const snapshot = await getDocs(this.ownerDataCollection(ownerId));
     for (const item of snapshot.docs) {
       const data = item.data() as Partial<TrackerDocument>;
       if (
@@ -283,7 +338,17 @@ class TrackerStorage {
         typeof data.value === 'string'
       ) {
         this.values.set(data.key, data.value);
+        previousKeys.add(data.key);
       }
+    }
+
+    if (
+      ownerId !== this.userId &&
+      !snapshot.empty &&
+      this.caregiverProfileId &&
+      !this.profileExists(this.caregiverProfileId)
+    ) {
+      throw new Error('The shared baby profile no longer exists.');
     }
 
     if (
@@ -295,7 +360,12 @@ class TrackerStorage {
       this.removeLegacyBrowserData();
     }
 
+    if (ownerId === this.userId) {
+      await this.syncAllSharedProfiles();
+    }
+
     this.subscribeToOwnerData(ownerId);
+    for (const key of previousKeys) this.dispatchDataChanged(key);
   }
 
   clearUser(): void {
@@ -307,6 +377,7 @@ class TrackerStorage {
     this.userId = '';
     this.dataOwnerId = '';
     this.accessRole = 'owner';
+    this.caregiverProfileId = '';
     document.body.classList.remove('viewer-mode');
     document.body.classList.remove('caregiver-mode');
     this.values.clear();
@@ -351,6 +422,15 @@ class TrackerStorage {
     }
   }
 
+  private profileExists(profileId: string): boolean {
+    try {
+      const profiles = JSON.parse(this.values.get('baby_profiles_v2') || '[]') as Array<{ id?: unknown }>;
+      return profiles.some(profile => profile?.id === profileId);
+    } catch {
+      return false;
+    }
+  }
+
   private isTrackerKey(key: string): boolean {
     return LEGACY_TRACKER_KEYS.has(key) ||
       key.startsWith('baby_profile_data:');
@@ -366,8 +446,154 @@ class TrackerStorage {
     );
   }
 
+  private ownerDataCollection(ownerId: string) {
+    return ownerId !== this.userId && this.caregiverProfileId
+      ? collection(
+          this.firestore!,
+          'users', ownerId,
+          'sharedProfiles', this.caregiverProfileId,
+          'trackerData'
+        )
+      : collection(this.firestore!, 'users', ownerId, 'trackerData');
+  }
+
+  private sharedProfileDocument(profileId: string, key: string) {
+    return doc(
+      this.firestore!,
+      'users', this.userId,
+      'sharedProfiles', profileId,
+      'trackerData', encodeURIComponent(key)
+    );
+  }
+
+  private async syncSharedProfileForKey(key: string): Promise<void> {
+    if (!this.firestore || !this.userId || this.isUsingSharedFamily) return;
+    if (key === 'baby_profiles_v2' || key === 'active_baby_profile_id') {
+      await this.syncAllSharedProfiles();
+      return;
+    }
+
+    const scoped = key.match(/^baby_profile_data:([^:]+):(.+)$/);
+    const profileId = scoped?.[1] ||
+      this.values.get('active_baby_profile_id') || '';
+    const sharedKey = scoped?.[2] || key;
+    if (!profileId || !this.isShareableKey(sharedKey)) return;
+    const value = this.values.get(key);
+    const reference = this.sharedProfileDocument(profileId, sharedKey);
+    if (value === undefined) await deleteDoc(reference);
+    else await setDoc(reference, {
+      key: sharedKey,
+      value,
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  private async syncAllSharedProfiles(): Promise<void> {
+    if (!this.firestore || !this.userId || this.isUsingSharedFamily) return;
+    let profiles: Array<{ id?: unknown }> = [];
+    try {
+      profiles = JSON.parse(this.values.get('baby_profiles_v2') || '[]');
+    } catch {
+      return;
+    }
+    const activeProfileId = this.values.get('active_baby_profile_id') || '';
+    const profileIds = profiles
+      .map(profile => typeof profile.id === 'string' ? profile.id : '')
+      .filter(Boolean);
+    const defaultProfileId = profileIds.includes(activeProfileId)
+      ? activeProfileId
+      : profileIds[0] || '';
+
+    // Older caregiver records predate baby-specific access. Repair them on
+    // the owner's next app load so those caregivers can authenticate against
+    // the assigned-baby security rules without being re-added.
+    if (defaultProfileId) {
+      const caregivers = await getDocs(collection(
+        this.firestore, 'users', this.userId, 'caregivers'
+      ));
+      for (const caregiver of caregivers.docs) {
+        if (typeof caregiver.data()['profileId'] !== 'string' ||
+            !caregiver.data()['profileId']) {
+          await setDoc(caregiver.ref, { profileId: defaultProfileId }, {
+            merge: true
+          });
+        }
+      }
+    }
+    const sharedKeys = new Set<string>();
+    for (const key of this.values.keys()) {
+      const scoped = key.match(/^baby_profile_data:[^:]+:(.+)$/);
+      const sharedKey = scoped?.[1] || key;
+      if (this.isShareableKey(sharedKey)) sharedKeys.add(sharedKey);
+    }
+
+    for (const profile of profiles) {
+      if (typeof profile.id !== 'string') continue;
+      const profileId = profile.id;
+      await setDoc(this.sharedProfileDocument(profileId, 'baby_profiles_v2'), {
+        key: 'baby_profiles_v2',
+        value: JSON.stringify([profile]),
+        updatedAt: serverTimestamp()
+      });
+      await setDoc(this.sharedProfileDocument(profileId, 'active_baby_profile_id'), {
+        key: 'active_baby_profile_id',
+        value: profileId,
+        updatedAt: serverTimestamp()
+      });
+      for (const key of sharedKeys) {
+        const sourceKey = profileId === activeProfileId
+          ? key
+          : `baby_profile_data:${profileId}:${key}`;
+        const value = this.values.get(sourceKey);
+        const reference = this.sharedProfileDocument(profileId, key);
+        if (value === undefined) await deleteDoc(reference);
+        else await setDoc(reference, {
+          key,
+          value,
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+  }
+
+  private isShareableKey(key: string): boolean {
+    return key !== 'baby_profiles_v2' &&
+      key !== 'active_baby_profile_id' &&
+      !key.startsWith('baby_profile_data:') &&
+      this.isTrackerKey(key);
+  }
+
   private ownerPreferenceKey(userId: string): string {
     return `baby_shared_owner:${userId}`;
+  }
+
+  private caregiverOnlyKey(userId: string): string {
+    return `baby_caregiver_only:${userId}`;
+  }
+
+  private async syncCaregiverOnlyAccount(userId: string): Promise<void> {
+    if (!this.firestore) return;
+    const key = this.caregiverOnlyKey(userId);
+    const reference = doc(
+      this.firestore, 'users', userId, 'accountSettings', 'profile'
+    );
+    const snapshot = await getDoc(reference);
+    if (snapshot.exists()) {
+      if (snapshot.data()['caregiverOnly'] === true) {
+        localStorage.setItem(key, 'true');
+      } else {
+        localStorage.removeItem(key);
+      }
+      return;
+    }
+
+    // Migrate the earlier device-only marker when this device has it.
+    if (localStorage.getItem(key) === 'true') {
+      await setDoc(reference, {
+        caregiverOnly: true,
+        updatedAt: serverTimestamp()
+      });
+    }
   }
 
   private async loadAccessRole(ownerId: string): Promise<void> {
@@ -376,6 +602,7 @@ class TrackerStorage {
 
     if (!this.firestore || ownerId === this.userId) {
       this.accessRole = 'owner';
+      this.caregiverProfileId = '';
       this.syncViewerMode();
       return;
     }
@@ -394,6 +621,7 @@ class TrackerStorage {
     this.accessRole = membership.data()['role'] === 'viewer'
       ? 'viewer'
       : 'editor';
+    this.caregiverProfileId = String(membership.data()['profileId'] || '');
     this.syncViewerMode();
 
     this.accessSubscription = onSnapshot(
@@ -413,10 +641,37 @@ class TrackerStorage {
           }
           return;
         }
-        this.accessRole = snapshot.data()['role'] === 'viewer'
+        const nextRole = snapshot.data()['role'] === 'viewer'
           ? 'viewer'
           : 'editor';
+        const nextProfileId = String(snapshot.data()['profileId'] || '');
+        const profileChanged = Boolean(
+          this.caregiverProfileId &&
+          nextProfileId &&
+          this.caregiverProfileId !== nextProfileId
+        );
+        this.accessRole = nextRole;
+        this.caregiverProfileId = nextProfileId;
         this.syncViewerMode();
+        if (profileChanged && this.currentDataOwnerId === ownerId) {
+          // The data listener still points at the previous baby's projection.
+          // Reload it immediately so cached information is replaced too.
+          this.values.clear();
+          void this.loadOwnerData(ownerId).then(() => {
+            window.dispatchEvent(
+              new CustomEvent('baby-tracker:caregiver-assignment-changed')
+            );
+          }).catch(error => {
+            console.error('Unable to load the newly assigned baby:', error);
+            window.dispatchEvent(
+              new CustomEvent('baby-tracker:permission-denied', {
+                detail: {
+                  message: 'Your baby assignment changed, but the new profile could not be loaded. Check your connection and reopen the app.'
+                }
+              })
+            );
+          });
+        }
       },
       error => console.error('Unable to refresh caregiver permission:', error)
     );
@@ -472,6 +727,10 @@ class TrackerStorage {
     if (!this.firestore || !user || !this.currentDataOwnerId) return;
     const requestId = globalThis.crypto?.randomUUID?.() ??
       `request-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const profileId = this.currentCaregiverProfileId || localStorage.getItem(
+      'baby_tracker_device_active_profile_id'
+    ) || '';
+    const changeGroupId = this.changeGroupId(key, value, requestId);
     void setDoc(
       doc(
         this.firestore,
@@ -487,6 +746,8 @@ class TrackerStorage {
         operation,
         caregiverId: user.uid,
         caregiverName: user.displayName || user.email || 'Caregiver',
+        profileId,
+        changeGroupId,
         createdAt: Date.now()
       }
     ).then(() => {
@@ -497,11 +758,30 @@ class TrackerStorage {
     });
   }
 
+  private changeGroupId(key: string, value: string, fallback: string): string {
+    try {
+      const before = JSON.parse(this.getItem(key) || '[]') as unknown;
+      const after = JSON.parse(value || '[]') as unknown;
+      if (!Array.isArray(before) || !Array.isArray(after)) return fallback;
+      const beforeById = new Map(before
+        .filter(item => item && typeof item === 'object' && 'id' in item)
+        .map(item => [String((item as { id: unknown }).id), JSON.stringify(item)]));
+      const afterById = new Map(after
+        .filter(item => item && typeof item === 'object' && 'id' in item)
+        .map(item => [String((item as { id: unknown }).id), JSON.stringify(item)]));
+      const changedId = [...new Set([...beforeById.keys(), ...afterById.keys()])]
+        .find(id => beforeById.get(id) !== afterById.get(id));
+      return changedId || fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
   private subscribeToOwnerData(ownerId: string): void {
     if (!this.firestore) return;
     this.dataSubscription?.();
     this.dataSubscription = onSnapshot(
-      collection(this.firestore, 'users', ownerId, 'trackerData'),
+      this.ownerDataCollection(ownerId),
       snapshot => {
         if (this.currentDataOwnerId !== ownerId) return;
 

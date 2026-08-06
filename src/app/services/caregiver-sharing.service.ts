@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import {
   collection,
+  DocumentReference,
   doc,
   getDoc,
   getDocs,
   getFirestore,
   query,
+  runTransaction,
   setDoc,
   updateDoc,
   where,
@@ -30,6 +32,8 @@ export interface CaregiverMember {
   displayName: string;
   email: string;
   role: 'editor' | 'viewer';
+  profileId: string;
+  assignedBabyName: string;
   joinedAt: number;
 }
 
@@ -74,6 +78,11 @@ export class CaregiverSharingService {
 
   get canManageBabyProfiles(): boolean {
     return this.currentFamilyRole === 'owner';
+  }
+
+  get hasPrivateFamily(): boolean {
+    return Boolean(firebaseAuth.currentUser) &&
+      !trackerStorage.isCaregiverOnlyAccount;
   }
 
   async createInvite(): Promise<string> {
@@ -154,46 +163,57 @@ export class CaregiverSharingService {
       throw new Error('You already own this family.');
     }
 
+    // Preserve a real private family when an existing owner also becomes a
+    // caregiver. Invite-first accounts have no profiles and stay
+    // caregiver-only until they explicitly create their own family.
+    const hadPrivateFamily = !trackerStorage.isCaregiverOnlyAccount;
+
+    const ownerId = invite.ownerId;
     const joinedAt = Date.now();
-    const batch = writeBatch(this.firestore);
-    batch.set(
-      doc(
+    await runTransaction(this.firestore, async transaction => {
+      const freshInvite = await transaction.get(inviteReference);
+      if (!freshInvite.exists()) {
+        throw new Error('That invite code was already used or revoked.');
+      }
+      const freshData = freshInvite.data();
+      if (
+        freshData['ownerId'] !== ownerId ||
+        Number(freshData['expiresAt']) < Date.now()
+      ) {
+        throw new Error('That invite code is invalid or has expired.');
+      }
+      transaction.set(doc(
         this.firestore,
         'users',
-        invite.ownerId,
+        ownerId,
         'caregivers',
         user.uid
-      ),
-      {
+      ), {
         inviteCode: code,
         displayName: user.displayName || 'Caregiver',
         email: user.email || '',
         role: 'editor',
+        profileId: invite.profileId,
         joinedAt
-      }
-    );
-    batch.set(
-      doc(
+      });
+      transaction.set(doc(
         this.firestore,
         'userFamilyLinks',
         user.uid,
         'families',
-        invite.ownerId
-      ),
-      {
+        ownerId
+      ), {
         inviteCode: code,
-        ownerId: invite.ownerId,
+        ownerId,
         ownerName:
           invite.ownerName || 'Shared family',
         joinedAt
-      }
-    );
-    // Invite codes are single-use. Keeping this deletion in the same batch
-    // prevents a membership from being created without consuming its code.
-    batch.delete(inviteReference);
-    await batch.commit();
+      });
+      transaction.delete(inviteReference);
+    });
 
-    await trackerStorage.switchDataOwner(invite.ownerId);
+    await trackerStorage.switchDataOwner(ownerId);
+    await trackerStorage.setCaregiverOnlyAccount(!hadPrivateFamily);
     return invite.ownerName || 'the shared family';
   }
 
@@ -210,10 +230,22 @@ export class CaregiverSharingService {
       )
     );
 
-    const caregivers = snapshot.docs.map(item => ({
-      id: item.id,
-      ...(item.data() as Omit<CaregiverMember, 'id'>)
-    }));
+    const babyNames = new Map(
+      this.babyProfileService.profiles.map(profile => [profile.id, profile.name])
+    );
+    const caregivers = snapshot.docs.map(item => {
+      const data = item.data();
+      const profileId = String(data['profileId'] || '');
+      return {
+        id: item.id,
+        displayName: String(data['displayName'] || 'Caregiver'),
+        email: String(data['email'] || ''),
+        role: data['role'] === 'viewer' ? 'viewer' as const : 'editor' as const,
+        profileId,
+        assignedBabyName: babyNames.get(profileId) || 'Baby profile unavailable',
+        joinedAt: Number(data['joinedAt']) || 0
+      };
+    });
     await this.refreshSharedFamilyNames(caregivers);
     return caregivers;
   }
@@ -285,6 +317,36 @@ export class CaregiverSharingService {
     await batch.commit();
   }
 
+  async revokeRequestsForProfile(profileId: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can remove pending requests.');
+    }
+    const snapshot = await getDocs(collection(
+      this.firestore, 'users', user.uid, 'changeRequests'
+    ));
+    const references = snapshot.docs
+      .filter(item => !item.data()['profileId'] || item.data()['profileId'] === profileId)
+      .map(item => item.ref);
+    await this.deleteInChunks(references);
+  }
+
+  async removeCaregiversForProfile(profileId: string): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can remove baby access.');
+    }
+    const snapshot = await getDocs(collection(
+      this.firestore, 'users', user.uid, 'caregivers'
+    ));
+    const caregiverIds = snapshot.docs
+      .filter(item => item.data()['profileId'] === profileId)
+      .map(item => item.id);
+    for (const caregiverId of caregiverIds) {
+      await this.removeCaregiver(caregiverId);
+    }
+  }
+
   async listSharedFamilies(): Promise<SharedFamily[]> {
     const user = firebaseAuth.currentUser;
     if (!user) return [];
@@ -300,7 +362,24 @@ export class CaregiverSharingService {
       )
     );
 
-    return snapshot.docs.map(item => {
+    const validItems: typeof snapshot.docs = [];
+    const staleReferences: DocumentReference[] = [];
+    for (const item of snapshot.docs) {
+      const membershipReference = doc(
+        this.firestore, 'users', item.id, 'caregivers', user.uid
+      );
+      const membership = await getDoc(membershipReference);
+      // The membership is the authority for access. Shared baby data may be
+      // temporarily empty while an owner upgrade/backfill is in progress;
+      // never revoke a valid membership because its projection is delayed.
+      if (membership.exists()) validItems.push(item);
+      else {
+        staleReferences.push(item.ref);
+      }
+    }
+    await this.deleteInChunks(staleReferences);
+
+    return validItems.map(item => {
       const data = item.data() as Omit<
         SharedFamily,
         'ownerId'
@@ -392,9 +471,27 @@ export class CaregiverSharingService {
     await trackerStorage.switchDataOwner(user.uid);
   }
 
+  async createPrivateFamily(baby: { name: string; birthDate: string }): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user) throw new Error('Sign in first.');
+
+    trackerStorage.setPendingOwnFamilyBaby(baby);
+    await trackerStorage.switchDataOwner(user.uid);
+    await trackerStorage.setCaregiverOnlyAccount(false);
+  }
+
   async removeCaregiver(caregiverId: string): Promise<void> {
     const user = firebaseAuth.currentUser;
-    if (!user) return;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can remove a caregiver.');
+    }
+    const pending = await this.requestsByCaregiver(user.uid, caregiverId);
+    // Membership + reverse link + request deletes must fit one atomic batch.
+    if (pending.size > 498) {
+      throw new Error(
+        'This caregiver has too many pending requests. Reject those requests before removing the caregiver.'
+      );
+    }
     const batch = writeBatch(this.firestore);
     batch.delete(
       doc(
@@ -414,6 +511,7 @@ export class CaregiverSharingService {
         user.uid
       )
     );
+    pending.docs.forEach(item => batch.delete(item.ref));
     await batch.commit();
   }
 
@@ -426,10 +524,58 @@ export class CaregiverSharingService {
     if (!['editor', 'viewer'].includes(role)) {
       throw new Error('Choose a valid caregiver role.');
     }
-    await updateDoc(
+    if (role === 'editor') {
+      await updateDoc(
+        doc(this.firestore, 'users', user.uid, 'caregivers', caregiverId),
+        { role }
+      );
+      return;
+    }
+
+    const pending = await this.requestsByCaregiver(user.uid, caregiverId);
+    if (pending.size > 499) {
+      throw new Error(
+        'This caregiver has too many pending requests. Reject those requests before changing them to Viewer.'
+      );
+    }
+    const batch = writeBatch(this.firestore);
+    batch.update(
       doc(this.firestore, 'users', user.uid, 'caregivers', caregiverId),
       { role }
     );
+    pending.docs.forEach(item => batch.delete(item.ref));
+    await batch.commit();
+  }
+
+  async setCaregiverProfile(
+    caregiverId: string,
+    profileId: string
+  ): Promise<void> {
+    const user = firebaseAuth.currentUser;
+    if (!user || !this.canManageBabyProfiles) {
+      throw new Error('Only the family owner can change baby access.');
+    }
+    if (!this.babyProfileService.profiles.some(profile => profile.id === profileId)) {
+      throw new Error('That baby profile no longer exists.');
+    }
+
+    const pending = await this.requestsByCaregiver(user.uid, caregiverId);
+    // One batch can contain the membership update plus at most 499 deletes.
+    // Refusing an unusually large reassignment is safer than partially
+    // changing access and leaving some old-baby requests behind.
+    if (pending.size > 499) {
+      throw new Error(
+        'This caregiver has too many pending requests. Reject those requests before changing their assigned baby.'
+      );
+    }
+
+    const batch = writeBatch(this.firestore);
+    batch.update(
+      doc(this.firestore, 'users', user.uid, 'caregivers', caregiverId),
+      { profileId }
+    );
+    pending.docs.forEach(item => batch.delete(item.ref));
+    await batch.commit();
   }
 
   async leaveSharedFamily(): Promise<void> {
@@ -457,6 +603,7 @@ export class CaregiverSharingService {
       )
     );
     await batch.commit();
+    await this.deleteRequestsByCaregiver(ownerId, user.uid);
     await trackerStorage.switchDataOwner(user.uid);
   }
 
@@ -487,5 +634,25 @@ export class CaregiverSharingService {
       .map(value => value.toString(16).padStart(2, '0'))
       .join('')
       .toUpperCase();
+  }
+
+  private async deleteRequestsByCaregiver(ownerId: string, caregiverId: string): Promise<void> {
+    const pending = await this.requestsByCaregiver(ownerId, caregiverId);
+    await this.deleteInChunks(pending.docs.map(item => item.ref));
+  }
+
+  private requestsByCaregiver(ownerId: string, caregiverId: string) {
+    return getDocs(query(
+      collection(this.firestore, 'users', ownerId, 'changeRequests'),
+      where('caregiverId', '==', caregiverId)
+    ));
+  }
+
+  private async deleteInChunks(references: DocumentReference[]): Promise<void> {
+    for (let index = 0; index < references.length; index += 400) {
+      const batch = writeBatch(this.firestore);
+      references.slice(index, index + 400).forEach(reference => batch.delete(reference));
+      await batch.commit();
+    }
   }
 }

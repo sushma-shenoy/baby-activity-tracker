@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import {
   IonBackButton,
@@ -17,6 +17,7 @@ import {
   PendingCaregiverInvite,
   SharedFamily
 } from '../../services/caregiver-sharing.service';
+import { BabyProfileService } from '../../services/baby-profile.service';
 
 @Component({
   selector: 'app-family-settings',
@@ -37,7 +38,9 @@ import {
 })
 export class FamilySettingsPage {
   readonly caregiverSharingService = inject(CaregiverSharingService);
+  readonly babyProfileService = inject(BabyProfileService);
   private readonly alertController = inject(AlertController);
+  private readonly router = inject(Router);
 
   caregivers: CaregiverMember[] = [];
   pendingInvites: PendingCaregiverInvite[] = [];
@@ -75,13 +78,50 @@ export class FamilySettingsPage {
     const alert = await this.alertController.create({
       header: `Remove ${member.displayName}?`,
       message:
-        'They will immediately lose access to every baby profile and shared care record in this family account.',
+        'They will immediately lose access to their assigned baby and that baby’s shared care records in this family account.',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Remove caregiver',
           role: 'destructive',
           handler: () => void this.confirmRemoveCaregiver(member)
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async changeAssignedBaby(
+    member: CaregiverMember,
+    event: Event
+  ): Promise<void> {
+    const select = event.target as HTMLSelectElement;
+    const profileId = select.value;
+    if (!profileId || profileId === member.profileId) return;
+    const baby = this.babyProfileService.profiles.find(
+      profile => profile.id === profileId
+    );
+    if (!baby) {
+      select.value = member.profileId;
+      this.errorMessage = 'That baby profile no longer exists.';
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: `Assign ${member.displayName} to ${baby.name}?`,
+      message:
+        'Access to the previous baby will end immediately. Their pending requests for the previous baby will be rejected.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => { select.value = member.profileId; }
+        },
+        {
+          text: 'Change assigned baby',
+          handler: () => void this.confirmAssignedBabyChange(
+            member, profileId, baby.name, select
+          )
         }
       ]
     });
@@ -115,6 +155,12 @@ export class FamilySettingsPage {
 
   async switchToPrivateProfile(): Promise<void> {
     await this.runAndReload(() => this.caregiverSharingService.switchToPrivateProfile());
+  }
+
+  async createPrivateFamily(): Promise<void> {
+    await this.router.navigate(['/create-family'], {
+      queryParams: { returnUrl: '/settings/family' }
+    });
   }
 
   async switchToFamily(family: SharedFamily): Promise<void> {
@@ -162,6 +208,30 @@ export class FamilySettingsPage {
       await this.load();
       this.message = `${member.displayName} was removed.`;
     } catch (error) {
+      this.errorMessage = this.errorText(error);
+    } finally {
+      this.isBusy = false;
+    }
+  }
+
+  private async confirmAssignedBabyChange(
+    member: CaregiverMember,
+    profileId: string,
+    babyName: string,
+    select: HTMLSelectElement
+  ): Promise<void> {
+    this.isBusy = true;
+    this.errorMessage = '';
+    this.message = '';
+    try {
+      await this.caregiverSharingService.setCaregiverProfile(
+        member.id, profileId
+      );
+      member.profileId = profileId;
+      member.assignedBabyName = babyName;
+      this.message = `${member.displayName} can now access ${babyName}.`;
+    } catch (error) {
+      select.value = member.profileId;
       this.errorMessage = this.errorText(error);
     } finally {
       this.isBusy = false;

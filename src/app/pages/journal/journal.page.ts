@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { DailyJournalService, JournalEntry, JournalMood } from '../../services/daily-journal.service';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 @Component({
   selector: 'app-journal',
   templateUrl: './journal.page.html',
   styleUrls: ['./journal.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, PendingChangesPanelComponent]
 })
 export class JournalPage implements OnDestroy {
   readonly moods: Array<{ value: JournalMood; label: string; icon: string }> = [

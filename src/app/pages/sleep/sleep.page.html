@@ -15,6 +15,11 @@
 
   <main class="sleep-page-content">
 
+    <app-pending-changes-panel
+      [keys]="['sleep_state', 'baby_activities']"
+      [activityTypes]="['sleep']">
+    </app-pending-changes-panel>
+
     <!-- HERO -->
     <section class="sleep-hero">
       <div class="sleep-hero-content">

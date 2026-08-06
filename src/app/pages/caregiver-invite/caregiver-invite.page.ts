@@ -81,8 +81,8 @@ export class CaregiverInvitePage implements OnInit {
       '👶 You have been invited to be a caregiver!',
       '',
       'You are invited to join a family account in Baby Tracker as a caregiver.',
-      `This family account currently includes ${this.babyName}.`,
-      'Accepting gives you access to all baby profiles and shared care records in this family account.',
+      `This invitation assigns you to ${this.babyName}.`,
+      `Accepting gives you access to ${this.babyName} and that baby’s shared care records.`,
       '',
       'Open your secure invitation:',
       this.inviteUrl,
@@ -102,7 +102,7 @@ export class CaregiverInvitePage implements OnInit {
     if (!this.inviteUrl) return;
     const text =
       'You’re invited to a Baby Tracker family account as a caregiver. ' +
-      'This grants access to all baby profiles and shared care records. ' +
+      `This grants access to ${this.babyName} and that baby’s shared care records. ` +
       'The secure invitation expires in 24 hours.';
     if (navigator.share) {
       await navigator.share({

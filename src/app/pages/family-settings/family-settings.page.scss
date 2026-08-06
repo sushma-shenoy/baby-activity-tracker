@@ -13,6 +13,7 @@ h2 { margin: 20px 0 7px; color: #746681; font-size: .72rem; }
 .identity { display: grid; min-width: 0; gap: 3px; }
 .identity strong { color: #44384e; font-size: .8rem; }
 .identity span { overflow: hidden; color: #91859a; font-size: .66rem; text-overflow: ellipsis; }
+.identity small { color: #7357a6; font-size: .66rem; font-weight: 750; }
 .controls { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; }
 .controls select { padding: 6px 24px 6px 8px; border: 1px solid #ddd3e9; border-radius: 9px; color: #594b64; background: #fff; font-size: .68rem; font-weight: 800; }
 .controls button { border: 0; color: #a04455; background: transparent; font-size: .68rem; font-weight: 800; }

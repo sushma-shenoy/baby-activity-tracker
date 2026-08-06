@@ -51,7 +51,7 @@
       <div class="proposed">
         <small>Proposed change</small>
         <p>{{ proposedValue(request) }}</p>
-        <span>Caregiver: {{ request.caregiverName }}</span>
+        <span>Baby: {{ babyName(request) }} · Caregiver: {{ request.caregiverName }}</span>
       </div>
       <button type="button" [disabled]="busyId === request.id || busyId === 'bulk'" (click)="cancel(request)">
         <ion-spinner *ngIf="busyId === request.id" name="crescent"></ion-spinner>

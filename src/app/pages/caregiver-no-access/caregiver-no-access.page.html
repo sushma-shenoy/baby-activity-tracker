@@ -1,0 +1,22 @@
+<ion-content [fullscreen]="true" class="no-access-page">
+  <main>
+    <div class="icon" aria-hidden="true">👥</div>
+    <p class="eyebrow">Caregiver access</p>
+    <h1>You’re not connected to a baby profile</h1>
+    <p class="description">
+      Ask the family owner for an invitation to continue as a caregiver.
+    </p>
+
+    <section>
+      <label for="invite-code">Join another family</label>
+      <input id="invite-code" [(ngModel)]="inviteCode" placeholder="Enter invitation code" autocomplete="off">
+      <button type="button" class="primary" (click)="joinFamily()">Review invitation</button>
+    </section>
+
+    <button type="button" class="secondary" [disabled]="isBusy" (click)="createFamily()">Create my own family account</button>
+    <button type="button" class="sign-out" [disabled]="isBusy" (click)="signOut()">
+      {{ isBusy ? 'Signing out…' : 'Sign out' }}
+    </button>
+    <p class="error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </main>
+</ion-content>

@@ -47,6 +47,7 @@ import {
   CaregiverSharingService,
   SharedFamily
 } from '../../services/caregiver-sharing.service';
+import { BabyDeletionService } from '../../services/baby-deletion.service';
 
 @Component({
   selector: 'app-settings',
@@ -78,6 +79,7 @@ export class SettingsPage {
   readonly preferencesService =
     inject(PreferencesService);
   private readonly fb = inject(FormBuilder);
+  private readonly babyDeletionService = inject(BabyDeletionService);
   private readonly router = inject(Router);
   private readonly dataExportService = inject(DataExportService);
   private readonly alertController = inject(AlertController);
@@ -328,8 +330,20 @@ export class SettingsPage {
   }
 
   ionViewWillEnter(): void {
+    void this.resumePendingProfileDeletion();
     void this.loadProfilePhotos();
     void this.loadCaregivers();
+  }
+
+  private async resumePendingProfileDeletion(): Promise<void> {
+    try {
+      const resumed = await this.babyDeletionService.resumePendingDeletion();
+      if (resumed) window.location.assign('/settings');
+    } catch (error) {
+      this.errorMessage = error instanceof Error
+        ? `Baby deletion is incomplete. ${error.message}`
+        : 'Baby deletion is incomplete. Reopen Settings to retry.';
+    }
   }
 
   getProfilePhoto(profile: ManagedBabyProfile): string {
@@ -555,6 +569,12 @@ export class SettingsPage {
       return;
     }
 
+    if (this.babyProfileService.profiles.length <= 1) {
+      this.errorMessage =
+        'Keep at least one baby in your family account. Add another baby before deleting this profile.';
+      return;
+    }
+
     const alert = await this.alertController.create({
       header: `Delete ${profile.name}?`,
       message:
@@ -569,20 +589,7 @@ export class SettingsPage {
             this.isDeletingProfile = true;
             this.errorMessage = '';
             try {
-              await this.caregiverSharingService.revokeInvitesForProfile(
-                profile.id
-              );
-              await this.photoStorageService.deletePhoto(
-                profile.photoId
-              );
-              const deleted =
-                this.babyProfileService.deleteProfile(profile.id);
-              if (!deleted) {
-                throw new Error(
-                  'Keep at least one baby profile in the family.'
-                );
-              }
-              await this.babyProfileService.waitForSync();
+              await this.babyDeletionService.deleteProfile(profile.id);
               window.location.assign('/settings');
             } catch (error) {
               this.errorMessage = error instanceof Error

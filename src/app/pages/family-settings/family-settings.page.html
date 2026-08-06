@@ -14,8 +14,8 @@
       </div>
       <p class="description">
         Each caregiver uses their own login. An invitation grants family
-        account access to all baby profiles and shared care records without
-        sharing your password.
+        account access to the assigned baby and that baby’s shared care
+        records without sharing your password.
       </p>
 
       <ng-container *ngIf="caregiverSharingService.canManageBabyProfiles; else joinedFamily">
@@ -40,8 +40,23 @@
         <div class="caregiver-list" *ngIf="caregivers.length">
           <h2>People with access</h2>
           <article *ngFor="let caregiver of caregivers">
-            <div class="identity"><strong>{{ caregiver.displayName }}</strong><span>{{ caregiver.email }}</span></div>
+            <div class="identity">
+              <strong>{{ caregiver.displayName }}</strong>
+              <span>{{ caregiver.email }}</span>
+              <small>Assigned baby: {{ caregiver.assignedBabyName }}</small>
+            </div>
             <div class="controls">
+              <select
+                aria-label="Assigned baby"
+                [value]="caregiver.profileId"
+                [disabled]="isBusy"
+                (change)="changeAssignedBaby(caregiver, $event)">
+                <option
+                  *ngFor="let profile of babyProfileService.profiles"
+                  [value]="profile.id">
+                  {{ profile.name }}
+                </option>
+              </select>
               <select aria-label="Caregiver permission" [value]="caregiver.role" [disabled]="isBusy" (change)="changeRole(caregiver, $any($event.target).value)">
                 <option value="editor">Editor</option><option value="viewer">Viewer</option>
               </select>
@@ -51,10 +66,10 @@
         </div>
 
         <div class="family-list" *ngIf="sharedFamilies.length">
-          <h2>Your profiles</h2>
-          <button type="button" class="family-option active"><span>👤</span><div><strong>My private profile</strong><small>Currently selected</small></div></button>
+          <h2>Switch account</h2>
+          <button type="button" class="family-option active"><span>👤</span><div><strong>My family account</strong><small>Currently selected</small></div></button>
           <button type="button" class="family-option" *ngFor="let family of sharedFamilies" [disabled]="isBusy" (click)="switchToFamily(family)">
-            <span>👨‍👩‍👧</span><div><strong>{{ family.ownerName }}</strong><small>Shared family</small></div>
+            <span>🤝</span><div><strong>{{ family.ownerName }}</strong><small>Switch to caregiver profile</small></div>
           </button>
         </div>
       </ng-container>
@@ -63,7 +78,18 @@
         <div class="shared-banner">
           <strong>{{ activeSharedFamilyName }}</strong>
           <p>{{ caregiverSharingService.canEditCurrentFamily ? 'You have Editor access. Your changes require owner approval.' : 'You have Viewer access. Records are read-only.' }}</p>
-          <button type="button" [disabled]="isBusy" (click)="switchToPrivateProfile()">Switch to my private profile</button>
+          <button
+            *ngIf="caregiverSharingService.hasPrivateFamily; else createFamilyAccount"
+            type="button"
+            [disabled]="isBusy"
+            (click)="switchToPrivateProfile()">
+            Switch to my family account
+          </button>
+          <ng-template #createFamilyAccount>
+            <button type="button" [disabled]="isBusy" (click)="createPrivateFamily()">
+              Create my own family account
+            </button>
+          </ng-template>
           <button type="button" class="danger-action" [disabled]="isBusy" (click)="leaveFamily()">Leave family permanently</button>
         </div>
 

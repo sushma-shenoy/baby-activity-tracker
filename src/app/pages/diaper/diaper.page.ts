@@ -38,6 +38,7 @@ import {
   ActivityReminder,
   ActivityReminderService
 } from '../../services/notification';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 type DiaperType =
   | 'wet'
@@ -64,7 +65,8 @@ interface DiaperStatistics {
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class DiaperPage implements OnDestroy {

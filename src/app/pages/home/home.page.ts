@@ -16,6 +16,7 @@ import {
 import {
   IonicModule
 } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 
 import {
   Subscription
@@ -44,6 +45,7 @@ import {
 } from '../../services/nursing.service';
 import { ChangeRequestService } from '../../services/change-request.service';
 import { CaregiverSharingService } from '../../services/caregiver-sharing.service';
+import { firebaseAuth } from '../../firebase/firebase.config';
 
 interface ProgressItem {
   label: string;
@@ -95,11 +97,14 @@ export class HomePage implements OnInit, OnDestroy {
   activeNursing: ActiveNursingSession | null = null;
   pendingCaregiverRequestCount = 0;
   pendingCaregiverSubmissionCount = 0;
+  selectedBabyProfileId = '';
 
   private activitiesSubscription?: Subscription;
   private preferencesSubscription?: Subscription;
   private clockTimer?: ReturnType<typeof setInterval>;
   private nursingClock?: ReturnType<typeof setInterval>;
+  private profilesSubscription?: Subscription;
+  private stopWatchingRequests?: () => void;
 
   constructor(
     private readonly router: Router,
@@ -109,7 +114,8 @@ export class HomePage implements OnInit, OnDestroy {
     private readonly photoStorageService: PhotoStorageService,
     private readonly nursingService: NursingService,
     private readonly changeRequestService: ChangeRequestService,
-    readonly caregiverSharingService: CaregiverSharingService
+    readonly caregiverSharingService: CaregiverSharingService,
+    private readonly toastController: ToastController
   ) {}
 
   ngOnInit(): void {
@@ -135,6 +141,10 @@ export class HomePage implements OnInit, OnDestroy {
         }
       );
 
+    this.profilesSubscription = this.babyProfileService.profiles$.subscribe(() => {
+      this.selectedBabyProfileId = this.babyProfileService.activeProfileId;
+    });
+
     this.clockTimer = setInterval(() => {
       this.updateGreeting();
       this.refreshLastActivityText();
@@ -147,10 +157,47 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter(): void {
+    if (sessionStorage.getItem('baby_family_created') === 'true') {
+      sessionStorage.removeItem('baby_family_created');
+      void this.showFamilyCreatedMessage();
+    }
+    this.selectedBabyProfileId = this.babyProfileService.activeProfileId;
     this.refreshHomeData();
     this.refreshActiveNursing();
     void this.loadBabyPhoto();
-    void this.loadCaregiverRequests();
+    this.watchCaregiverRequests();
+  }
+
+  private async showFamilyCreatedMessage(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: 'Your family account and baby profile were created successfully.',
+      duration: 4000,
+      position: 'top',
+      color: 'success'
+    });
+    await toast.present();
+  }
+
+  ionViewWillLeave(): void {
+    this.stopWatchingRequests?.();
+    this.stopWatchingRequests = undefined;
+  }
+
+  private watchCaregiverRequests(): void {
+    this.stopWatchingRequests?.();
+    const user = firebaseAuth.currentUser;
+    if (!user) return;
+    if (this.caregiverSharingService.canManageBabyProfiles) {
+      this.stopWatchingRequests = this.changeRequestService.watchCount(
+        user.uid, null, count => this.pendingCaregiverRequestCount = count
+      );
+    } else if (this.caregiverSharingService.currentFamilyRole === 'editor') {
+      this.stopWatchingRequests = this.changeRequestService.watchCount(
+        this.caregiverSharingService.familyOwnerId,
+        user.uid,
+        count => this.pendingCaregiverSubmissionCount = count
+      );
+    }
   }
 
   private async loadCaregiverRequests(): Promise<void> {
@@ -183,6 +230,8 @@ export class HomePage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.activitiesSubscription?.unsubscribe();
     this.preferencesSubscription?.unsubscribe();
+    this.profilesSubscription?.unsubscribe();
+    this.stopWatchingRequests?.();
 
     if (this.clockTimer) {
       clearInterval(this.clockTimer);
@@ -312,6 +361,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   async switchBaby(profileId: string): Promise<void> {
     if (this.babyProfileService.switchProfile(profileId)) {
+      this.selectedBabyProfileId = profileId;
       await this.babyProfileService.waitForSync();
       window.location.reload();
     }

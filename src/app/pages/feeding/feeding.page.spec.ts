@@ -24,12 +24,13 @@ describe('FeedingPage', () => {
 
   it('adds a formula feed with the selected time', () => {
     const initialFeedCount = component.feeds.length;
+    const selectedTime = component.newFeed.time;
 
     component.newFeed = {
       id: '',
       quantity: 120,
       type: 'formula',
-      time: '14:35'
+      time: selectedTime
     };
 
     component.saveFeed();
@@ -40,9 +41,27 @@ describe('FeedingPage', () => {
       jasmine.objectContaining({
         quantity: 120,
         type: 'formula',
-        time: '14:35'
+        time: selectedTime
       })
     );
+  });
+
+  it('does not partially save a feed with a future time', () => {
+    jasmine.clock().install();
+    jasmine.clock().mockDate(new Date(2026, 7, 5, 12, 0, 0));
+    const initialFeedCount = component.feeds.length;
+    component.newFeed = {
+      id: '',
+      quantity: 120,
+      type: 'formula',
+      time: '13:00'
+    };
+
+    component.saveFeed();
+
+    expect(component.feedError).toContain('valid time');
+    expect(component.feeds.length).toBe(initialFeedCount);
+    jasmine.clock().uninstall();
   });
 
   it('summarizes left and right nursing time from the last 24 hours', () => {

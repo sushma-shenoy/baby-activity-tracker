@@ -55,12 +55,26 @@ export class BabyProfileService {
   constructor() {
     onTrackerDataChange(PROFILE_LIST_KEY, () => {
       const profiles = this.readStoredProfiles();
-      if (profiles.length) this.profilesSubject.next(profiles);
+      if (profiles.length) {
+        this.profilesSubject.next(profiles);
+        const deviceProfileId = localStorage.getItem(DEVICE_ACTIVE_PROFILE_KEY);
+        const storedProfileId = trackerStorage.getItem(ACTIVE_PROFILE_KEY);
+        const activeProfileId = profiles.some(profile => profile.id === deviceProfileId)
+          ? deviceProfileId as string
+          : profiles.some(profile => profile.id === storedProfileId)
+            ? storedProfileId as string
+            : profiles[0].id;
+        localStorage.setItem(DEVICE_ACTIVE_PROFILE_KEY, activeProfileId);
+      }
     });
   }
 
   get profiles(): ManagedBabyProfile[] {
-    return this.profilesSubject.value;
+    const profiles = this.profilesSubject.value;
+    const caregiverProfileId = trackerStorage.currentCaregiverProfileId;
+    return trackerStorage.isUsingSharedFamily && caregiverProfileId
+      ? profiles.filter(profile => profile.id === caregiverProfileId)
+      : profiles;
   }
 
   get activeProfileId(): string {
@@ -111,6 +125,7 @@ export class BabyProfileService {
   }
 
   switchProfile(profileId: string): boolean {
+    if (trackerStorage.isUsingSharedFamily) return false;
     if (
       profileId === this.activeProfileId ||
       !this.profiles.some(profile => profile.id === profileId)
@@ -209,7 +224,18 @@ export class BabyProfileService {
       // Fall through to a safe legacy-data migration.
     }
 
-    const baby = this.loadLegacyBaby();
+    if (trackerStorage.isCaregiverOnlyAccount) {
+      return [];
+    }
+
+    const pendingBaby = trackerStorage.pendingOwnFamilyBaby;
+    const baby: BabyProfile = pendingBaby
+      ? {
+          name: pendingBaby.name,
+          birthDate: pendingBaby.birthDate,
+          mood: 'Happy 😊'
+        }
+      : this.loadLegacyBaby();
     const profile: ManagedBabyProfile = {
       id: this.createId(),
       ...baby,
@@ -219,6 +245,7 @@ export class BabyProfileService {
     trackerStorage.setItem(PROFILE_LIST_KEY, JSON.stringify([profile]));
     this.setActiveProfileId(profile.id);
     this.snapshotProfile(profile.id);
+    if (pendingBaby) trackerStorage.clearPendingOwnFamilyBaby();
     return [profile];
   }
 

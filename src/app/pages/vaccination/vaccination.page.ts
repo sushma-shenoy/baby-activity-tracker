@@ -25,6 +25,7 @@ import {
   calendarDateValidator,
   trimmedRequiredValidator
 } from '../../shared/form-validators';
+import { PendingChangesPanelComponent } from '../../shared/pending-changes-panel/pending-changes-panel.component';
 
 @Component({
   selector: 'app-vaccination',
@@ -34,7 +35,8 @@ import {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule
+    IonicModule,
+    PendingChangesPanelComponent
   ]
 })
 export class VaccinationPage implements OnDestroy {

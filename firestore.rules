@@ -18,6 +18,11 @@ service cloud.firestore {
       return signedIn() && exists(caregiverPath(userId));
     }
 
+    function isCaregiverForProfile(userId, profileId) {
+      return isCaregiver(userId)
+        && get(caregiverPath(userId)).data.profileId == profileId;
+    }
+
     function hasValidInvite(inviteCode, ownerId) {
       return inviteCode is string
         && exists(
@@ -40,7 +45,7 @@ service cloud.firestore {
     }
 
     match /users/{userId}/trackerData/{dataKey} {
-      allow read: if owns(userId) || isCaregiver(userId);
+      allow read: if owns(userId);
       allow delete: if owns(userId);
 
       allow create, update: if owns(userId)
@@ -61,8 +66,26 @@ service cloud.firestore {
         && request.resource.data.value.size() <= 900000;
     }
 
+    match /users/{userId}/sharedProfiles/{profileId}/trackerData/{dataKey} {
+      allow read: if owns(userId) || isCaregiverForProfile(userId, profileId);
+      allow create, update: if owns(userId)
+        && request.resource.data.keys().hasOnly([
+          'key',
+          'value',
+          'updatedAt'
+        ])
+        && request.resource.data.key is string
+        && request.resource.data.key.size() <= 300
+        && request.resource.data.value is string
+        && request.resource.data.value.size() <= 900000;
+      allow delete: if owns(userId);
+    }
+
     match /users/{userId}/photos/{photoId} {
-      allow read: if owns(userId) || isCaregiver(userId);
+      allow read: if owns(userId) || (
+        resource.data.profileId is string &&
+        isCaregiverForProfile(userId, resource.data.profileId)
+      );
       allow delete: if owns(userId);
 
       allow create, update: if owns(userId)
@@ -70,12 +93,49 @@ service cloud.firestore {
           'imageBytes',
           'contentType',
           'category',
+          'profileId',
           'updatedAt'
         ])
         && request.resource.data.imageBytes is bytes
         && request.resource.data.imageBytes.size() <= 307200
         && request.resource.data.contentType == 'image/webp'
-        && request.resource.data.category in ['diaper', 'profile'];
+        && request.resource.data.category in ['diaper', 'profile']
+        && request.resource.data.profileId is string;
+    }
+
+    match /users/{userId}/accountSettings/{settingId} {
+      allow read: if owns(userId);
+      allow create, update: if owns(userId)
+        && settingId == 'profile'
+        && request.resource.data.caregiverOnly is bool
+        && request.resource.data.keys().hasOnly([
+          'caregiverOnly',
+          'updatedAt'
+        ]);
+      allow delete: if owns(userId);
+    }
+
+    match /users/{userId}/deletionJobs/{profileId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId)
+        && request.resource.data.ownerId == userId
+        && request.resource.data.profileId == profileId
+        && request.resource.data.profileDeleted is bool
+        && request.resource.data.photosDeleted is bool
+        && request.resource.data.invitesDeleted is bool
+        && request.resource.data.requestsDeleted is bool
+        && request.resource.data.sharedDataDeleted is bool
+        && request.resource.data.updatedAt is number
+        && request.resource.data.keys().hasOnly([
+          'ownerId',
+          'profileId',
+          'profileDeleted',
+          'photosDeleted',
+          'invitesDeleted',
+          'requestsDeleted',
+          'sharedDataDeleted',
+          'updatedAt'
+        ]);
     }
 
     match /users/{ownerId}/changeRequests/{requestId} {
@@ -89,6 +149,10 @@ service cloud.firestore {
         && request.resource.data.caregiverId == request.auth.uid
         && isCaregiver(ownerId)
         && get(caregiverPath(ownerId)).data.role == 'editor'
+        && (
+          !('profileId' in get(caregiverPath(ownerId)).data) ||
+          get(caregiverPath(ownerId)).data.profileId == request.resource.data.profileId
+        )
         && request.resource.data.key is string
         && request.resource.data.key.size() <= 300
         && request.resource.data.value is string
@@ -97,6 +161,10 @@ service cloud.firestore {
         && request.resource.data.baseValue.size() <= 900000
         && request.resource.data.operation in ['set', 'remove']
         && request.resource.data.caregiverName is string
+        && request.resource.data.profileId is string
+        && request.resource.data.profileId.size() > 0
+        && request.resource.data.changeGroupId is string
+        && request.resource.data.changeGroupId.size() > 0
         && request.resource.data.createdAt is number
         && request.resource.data.keys().hasOnly([
           'key',
@@ -105,6 +173,8 @@ service cloud.firestore {
           'operation',
           'caregiverId',
           'caregiverName',
+          'profileId',
+          'changeGroupId',
           'createdAt'
         ]);
       allow update: if false;
@@ -160,6 +230,7 @@ service cloud.firestore {
           /databases/$(database)/documents/caregiverInvites/$(request.resource.data.inviteCode)
         ).data.expiresAt > request.time.toMillis()
         && request.resource.data.role == 'editor'
+        && request.resource.data.profileId is string
         && request.resource.data.displayName is string
         && request.resource.data.email is string
         && request.resource.data.joinedAt is number
@@ -168,19 +239,23 @@ service cloud.firestore {
           'displayName',
           'email',
           'role',
+          'profileId',
           'joinedAt'
         ]);
 
       allow update: if (
         owns(ownerId)
         && request.resource.data.role in ['editor', 'viewer']
+        && request.resource.data.profileId is string
+        && request.resource.data.profileId.size() > 0
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['role'])
+          .hasOnly(['role', 'profileId'])
       ) || (
         signedIn()
         && request.auth.uid == caregiverId
         && hasValidInvite(request.resource.data.inviteCode, ownerId)
         && request.resource.data.role == 'editor'
+        && request.resource.data.profileId is string
         && request.resource.data.displayName is string
         && request.resource.data.email is string
         && request.resource.data.joinedAt is number
@@ -189,6 +264,7 @@ service cloud.firestore {
           'displayName',
           'email',
           'role',
+          'profileId',
           'joinedAt'
         ])
       );
