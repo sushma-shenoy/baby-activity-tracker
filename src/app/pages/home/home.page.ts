@@ -157,6 +157,13 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter(): void {
+    const verificationEmail = sessionStorage.getItem(
+      'tenderly_verification_email'
+    );
+    if (verificationEmail) {
+      sessionStorage.removeItem('tenderly_verification_email');
+      void this.showVerificationEmailMessage(verificationEmail === 'sent');
+    }
     if (sessionStorage.getItem('baby_family_created') === 'true') {
       sessionStorage.removeItem('baby_family_created');
       void this.showFamilyCreatedMessage();
@@ -166,6 +173,18 @@ export class HomePage implements OnInit, OnDestroy {
     this.refreshActiveNursing();
     void this.loadBabyPhoto();
     this.watchCaregiverRequests();
+  }
+
+  private async showVerificationEmailMessage(sent: boolean): Promise<void> {
+    const toast = await this.toastController.create({
+      message: sent
+        ? 'Welcome to Tenderly! Check your inbox to verify your email address.'
+        : 'Welcome to Tenderly! We could not send the verification email. You can try again later.',
+      duration: 5000,
+      position: 'top',
+      color: sent ? 'success' : 'warning'
+    });
+    await toast.present();
   }
 
   private async showFamilyCreatedMessage(): Promise<void> {

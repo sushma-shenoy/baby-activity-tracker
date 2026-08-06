@@ -151,6 +151,11 @@ export class SignupPage {
       }
     }
 
+    sessionStorage.setItem(
+      'tenderly_verification_email',
+      result.verificationEmailSent ? 'sent' : 'failed'
+    );
+
     // Reload so the new account starts with its Firestore-backed data store.
     this.reloadApp(destination);
   }

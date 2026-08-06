@@ -16,6 +16,7 @@ import {
   UserCredential,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
@@ -26,6 +27,7 @@ import {
   firebaseAuth
 } from '../firebase/firebase.config';
 import { trackerStorage } from '../firebase/tracker-storage';
+import { environment } from '../../environments/environment';
 
 import {
   AuthResult
@@ -125,9 +127,23 @@ export class AuthService {
         userCredential.user
       );
 
+      let verificationEmailSent = false;
+      try {
+        await sendEmailVerification(userCredential.user, {
+          url: `${environment.appUrl || window.location.origin}/login`
+        });
+        verificationEmailSent = true;
+      } catch (error) {
+        // Account creation succeeded. Do not report it as failed and invite
+        // the user to create a duplicate account merely because email delivery
+        // could not be started.
+        console.error('Unable to send verification email:', error);
+      }
+
       return {
         success: true,
-        user: userCredential.user
+        user: userCredential.user,
+        verificationEmailSent
       };
     } catch (error: unknown) {
       return {
