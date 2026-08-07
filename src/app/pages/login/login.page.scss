@@ -59,7 +59,7 @@
   display: flex;
   z-index: 1;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.01em;
@@ -78,28 +78,29 @@
 
 .brand-mark {
   position: relative;
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  border-radius: 19px;
   background: rgba(255, 255, 255, 0.16);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 
 .moon {
   position: absolute;
-  top: 11px;
-  left: 12px;
-  width: 21px;
-  height: 21px;
+  top: 14px;
+  left: 15px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #fff0d5;
-  box-shadow: 7px -4px 0 #7b6daa;
+  box-shadow: 9px -5px 0 #7b6daa;
 }
 
 .star {
   position: absolute;
   color: #fff0d5;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .star-one {
@@ -214,15 +215,19 @@
 }
 
 .brand-mark.small {
-  width: 40px;
-  height: 40px;
+  flex-basis: 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 17px;
   background: #8172af;
 }
 
 .brand-mark.small .moon {
-  top: 9px;
-  left: 10px;
-  box-shadow: 7px -4px 0 #8172af;
+  top: 13px;
+  left: 13px;
+  width: 26px;
+  height: 26px;
+  box-shadow: 8px -5px 0 #8172af;
 }
 
 .form-heading {

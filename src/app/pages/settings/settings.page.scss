@@ -8,6 +8,39 @@
   padding: 24px 16px;
 }
 
+.delete-account-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 12px;
+  color: #a33f4d;
+  background: #fff0f2;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.delete-account-button:disabled {
+  opacity: 0.55;
+}
+
+.delete-account-help {
+  margin: 8px 4px 0;
+  color: #8a8598;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.account-deletion-error {
+  margin: 9px 4px 0;
+  color: #b42318;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .account-card {
   margin: 0 0 16px;
   border-radius: 20px;

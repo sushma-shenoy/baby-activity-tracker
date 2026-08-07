@@ -7,6 +7,10 @@ import {
 
 export const routes: Routes = [
   {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
+  },
+  {
     path: 'caregiver-no-access',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/caregiver-no-access/caregiver-no-access.page').then(m => m.CaregiverNoAccessPage)

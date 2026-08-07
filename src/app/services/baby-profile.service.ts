@@ -55,8 +55,8 @@ export class BabyProfileService {
   constructor() {
     onTrackerDataChange(PROFILE_LIST_KEY, () => {
       const profiles = this.readStoredProfiles();
+      this.profilesSubject.next(profiles);
       if (profiles.length) {
-        this.profilesSubject.next(profiles);
         const deviceProfileId = localStorage.getItem(DEVICE_ACTIVE_PROFILE_KEY);
         const storedProfileId = trackerStorage.getItem(ACTIVE_PROFILE_KEY);
         const activeProfileId = profiles.some(profile => profile.id === deviceProfileId)
@@ -180,10 +180,7 @@ export class BabyProfileService {
   }
 
   deleteProfile(profileId: string): boolean {
-    if (
-      !this.profiles.some(profile => profile.id === profileId) ||
-      this.profiles.length <= 1
-    ) {
+    if (!this.profiles.some(profile => profile.id === profileId)) {
       return false;
     }
 
@@ -191,10 +188,14 @@ export class BabyProfileService {
       profile => profile.id !== profileId
     );
 
-    if (profileId === this.activeProfileId) {
+    if (profileId === this.activeProfileId && profiles.length > 0) {
       this.clearActiveData();
       this.restoreProfile(profiles[0].id);
       this.setActiveProfileId(profiles[0].id);
+    } else if (profiles.length === 0) {
+      this.clearActiveData();
+      localStorage.removeItem(DEVICE_ACTIVE_PROFILE_KEY);
+      trackerStorage.removeItem(ACTIVE_PROFILE_KEY);
     }
 
     for (const key of BABY_TRACKER_DATA_KEYS) {
@@ -207,6 +208,16 @@ export class BabyProfileService {
 
   private loadOrMigrateProfiles(): ManagedBabyProfile[] {
     try {
+      // An explicitly saved empty list means the owner deleted their last
+      // baby. Keep it empty so the legacy migration cannot recreate it.
+      if (
+        trackerStorage.getItem(PROFILE_LIST_KEY) === '[]' &&
+        !trackerStorage.pendingOwnFamilyBaby
+      ) {
+        localStorage.removeItem(DEVICE_ACTIVE_PROFILE_KEY);
+        trackerStorage.removeItem(ACTIVE_PROFILE_KEY);
+        return [];
+      }
       const profiles = this.readStoredProfiles();
       if (profiles.length > 0) {
           const deviceProfileId = localStorage.getItem(DEVICE_ACTIVE_PROFILE_KEY);

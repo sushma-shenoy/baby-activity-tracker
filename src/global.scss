@@ -38,6 +38,165 @@ ion-content {
   --color: #1f1f1f;
 }
 
+/*
+ * Responsive application frame
+ * --------------------------------------------------------------------------
+ * Most tracker screens are intentionally card based. Keep those cards at a
+ * comfortable reading width on large monitors while allowing them to use the
+ * full viewport on phones. These rules also provide a few defensive defaults
+ * for user-entered text and media so a long value can never create horizontal
+ * page scrolling.
+ */
+html {
+  min-width: 320px;
+}
+
+html,
+body,
+ion-app {
+  width: 100%;
+  min-height: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+main,
+section,
+article,
+form,
+ion-card,
+ion-item,
+ion-list {
+  min-width: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+small,
+strong,
+span {
+  overflow-wrap: anywhere;
+}
+
+/* Consistent desktop canvas for the primary activity screens. */
+:is(
+  .dashboard-content,
+  .diaper-page-content,
+  .sleep-page-content,
+  .insights-content,
+  .growth-content,
+  .medicine-content,
+  .milestones-content,
+  .temperature-content,
+  .vaccination-content,
+  .calendar-content
+) {
+  width: min(100%, 920px);
+  margin-inline: auto;
+}
+
+:is(.home-bg, .app-bg) > :is(section, form),
+.home-bg > .section {
+  width: min(calc(100% - 32px), 888px);
+  margin-inline: auto;
+}
+
+:is(.journal-page, .solids-page) main {
+  width: min(100%, 760px);
+  margin-inline: auto;
+}
+
+/* Prevent native controls from retaining an intrinsic desktop width. */
+input,
+textarea,
+select,
+button {
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  ion-header.app-header ion-toolbar {
+    --min-height: 64px;
+  }
+
+  :is(
+    .dashboard-content,
+    .diaper-page-content,
+    .sleep-page-content,
+    .insights-content
+  ) {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  :is(.home-bg, .app-bg) > :is(section, form),
+  .home-bg > .section {
+    width: min(calc(100% - 48px), 872px);
+  }
+}
+
+@media (max-width: 600px) {
+  ion-header.app-header ion-title,
+  ion-header ion-title {
+    font-size: 0.96rem;
+  }
+
+  /* Dense headings and action rows should stack instead of being clipped. */
+  :is(.section-heading, .history-heading, .timeline-heading, .page-heading) {
+    gap: 10px;
+  }
+
+  :is(.bulk-actions, .photo-editor) {
+    flex-wrap: wrap;
+  }
+
+  ion-alert,
+  ion-modal,
+  ion-action-sheet {
+    --width: min(100% - 24px, 520px);
+  }
+}
+
+@media (max-width: 380px) {
+  :is(
+    .dashboard-content,
+    .diaper-page-content,
+    .sleep-page-content,
+    .insights-content,
+    .growth-content,
+    .medicine-content,
+    .milestones-content,
+    .temperature-content,
+    .vaccination-content,
+    .calendar-content
+  ) {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  :is(.home-bg, .app-bg) > :is(section, form),
+  .home-bg > .section {
+    width: calc(100% - 24px);
+  }
+
+  :is(.actions, .button-row) {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Viewer caregivers can browse records but cannot reach mutation controls. */
 body.viewer-mode form,
 body.viewer-mode ion-toggle,
@@ -415,4 +574,64 @@ ion-item.field-invalid {
   --border-color: #c8646b;
   --highlight-color-focused: #c8646b;
   outline: 1px solid rgba(200, 100, 107, 0.35);
+}
+
+ion-modal.delete-account-modal {
+  --width: min(92vw, 440px);
+  --height: auto;
+  --border-radius: 24px;
+}
+
+.delete-account-dialog { background: #fff; }
+.delete-account-header {
+  min-height: 58px; padding: 8px 12px; border-bottom: 1px solid #eeeaf1;
+  display: grid; grid-template-columns: 42px 1fr 42px; align-items: center;
+  color: #322b3b; text-align: center;
+}
+.delete-account-back {
+  width: 40px; height: 40px; border: 0; border-radius: 12px;
+  color: #554c60; background: #f5f2f7; font-size: 2rem; line-height: 1;
+}
+.delete-account-body { padding: 24px; text-align: center; }
+.delete-warning-icon {
+  width: 52px; height: 52px; margin: 0 auto 13px; border-radius: 17px;
+  display: grid; place-items: center; color: #a33f4d; background: #fff0f2;
+  font-size: 1.5rem; font-weight: 900;
+}
+.delete-account-body h2 { margin: 0; color: #302938; font-size: 1.2rem; }
+.delete-account-body > p { color: #756d7c; font-size: .78rem; line-height: 1.55; }
+.delete-account-body label {
+  display: block; margin: 20px 2px 7px; color: #4d4555;
+  font-size: .76rem; font-weight: 800; text-align: left;
+}
+.delete-account-body input {
+  width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #ddd7e2;
+  border-radius: 13px; color: #302938; background: #fcfbfd;
+  box-sizing: border-box; font: inherit;
+}
+.forgot-account-password {
+  margin: 9px 2px 0 auto; border: 0; display: block; color: #7061a4;
+  background: transparent; font-size: .75rem; font-weight: 800;
+}
+.modal-account-error, .modal-account-success {
+  margin: 13px 0 0 !important; padding: 10px 12px; border-radius: 11px;
+  font-size: .75rem !important; font-weight: 700;
+}
+.modal-account-error { color: #a12f3f !important; background: #fff0f2; }
+.modal-account-success { color: #25705f !important; background: #edf9f5; }
+.confirm-account-delete {
+  width: 100%; min-height: 48px; margin-top: 18px; border: 0; border-radius: 13px;
+  color: #fff; background: #b04454; font-size: .84rem; font-weight: 850;
+}
+.confirm-account-delete:disabled, .delete-account-back:disabled,
+.forgot-account-password:disabled { opacity: .55; }
+
+@media (max-width: 480px) {
+  ion-modal.delete-account-modal {
+    --width: 100%; --height: auto; align-items: flex-end;
+    --border-radius: 24px 24px 0 0;
+  }
+  .delete-account-body {
+    padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
+  }
 }

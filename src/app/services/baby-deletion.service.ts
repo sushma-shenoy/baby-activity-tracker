@@ -75,9 +75,7 @@ export class BabyDeletionService {
         profile => profile.id === pending.profileId
       );
       if (stillExists && !this.profiles.deleteProfile(pending.profileId)) {
-        throw new Error(
-          'Keep at least one baby in your family account. Add another baby before deleting this profile.'
-        );
+        throw new Error('Unable to delete this baby profile.');
       }
       await this.profiles.waitForSync();
       pending.profileDeleted = true;

@@ -12,10 +12,13 @@ import {
 
 import {
   AuthError,
+  EmailAuthProvider,
   User,
   UserCredential,
   createUserWithEmailAndPassword,
+  deleteUser,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -217,7 +220,11 @@ export class AuthService {
 
       await sendPasswordResetEmail(
         firebaseAuth,
-        normalizedEmail
+        normalizedEmail,
+        {
+          url: `${environment.appUrl || window.location.origin}/reset-password`,
+          handleCodeInApp: false
+        }
       );
 
       return {
@@ -229,6 +236,39 @@ export class AuthService {
         errorMessage:
           this.getFriendlyErrorMessage(error)
       };
+    }
+  }
+
+  async deleteAccount(
+    password: string,
+    beforeDelete: () => Promise<void>
+  ): Promise<AuthResult> {
+    const user = firebaseAuth.currentUser;
+    if (!user?.email) {
+      return { success: false, errorMessage: 'Sign in again to delete your account.' };
+    }
+
+    try {
+      await reauthenticateWithCredential(
+        user,
+        EmailAuthProvider.credential(user.email, password)
+      );
+      await beforeDelete();
+      await deleteUser(user);
+      trackerStorage.clearUser();
+      return { success: true };
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        ['auth/invalid-credential', 'auth/wrong-password'].includes(
+          (error as AuthError).code
+        )
+      ) {
+        return { success: false, errorMessage: 'The password is incorrect.' };
+      }
+      return { success: false, errorMessage: this.getFriendlyErrorMessage(error) };
     }
   }
 

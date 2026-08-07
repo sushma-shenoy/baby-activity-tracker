@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
   FormBuilder,
+  FormsModule,
   ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
@@ -19,6 +20,7 @@ import {
   IonHeader,
   IonInput,
   IonItem,
+  IonModal,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -56,6 +58,7 @@ import { BabyDeletionService } from '../../services/baby-deletion.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     RouterLink,
     IonButton,
@@ -67,6 +70,7 @@ import { BabyDeletionService } from '../../services/baby-deletion.service';
     IonHeader,
     IonInput,
     IonItem,
+    IonModal,
     IonSelect,
     IonSelectOption,
     IonSpinner,
@@ -89,6 +93,12 @@ export class SettingsPage {
     inject(CaregiverSharingService);
 
   isLoggingOut = false;
+  isDeletingAccount = false;
+  accountDeletionStage: 'idle' | 'verifying' | 'deleting' = 'idle';
+  accountDeletionError = '';
+  accountDeletionMessage = '';
+  accountPassword = '';
+  isDeleteAccountModalOpen = false;
   isSaved = false;
   errorMessage = '';
   exportMessage = '';
@@ -569,12 +579,7 @@ export class SettingsPage {
       return;
     }
 
-    if (this.babyProfileService.profiles.length <= 1) {
-      this.errorMessage =
-        'Keep at least one baby in your family account. Add another baby before deleting this profile.';
-      return;
-    }
-
+    const isLastProfile = this.babyProfileService.profiles.length === 1;
     const alert = await this.alertController.create({
       header: `Delete ${profile.name}?`,
       message:
@@ -590,7 +595,9 @@ export class SettingsPage {
             this.errorMessage = '';
             try {
               await this.babyDeletionService.deleteProfile(profile.id);
-              window.location.assign('/settings');
+              window.location.assign(
+                isLastProfile ? '/create-family' : '/settings'
+              );
             } catch (error) {
               this.errorMessage = error instanceof Error
                 ? error.message
@@ -689,6 +696,70 @@ export class SettingsPage {
     }
 
     await this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
+
+  confirmDeleteAccount(): void {
+    this.accountPassword = '';
+    this.accountDeletionError = '';
+    this.accountDeletionMessage = '';
+    this.isDeleteAccountModalOpen = true;
+  }
+
+  closeDeleteAccountModal(): void {
+    if (this.isDeletingAccount) return;
+    this.isDeleteAccountModalOpen = false;
+    this.accountPassword = '';
+  }
+
+  submitAccountDeletion(): void {
+    if (!this.accountPassword) {
+      this.accountDeletionError = 'Enter your password to delete the account.';
+      return;
+    }
+    void this.deleteAccount(this.accountPassword);
+  }
+
+  async sendAccountPasswordReset(): Promise<void> {
+    this.accountDeletionError = '';
+    this.accountDeletionMessage = '';
+    const result = await this.authService.resetPassword(this.email);
+    if (result.success) {
+      this.accountDeletionMessage =
+        `Password reset instructions were sent to ${this.email}.`;
+    } else {
+      this.accountDeletionError =
+        result.errorMessage || 'Unable to send the password reset email.';
+    }
+  }
+
+  private async deleteAccount(password: string): Promise<void> {
+    this.isDeletingAccount = true;
+    this.accountDeletionStage = 'verifying';
+    this.accountDeletionError = '';
+    this.errorMessage = '';
+    const result = await this.authService.deleteAccount(password, async () => {
+      this.accountDeletionStage = 'deleting';
+      if (!this.caregiverSharingService.canManageBabyProfiles) return;
+      for (const profile of [...this.babyProfileService.profiles]) {
+        await this.babyDeletionService.deleteProfile(profile.id);
+      }
+    });
+    this.isDeletingAccount = false;
+    this.accountDeletionStage = 'idle';
+
+    if (!result.success) {
+      this.accountDeletionError =
+        result.errorMessage || 'Unable to delete your account.';
+      return;
+    }
+    this.isDeleteAccountModalOpen = false;
+    await this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
+
+  get accountDeletionButtonText(): string {
+    if (this.accountDeletionStage === 'verifying') return 'Checking password…';
+    if (this.accountDeletionStage === 'deleting') return 'Deleting account…';
+    return 'Delete account';
   }
 
   private validBirthDateValidator(): ValidatorFn {

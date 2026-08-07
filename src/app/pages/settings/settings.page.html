@@ -88,7 +88,7 @@
           <button
             type="button"
             class="profile-delete"
-            *ngIf="caregiverSharingService.canManageBabyProfiles && profiles.length > 1"
+            *ngIf="caregiverSharingService.canManageBabyProfiles"
             (click)="deleteProfile(profile)"
             [disabled]="isDeletingProfile"
             [attr.aria-label]="'Delete ' + profile.name">
@@ -306,6 +306,65 @@
       </ion-spinner>
       <span *ngIf="!isLoggingOut">Log out</span>
     </ion-button>
+
+    <button
+      type="button"
+      class="delete-account-button"
+      [disabled]="isDeletingAccount || isLoggingOut"
+      (click)="confirmDeleteAccount()">
+      {{ accountDeletionButtonText }}
+    </button>
+    <p class="delete-account-help">
+      Permanently delete your main profile, login and owned family data.
+    </p>
     </div>
   </div>
 </ion-content>
+
+<ion-modal
+  cssClass="delete-account-modal"
+  [isOpen]="isDeleteAccountModalOpen"
+  [backdropDismiss]="!isDeletingAccount"
+  (didDismiss)="closeDeleteAccountModal()">
+  <ng-template>
+    <div class="delete-account-dialog">
+      <header class="delete-account-header">
+        <button type="button" class="delete-account-back"
+          [disabled]="isDeletingAccount" (click)="closeDeleteAccountModal()"
+          aria-label="Go back"><span aria-hidden="true">‹</span></button>
+        <strong>Delete account</strong>
+        <span aria-hidden="true"></span>
+      </header>
+
+      <div class="delete-account-body">
+        <div class="delete-warning-icon" aria-hidden="true">!</div>
+        <h2>Delete your main profile?</h2>
+        <p>This permanently deletes your Tenderly login and every baby profile you own. Caregivers will lose access.</p>
+
+        <label for="delete-account-password">Current password</label>
+        <input id="delete-account-password" type="password"
+          autocomplete="current-password" placeholder="Enter your password"
+          [disabled]="isDeletingAccount" [(ngModel)]="accountPassword"
+          (input)="accountDeletionError = ''; accountDeletionMessage = ''"
+          (keyup.enter)="submitAccountDeletion()">
+
+        <button type="button" class="forgot-account-password"
+          [disabled]="isDeletingAccount" (click)="sendAccountPasswordReset()">
+          Forgot password?
+        </button>
+
+        <p *ngIf="accountDeletionError" class="modal-account-error" role="alert">
+          {{ accountDeletionError }}
+        </p>
+        <p *ngIf="accountDeletionMessage" class="modal-account-success" role="status">
+          {{ accountDeletionMessage }}
+        </p>
+
+        <button type="button" class="confirm-account-delete"
+          [disabled]="isDeletingAccount" (click)="submitAccountDeletion()">
+          {{ accountDeletionButtonText }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

@@ -118,8 +118,16 @@ describe('BabyProfileService', () => {
     )).toBeNull();
   });
 
-  it('does not delete the family\'s only baby profile', () => {
-    expect(service.deleteProfile(service.activeProfileId)).toBeFalse();
-    expect(service.profiles.length).toBe(1);
+  it('deletes the family\'s only baby profile without recreating it', () => {
+    expect(service.deleteProfile(service.activeProfileId)).toBeTrue();
+    expect(service.profiles).toEqual([]);
+    expect(service.activeProfileId).toBe('');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(BabyProfileService);
+
+    expect(service.profiles).toEqual([]);
+    expect(service.activeProfileId).toBe('');
   });
 });
