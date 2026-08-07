@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'io.sushma.starter',
   appName: 'Gigglebean',
   webDir: 'www',
   plugins: {
