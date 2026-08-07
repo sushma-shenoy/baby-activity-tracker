@@ -178,8 +178,8 @@ export class HomePage implements OnInit, OnDestroy {
   private async showVerificationEmailMessage(sent: boolean): Promise<void> {
     const toast = await this.toastController.create({
       message: sent
-        ? 'Welcome to Tenderly! Check your inbox to verify your email address.'
-        : 'Welcome to Tenderly! We could not send the verification email. You can try again later.',
+        ? 'Welcome to Gigglebean! Check your inbox to verify your email address.'
+        : 'Welcome to Gigglebean! We could not send the verification email. You can try again later.',
       duration: 5000,
       position: 'top',
       color: sent ? 'success' : 'warning'

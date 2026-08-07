@@ -3,6 +3,7 @@
     "rules": "firestore.rules"
   },
   "hosting": {
+    "site": "gigglebean",
     "public": "www",
     "ignore": [
       "firebase.json",

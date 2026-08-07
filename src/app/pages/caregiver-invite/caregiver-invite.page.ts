@@ -76,14 +76,14 @@ export class CaregiverInvitePage implements OnInit {
       this.errorMessage = 'Enter a valid caregiver email address first.';
       return;
     }
-    const subject = 'You’re invited to Tenderly';
+    const subject = 'You’re invited to Gigglebean';
     const body = [
-      'Tenderly',
+      'Gigglebean',
       'Every little moment, cared for.',
       '',
       '👶 You have been invited to be a caregiver!',
       '',
-      'You are invited to join a family account in Tenderly as a caregiver.',
+      'You are invited to join a family account in Gigglebean as a caregiver.',
       `This invitation assigns you to ${this.babyName}.`,
       `Accepting gives you access to ${this.babyName} and that baby’s shared care records.`,
       '',
@@ -93,7 +93,7 @@ export class CaregiverInvitePage implements OnInit {
       'This invitation expires in 24 hours and works only once.',
       '',
       'With care,',
-      'The Tenderly family 💜'
+      'The Gigglebean family 💜'
     ].join('\n');
     window.location.href =
       `mailto:${encodeURIComponent(this.recipientEmail)}` +
@@ -104,12 +104,12 @@ export class CaregiverInvitePage implements OnInit {
   async shareInvitation(): Promise<void> {
     if (!this.inviteUrl) return;
     const text =
-      'You’re invited to a Tenderly family account as a caregiver. ' +
+      'You’re invited to a Gigglebean family account as a caregiver. ' +
       `This grants access to ${this.babyName} and that baby’s shared care records. ` +
       'The secure invitation expires in 24 hours.';
     if (navigator.share) {
       await navigator.share({
-        title: 'Tenderly caregiver invitation',
+        title: 'Gigglebean caregiver invitation',
         text,
         url: this.inviteUrl
       });

@@ -1,7 +1,7 @@
 
 export const environment = {
   production: true,
-  appUrl: 'https://baby-tracker-app-62cc8.web.app',
+  appUrl: 'https://gigglebean.web.app',
 
   firebase: {
   apiKey: "AIzaSyCFI-8u46D6eFwwfs8Mv-8l9vQMNqLYbu0",

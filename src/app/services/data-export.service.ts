@@ -99,7 +99,7 @@ export class DataExportService {
       !(parsed as BabyTrackerBackup).data ||
       typeof (parsed as BabyTrackerBackup).data !== 'object'
     ) {
-      throw new Error('This file is not a supported Tenderly backup.');
+      throw new Error('This file is not a supported Gigglebean backup.');
     }
 
     const backup = parsed as BabyTrackerBackup;
