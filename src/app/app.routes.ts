@@ -7,6 +7,10 @@ import {
 
 export const routes: Routes = [
   {
+    path: 'privacy',
+    loadComponent: () => import('./pages/privacy/privacy.page').then(m => m.PrivacyPage)
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./pages/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
   },
