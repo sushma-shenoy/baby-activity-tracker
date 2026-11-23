@@ -11,6 +11,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/privacy/privacy.page').then(m => m.PrivacyPage)
   },
   {
+    path: 'delete-account',
+    loadComponent: () => import('./pages/delete-account/delete-account.page').then(m => m.DeleteAccountPage)
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./pages/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
   },
