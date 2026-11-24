@@ -21,7 +21,7 @@ export class JournalPage implements OnDestroy {
     { value: 'tired', label: 'Tired', icon: '🥱' },
     { value: 'unwell', label: 'Unwell', icon: '🤒' }
   ];
-  readonly symptomOptions = ['Fever', 'Cough', 'Congestion', 'Rash', 'Teething', 'Vomiting', 'Diarrhea', 'Low appetite'];
+  readonly symptomOptions = ['Cough', 'Congestion', 'Rash', 'Teething', 'Vomiting', 'Diarrhea', 'Low appetite'];
   entries: JournalEntry[] = [];
   mood: JournalMood = 'happy';
   notes = '';

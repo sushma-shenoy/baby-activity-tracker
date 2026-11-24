@@ -131,9 +131,6 @@ export class ChangeRequestsPage {
       baby_solid_food_entries: 'Solid food records',
       sleep_state: 'Sleep records',
       baby_weight_entries: 'Growth records',
-      baby_medicine_entries: 'Medicine records',
-      baby_vaccination_entries: 'Vaccination records',
-      baby_temperature_entries: 'Temperature records',
       baby_milestones: 'Milestones',
       nursing_sessions: 'Nursing records',
       baby_daily_journal_entries: 'Journal entries'

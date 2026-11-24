@@ -9,14 +9,11 @@ import {
   PermissionStatus
 } from '@capacitor/local-notifications';
 import { PreferencesService } from './preferences.service';
-import { VaccinationService } from './vaccination.service';
 
 export type ReminderType =
   | 'feeding'
   | 'sleep'
-  | 'diaper'
-  | 'medicine'
-  | 'temperature';
+  | 'diaper';
 
 export interface ActivityReminder {
   type: ReminderType;
@@ -32,18 +29,6 @@ export interface CustomReminder {
   enabled: boolean;
   time: string;
 }
-
-export interface VaccinationReminderSettings {
-  enabled: boolean;
-  daysBefore: number;
-  time: string;
-}
-
-const DEFAULT_VACCINATION_REMINDER: VaccinationReminderSettings = {
-  enabled: false,
-  daysBefore: 1,
-  time: '09:00'
-};
 
 const DEFAULT_REMINDERS: ActivityReminder[] = [
   {
@@ -66,20 +51,6 @@ const DEFAULT_REMINDERS: ActivityReminder[] = [
     icon: '🧷',
     enabled: false,
     time: '12:00'
-  },
-  {
-    type: 'medicine',
-    label: 'Medicine reminder',
-    icon: '💊',
-    enabled: false,
-    time: '08:00'
-  },
-  {
-    type: 'temperature',
-    label: 'Temperature check',
-    icon: '🌡️',
-    enabled: false,
-    time: '18:00'
   }
 ];
 
@@ -87,26 +58,16 @@ const DEFAULT_REMINDERS: ActivityReminder[] = [
 export class ActivityReminderService {
   private readonly storageKey = 'baby_activity_reminders';
   private readonly customStorageKey = 'baby_custom_reminders';
-  private readonly vaccinationStorageKey =
-    'baby_vaccination_reminder';
   private readonly scheduledIdsKey = 'baby_scheduled_notification_ids';
   private readonly remindersSubject =
     new BehaviorSubject<ActivityReminder[]>(this.load());
   private readonly customRemindersSubject =
     new BehaviorSubject<CustomReminder[]>(this.loadCustomReminders());
-  private readonly vaccinationReminderSubject =
-    new BehaviorSubject<VaccinationReminderSettings>(
-      this.loadVaccinationReminder()
-    );
 
   readonly reminders$ = this.remindersSubject.asObservable();
   readonly customReminders$ = this.customRemindersSubject.asObservable();
-  readonly vaccinationReminder$ =
-    this.vaccinationReminderSubject.asObservable();
-
   constructor(
-    private readonly preferencesService: PreferencesService,
-    private readonly vaccinationService: VaccinationService
+    private readonly preferencesService: PreferencesService
   ) {}
 
   get reminders(): ActivityReminder[] {
@@ -115,10 +76,6 @@ export class ActivityReminderService {
 
   get customReminders(): CustomReminder[] {
     return this.customRemindersSubject.value;
-  }
-
-  get vaccinationReminder(): VaccinationReminderSettings {
-    return this.vaccinationReminderSubject.value;
   }
 
   async initialize(): Promise<void> {
@@ -271,39 +228,6 @@ export class ActivityReminderService {
     await this.reconcileNativeSchedule(false);
   }
 
-  async updateVaccinationReminder(
-    changes: VaccinationReminderSettings
-  ): Promise<{ success: boolean; message?: string }> {
-    if (
-      !this.isValidTime(changes.time) ||
-      ![0, 1, 3, 7].includes(changes.daysBefore)
-    ) {
-      return {
-        success: false,
-        message: 'Choose a valid reminder time and notice period.'
-      };
-    }
-
-    if (changes.enabled) {
-      const permission = await this.ensurePermission();
-      if (permission.display !== 'granted') {
-        return {
-          success: false,
-          message:
-            'Notifications are disabled. Allow them in iPhone Settings first.'
-        };
-      }
-    }
-
-    trackerStorage.setItem(
-      this.vaccinationStorageKey,
-      JSON.stringify(changes)
-    );
-    this.vaccinationReminderSubject.next(changes);
-    await this.reconcileNativeSchedule(false);
-    return { success: true };
-  }
-
   async refreshSchedules(): Promise<void> {
     await this.reconcileNativeSchedule(false);
   }
@@ -320,12 +244,9 @@ export class ActivityReminderService {
     const enabledCustom = this.customReminders.filter(
       reminder => reminder.enabled
     );
-    const vaccinationNotifications =
-      this.buildVaccinationNotifications();
     if (
       enabled.length === 0 &&
-      enabledCustom.length === 0 &&
-      vaccinationNotifications.length === 0
+      enabledCustom.length === 0
     ) {
       this.persistScheduledIds([]);
       return;
@@ -379,8 +300,7 @@ export class ActivityReminderService {
 
     const notifications = [
       ...presetNotifications,
-      ...customNotifications,
-      ...vaccinationNotifications
+      ...customNotifications
     ];
     await LocalNotifications.schedule({ notifications });
     this.persistScheduledIds(
@@ -450,87 +370,6 @@ export class ActivityReminderService {
     this.customRemindersSubject.next(reminders);
   }
 
-  private loadVaccinationReminder(): VaccinationReminderSettings {
-    try {
-      const saved = JSON.parse(
-        trackerStorage.getItem(this.vaccinationStorageKey) || '{}'
-      ) as Partial<VaccinationReminderSettings>;
-
-      return {
-        enabled: saved.enabled === true,
-        daysBefore: [0, 1, 3, 7].includes(
-          Number(saved.daysBefore)
-        )
-          ? Number(saved.daysBefore)
-          : DEFAULT_VACCINATION_REMINDER.daysBefore,
-        time:
-          typeof saved.time === 'string' &&
-          this.isValidTime(saved.time)
-            ? saved.time
-            : DEFAULT_VACCINATION_REMINDER.time
-      };
-    } catch {
-      return { ...DEFAULT_VACCINATION_REMINDER };
-    }
-  }
-
-  private buildVaccinationNotifications() {
-    const settings = this.vaccinationReminder;
-    if (!settings.enabled) {
-      return [];
-    }
-
-    const [hour, minute] = settings.time.split(':').map(Number);
-    const babyName = this.preferencesService.preferences.baby.name;
-    const now = Date.now();
-
-    return this.vaccinationService.entries
-      .filter(entry => Boolean(entry.nextDueDate))
-      .map(entry => {
-        const notificationDate =
-          new Date(`${entry.nextDueDate}T${settings.time}:00`);
-        notificationDate.setDate(
-          notificationDate.getDate() - settings.daysBefore
-        );
-
-        return {
-          entry,
-          notificationDate
-        };
-      })
-      .filter(item => item.notificationDate.getTime() > now)
-      .sort(
-        (first, second) =>
-          first.notificationDate.getTime() -
-          second.notificationDate.getTime()
-      )
-      .slice(0, 32)
-      .map(({ entry, notificationDate }) => ({
-        id: this.vaccinationNotificationId(entry.id),
-        title: `🩹 ${entry.vaccineName} reminder`,
-        body:
-          settings.daysBefore === 0
-            ? `${babyName}’s vaccination is due today.`
-            : `${babyName}’s vaccination is due in ${settings.daysBefore} ${
-                settings.daysBefore === 1 ? 'day' : 'days'
-              }.`,
-        sound: 'default',
-        schedule: {
-          at: new Date(
-            notificationDate.getFullYear(),
-            notificationDate.getMonth(),
-            notificationDate.getDate(),
-            hour,
-            minute
-          ),
-          allowWhileIdle: true
-        },
-        extra: {
-          vaccinationId: entry.id
-        }
-      }));
-  }
-
   private loadScheduledIds(): number[] {
     try {
       const ids = JSON.parse(
@@ -566,14 +405,6 @@ export class ActivityReminderService {
     return 100_000 + (hash % 2_000_000_000);
   }
 
-  private vaccinationNotificationId(id: string): number {
-    let hash = 0;
-    for (const character of id) {
-      hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-    }
-    return 2_100_000_000 + (hash % 40_000_000);
-  }
-
   private createCustomId(): string {
     return globalThis.crypto?.randomUUID?.() ??
       `reminder-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -583,9 +414,7 @@ export class ActivityReminderService {
     const labels: Record<ReminderType, string> = {
       feeding: 'feeding check-in',
       sleep: 'sleep routine',
-      diaper: 'diaper check',
-      medicine: 'medicine',
-      temperature: 'temperature check'
+      diaper: 'diaper check'
     };
     return labels[type];
   }

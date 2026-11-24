@@ -27,16 +27,11 @@ export const BABY_TRACKER_DATA_KEYS = [
   'baby_solid_food_entries',
   'sleep_state',
   'baby_weight_entries',
-  'baby_medicine_entries',
-  'baby_vaccination_entries',
-  'baby_temperature_entries',
-  'baby_temperature_unit',
   'baby_milestones',
   'nursing_sessions',
   'active_nursing_session',
   'baby_activity_reminders',
   'baby_custom_reminders',
-  'baby_vaccination_reminder',
   'baby_daily_journal_entries'
 ] as const;
 

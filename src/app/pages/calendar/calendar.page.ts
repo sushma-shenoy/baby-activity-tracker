@@ -4,17 +4,14 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ActivityService } from '../../services/activity.service';
 import { GrowthService } from '../../services/growth.service';
-import { MedicineService } from '../../services/medicine.service';
 import { MilestoneService } from '../../services/milestone.service';
 import { NursingService } from '../../services/nursing.service';
-import { TemperatureService } from '../../services/temperature.service';
-import { VaccinationService } from '../../services/vaccination.service';
 import { Subscription } from 'rxjs';
 import { DailyJournalService } from '../../services/daily-journal.service';
 
 type CalendarType =
-  | 'feeding' | 'solids' | 'sleep' | 'diaper' | 'medicine'
-  | 'nursing' | 'growth' | 'vaccination' | 'temperature' | 'milestone'
+  | 'feeding' | 'solids' | 'sleep' | 'diaper'
+  | 'nursing' | 'growth' | 'milestone'
   | 'journal';
 
 interface CalendarEvent {
@@ -57,10 +54,7 @@ export class CalendarPage implements OnInit, OnDestroy {
     { type: 'sleep', label: 'Sleep', icon: '😴' },
     { type: 'diaper', label: 'Diapers', icon: '🧷' },
     { type: 'nursing', label: 'Nursing', icon: '🤱' },
-    { type: 'medicine', label: 'Medicine', icon: '💊' },
     { type: 'growth', label: 'Growth', icon: '⚖️' },
-    { type: 'vaccination', label: 'Vaccines', icon: '🩹' },
-    { type: 'temperature', label: 'Temperature', icon: '🌡️' },
     { type: 'milestone', label: 'Milestones', icon: '🌟' },
     { type: 'journal', label: 'Journal', icon: '📔' }
   ];
@@ -78,9 +72,6 @@ export class CalendarPage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly activityService: ActivityService,
     private readonly growthService: GrowthService,
-    private readonly medicineService: MedicineService,
-    private readonly vaccinationService: VaccinationService,
-    private readonly temperatureService: TemperatureService,
     private readonly milestoneService: MilestoneService,
     private readonly nursingService: NursingService,
     private readonly journalService: DailyJournalService
@@ -205,23 +196,9 @@ export class CalendarPage implements OnInit, OnDestroy {
       route: `/${activity.type}`,
       createdByName: activity.createdByName
     }));
-    const medicineEvents = this.medicineService.entries.map(entry => ({
-      id: entry.id, type: 'medicine' as const, title: entry.name,
-      detail: entry.dose, timestamp: entry.givenAt, route: '/medicine', createdByName: entry.createdByName
-    }));
     const growthEvents = this.growthService.entries.map(entry => ({
       id: entry.id, type: 'growth' as const, title: 'Weight recorded',
       detail: `${entry.weightKg} kg`, timestamp: this.dateTimestamp(entry.date), route: '/growth', createdByName: entry.createdByName
-    }));
-    const vaccinationEvents = this.vaccinationService.entries.map(entry => ({
-      id: entry.id, type: 'vaccination' as const, title: entry.vaccineName,
-      detail: entry.provider || 'Vaccination',
-      timestamp: this.dateTimestamp(entry.administeredDate), route: '/vaccination', createdByName: entry.createdByName
-    }));
-    const temperatureEvents = this.temperatureService.entries.map(entry => ({
-      id: entry.id, type: 'temperature' as const, title: 'Temperature',
-      detail: `${this.temperatureService.toDisplay(entry.celsius).toFixed(1)}°${this.temperatureService.unit === 'celsius' ? 'C' : 'F'} · ${entry.method}`,
-      timestamp: entry.measuredAt, route: '/temperature', createdByName: entry.createdByName
     }));
     const milestoneEvents = this.milestoneService.milestones.map(entry => ({
       id: entry.id, type: 'milestone' as const, title: entry.title,
@@ -242,8 +219,7 @@ export class CalendarPage implements OnInit, OnDestroy {
       createdByName: entry.createdByName
     }));
     return [
-      ...activityEvents, ...medicineEvents, ...growthEvents,
-      ...vaccinationEvents, ...temperatureEvents, ...milestoneEvents,
+      ...activityEvents, ...growthEvents, ...milestoneEvents,
       ...nursingEvents, ...journalEvents
     ];
   }

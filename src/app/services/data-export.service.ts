@@ -19,16 +19,11 @@ export class DataExportService {
     'baby_solid_food_entries',
     'sleep_state',
     'baby_weight_entries',
-    'baby_medicine_entries',
-    'baby_vaccination_entries',
-    'baby_temperature_entries',
-    'baby_temperature_unit',
     'baby_milestones',
     'nursing_sessions',
     'active_nursing_session',
     'baby_activity_reminders',
-    'baby_custom_reminders',
-    'baby_vaccination_reminder'
+    'baby_custom_reminders'
   ] as const;
 
   createBackup(): BabyTrackerBackup {
@@ -47,7 +42,7 @@ export class DataExportService {
 
     for (let index = 0; index < trackerStorage.length; index += 1) {
       const key = trackerStorage.key(index);
-      if (!key?.startsWith('baby_profile_data:')) continue;
+      if (!key || !this.isAllowedKey(key)) continue;
 
       const rawValue = trackerStorage.getItem(key);
       if (rawValue === null) continue;
@@ -138,9 +133,15 @@ export class DataExportService {
   }
 
   private isAllowedKey(key: string): boolean {
+    if (key.startsWith('baby_profile_data:')) {
+      const keyParts = key.split(':');
+      const baseKey = keyParts[keyParts.length - 1];
+      return Boolean(
+        baseKey && (this.allowedKeys as readonly string[]).includes(baseKey)
+      );
+    }
     return (
-      (this.allowedKeys as readonly string[]).includes(key) ||
-      key.startsWith('baby_profile_data:')
+      (this.allowedKeys as readonly string[]).includes(key)
     );
   }
 
@@ -156,9 +157,6 @@ export class DataExportService {
       'feeds',
       'baby_solid_food_entries',
       'baby_weight_entries',
-      'baby_medicine_entries',
-      'baby_vaccination_entries',
-      'baby_temperature_entries',
       'baby_milestones',
       'nursing_sessions',
       'baby_activity_reminders',
@@ -168,12 +166,6 @@ export class DataExportService {
     if (key === 'baby_profiles_v2') return Array.isArray(value);
     if (key === 'active_baby_profile_id') {
       return typeof value === 'string' && value.length > 0;
-    }
-    if (key === 'baby_temperature_unit') {
-      return value === 'celsius' || value === 'fahrenheit';
-    }
-    if (key === 'baby_vaccination_reminder') {
-      return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     }
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   }

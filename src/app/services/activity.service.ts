@@ -159,7 +159,7 @@ export class ActivityService {
     return (
       typeof activity.id === 'string' &&
       activity.id.length > 0 &&
-      ['feeding', 'solids', 'sleep', 'diaper', 'medicine'].includes(
+      ['feeding', 'solids', 'sleep', 'diaper'].includes(
         String(activity.type)
       ) &&
       typeof activity.title === 'string' &&

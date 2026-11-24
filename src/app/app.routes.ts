@@ -69,21 +69,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/growth/growth.page').then( m => m.GrowthPage)
   },
   {
-    path: 'medicine',
-    canActivate: [authGuard, caregiverAccessGuard],
-    loadComponent: () => import('./pages/medicine/medicine.page').then( m => m.MedicinePage)
-  },
-  {
-    path: 'vaccination',
-    canActivate: [authGuard, caregiverAccessGuard],
-    loadComponent: () => import('./pages/vaccination/vaccination.page').then( m => m.VaccinationPage)
-  },
-  {
-    path: 'temperature',
-    canActivate: [authGuard, caregiverAccessGuard],
-    loadComponent: () => import('./pages/temperature/temperature.page').then( m => m.TemperaturePage)
-  },
-  {
     path: 'milestones',
     canActivate: [authGuard, caregiverAccessGuard],
     loadComponent: () => import('./pages/milestones/milestones.page').then( m => m.MilestonesPage)

@@ -54,8 +54,6 @@ export class PendingChangesPanelComponent implements OnInit, OnDestroy {
       feeds: 'Feeding change', nursing_sessions: 'Nursing change',
       active_nursing_session: 'Nursing timer change', baby_solid_food_entries: 'Solid food change',
       sleep_state: 'Sleep change', baby_weight_entries: 'Growth change',
-      baby_medicine_entries: 'Medicine change', baby_vaccination_entries: 'Vaccination change',
-      baby_temperature_entries: 'Temperature change', baby_temperature_unit: 'Temperature unit change',
       baby_milestones: 'Milestone change', baby_daily_journal_entries: 'Journal change'
     };
     if (request.key === 'baby_activities') return `${this.activityTypeLabel(request)} change`;
